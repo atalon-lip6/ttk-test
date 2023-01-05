@@ -182,7 +182,6 @@ jobs:
 
     - name: Upload result screenshots
       if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshots'
-      id: validate
       uses: actions/upload-artifact@v3
       with:
         name: screenshots-${{ matrix.os }}.tar.gz

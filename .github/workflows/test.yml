@@ -7,6 +7,7 @@ on:
       - 'dev'
     # triggered on tag pushes with tags beginning with either "v" or "dev"
     tags:
+      - 'tutu*'
       - 'v*'
       - 'dev*'
       - 'ci*'
@@ -40,6 +41,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
+        testSet: [screenshots, python-scripts]
     env:
       CCACHE_DIR: /home/runner/.ccache
       CCACHE_MAXSIZE: 500M
@@ -123,6 +125,8 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
+        #ici
+
     - uses: actions/checkout@v3
       with:
         repository: "topology-tool-kit/ttk-data"
@@ -142,6 +146,7 @@ jobs:
             simple.SaveData(ds, rsi)
 
     - name: Run ttk-data states [NOT ENFORCED]
+      if: matrix.testSet == 'screenshots'
       id: validate
       continue-on-error: true
       run: |
@@ -176,7 +181,8 @@ jobs:
         fi
 
     - name: Upload result screenshots
-      if: steps.validate.outcome == 'failure'
+      if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshots'
+      id: validate
       uses: actions/upload-artifact@v3
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
@@ -184,11 +190,13 @@ jobs:
         retention-days: 10
 
     - name: Run ttk-data Python scripts
+      if: matrix.testSet == 'python-scripts'
       run: |
         cd ttk-data
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
+      if: matrix.testSet == 'python-scripts'
       continue-on-error: true
       run: |
         cd ttk-data
@@ -196,6 +204,7 @@ jobs:
         diff python/hashes/${{ matrix.os }}.json python/res.json
 
     - name: Archive cache
+      if: matrix.testSet == 'python-scripts'
       run: |
         ccache -s
         ccache -c
@@ -203,7 +212,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }} && matrix.testSet == 'python-scripts'
       uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}

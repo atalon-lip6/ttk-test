@@ -143,7 +143,7 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+        if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
       uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}
@@ -193,7 +193,7 @@ jobs:
         sudo apt install ./ttk-paraview-headless.deb
 
     - name: Fetch TTK packages we just built in the test-build-ubuntu job
-      uses: actions/download-artifactv3
+      uses: actions/download-artifact@v3
       with:
         name: ttk-for-tests-${{ matrix.os }}.deb
 

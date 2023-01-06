@@ -162,7 +162,7 @@ jobs:
         os: [ubuntu-20.04, ubuntu-22.04]
         testSet: [pyTests, screenshotTests]
     steps:
-      - name: Install Ubuntu dependencies
+    - name: Install Ubuntu dependencies
       run: |
         sudo apt update
         # TODO voir quels paquets ne sont pas nécessaires au runtime

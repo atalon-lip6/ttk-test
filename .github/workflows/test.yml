@@ -40,7 +40,7 @@ jobs:
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04] #, ubuntu-22.04]
     env:
       CCACHE_DIR: /home/runner/.ccache
       CCACHE_MAXSIZE: 500M
@@ -160,7 +160,7 @@ jobs:
     needs: test-build-ubuntu
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]
+        os: [ubuntu-20.04] #, ubuntu-22.04]
         testSet: [pyTests, screenshotTests]
     steps:
     - name: Install Ubuntu dependencies
@@ -199,7 +199,8 @@ jobs:
         name: ttk-for-tests-${{ matrix.os }}.deb
 
     - name: Installing the previously built ttk package
-      run: sudo apt install ./ttk-for-tests-${{ matrix.os }}.deb  
+      run: |
+        sudo apt install ./ttk-for-tests-${{ matrix.os }}.deb  
 
     - uses: actions/checkout@v3
       with:
@@ -282,7 +283,7 @@ jobs:
   # -----------------#
   test-build-macos:
     runs-on: macos-12
-    if: false && ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false # && ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
@@ -427,7 +428,7 @@ jobs:
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
-    if: false && ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false #&& ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk

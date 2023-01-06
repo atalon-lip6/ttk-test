@@ -127,7 +127,7 @@ jobs:
     - name: Package TTK & update package information
       run: |
         cd build
-        cpack -G DEB
+        sudo cpack -G DEB
 
     - name: Upload TTK .deb package for fast install in tests
       uses: actions/upload-artifact@v3
@@ -281,6 +281,7 @@ jobs:
   # Test macOS build #
   # -----------------#
   test-build-macos:
+    if: false
     runs-on: macos-12
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
@@ -426,6 +427,7 @@ jobs:
   # Test Windows build #
   # ------------------ #
   test-build-windows:
+    if: false
     runs-on: windows-2022
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:

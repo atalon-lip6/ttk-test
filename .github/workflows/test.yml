@@ -124,7 +124,7 @@ jobs:
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
 
-      - name: Package TTK & update package information
+    - name: Package TTK & update package information
       run: |
         cd build
         cpack -G DEB

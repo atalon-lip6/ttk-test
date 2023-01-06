@@ -156,7 +156,7 @@ jobs:
   # ------------------#
   # Tests Screenshots #
   # ------------------#
-  - name: Run Screenshots tests
+  run-python-screenshots-tests:
     needs: test-build-ubuntu
     strategy:
       matrix:

@@ -152,9 +152,9 @@ jobs:
 
 
 
-  # ----------------- #
+  # ------------------#
   # Tests Screenshots #
-  # ----------------- #
+  # ------------------#
   - name: Run Screenshots tests
     needs: test-build-ubuntu
     strategy:
@@ -177,7 +177,7 @@ jobs:
           libsqlite3-dev \
           libwebsocketpp-dev \
           graphviz \
-          #ninja-build \
+          ninja-build \
           zlib1g-dev \
           dpkg-dev
         sudo python3 -m pip install scikit-learn

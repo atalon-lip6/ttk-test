@@ -158,6 +158,25 @@ jobs:
         os: [ubuntu-22.04] #, ubuntu-22.04]
         testSet: [pyTests, screenshotTests]
     steps:
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TODO voir quels paquets ne sont pas nécessaires au runtime
+        # TTK dependencies 
+        sudo apt install -y \
+          ccache \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libosmesa-dev \
+          libopenmpi-dev \
+          libsqlite3-dev \
+          libwebsocketpp-dev \
+          graphviz \
+          ninja-build \
+          zlib1g-dev \
+          dpkg-dev
+        sudo python3 -m pip install scikit-learn
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \

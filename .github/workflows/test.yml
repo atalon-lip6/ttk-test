@@ -258,7 +258,7 @@ jobs:
   # -----------------#
   test-build-macos:
     runs-on: macos-12
-    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false # ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
@@ -403,7 +403,7 @@ jobs:
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false # ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk

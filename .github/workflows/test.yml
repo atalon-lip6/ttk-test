@@ -7,7 +7,6 @@ on:
       - 'dev'
     # triggered on tag pushes with tags beginning with either "v" or "dev"
     tags:
-      - 'tutu*'
       - 'v*'
       - 'dev*'
       - 'ci*'
@@ -115,7 +114,7 @@ jobs:
         CXXFLAGS: -Werror
 
     - uses: ammaraskar/gcc-problem-matcher@master
-    - name: Build & install TTK & package it
+    - name: Build, install TTK & package it
       run: |
         cd build
         cmake --build . --parallel
@@ -139,17 +138,17 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      #if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
       uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}
         path: /home/runner/ttk-ccache.tar.gz
-        retention-days: 2
+        retention-days: 10
 
 
 
   # ------------------#
-  # Tests Screenshots #
+  # Tests on ttk-data #
   # ------------------#
   run-python-screenshots-tests:
     runs-on: ${{ matrix.os }}
@@ -159,31 +158,11 @@ jobs:
         os: [ubuntu-22.04] #, ubuntu-22.04]
         testSet: [pyTests, screenshotTests]
     steps:
-    - name: Install Ubuntu dependencies
-      run: |
-        sudo apt update
-        # TODO voir quels paquets ne sont pas nécessaires au runtime
-        # TTK dependencies 
-        sudo apt install -y \
-          ccache \
-          libboost-system-dev \
-          libeigen3-dev \
-          libgraphviz-dev \
-          libosmesa-dev \
-          libopenmpi-dev \
-          libsqlite3-dev \
-          libwebsocketpp-dev \
-          graphviz \
-          ninja-build \
-          zlib1g-dev \
-          dpkg-dev
-        sudo python3 -m pip install scikit-learn
-
-
     - name: Fetch TTK-ParaView headless Debian package
       run: |
         wget -O ttk-paraview-headless.deb \
           https://github.com/${{ env.PV_REPO }}/releases/download/${{ env.PV_TAG }}/ttk-paraview-headless-${{ matrix.os }}.deb
+
 
     - name: Install ParaView .deb
       run: |
@@ -194,12 +173,9 @@ jobs:
       with:
         name: ttk-for-tests-${{ matrix.os }}.deb
 
-    - name: Investigate filename
-      run: |
-        ls
     - name: Installing the previously built ttk package
       run: |
-        sudo apt install ./ttk*.deb
+        sudo apt install ./ttk.deb
 
     - uses: actions/checkout@v3
       with:
@@ -220,7 +196,7 @@ jobs:
             simple.SaveData(ds, rsi)
 
     - name: Run ttk-data states [NOT ENFORCED]
-      if: matrix.testSet == 'screenshots'
+      if: matrix.testSet == 'screenshotTests'
       id: validate
       continue-on-error: true
       run: |
@@ -255,7 +231,7 @@ jobs:
         fi
 
     - name: Upload result screenshots
-      if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshots'
+      if: steps.validate.outcome == 'failure' && matrix.testSet == 'screenshotTests'
       uses: actions/upload-artifact@v3
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
@@ -263,13 +239,13 @@ jobs:
         retention-days: 10
 
     - name: Run ttk-data Python scripts
-      if: matrix.testSet == 'python-scripts'
+      if: matrix.testSet == 'pyTests'
       run: |
         cd ttk-data
         python3 -u python/run.py
 
     - name: Test ttk-data Python scripts results [NOT ENFORCED]
-      if: matrix.testSet == 'python-scripts'
+      if: matrix.testSet == 'pyTests'
       continue-on-error: true
       run: |
         cd ttk-data
@@ -282,7 +258,7 @@ jobs:
   # -----------------#
   test-build-macos:
     runs-on: macos-12
-    if: false # && ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       CCACHE_DIR: /Users/runner/work/ttk/.ccache
       CCACHE_MAXSIZE: 200M
@@ -427,7 +403,7 @@ jobs:
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
-    if: false #&& ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk

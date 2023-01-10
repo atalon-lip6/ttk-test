@@ -138,12 +138,12 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      #if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
       uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-${{ matrix.os }}
         path: /home/runner/ttk-ccache.tar.gz
-        retention-days: 2
+        retention-days: 30
 
 
 
@@ -253,7 +253,7 @@ jobs:
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
-        retention-days: 10
+        retention-days: 30
 
     - name: Run ttk-data Python scripts
       if: matrix.testSet == 'pyTests'
@@ -383,7 +383,7 @@ jobs:
       with:
         name: screenshots-macOS.tar.gz
         path: ttk-data/tests/screenshots.tar.gz
-        retention-days: 10
+        retention-days: 30
 
     - name: Run ttk-data Python scripts
       run: |
@@ -407,12 +407,12 @@ jobs:
         tar czf ttk-ccache.tar.gz .ccache
 
     - name: Upload ccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      #if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
       uses: actions/upload-artifact@v3
       with:
         name: ttk-ccache-macOS
         path: /Users/runner/work/ttk/ttk-ccache.tar.gz
-        retention-days: 2
+        retention-days: 30
 
 
   # ------------------ #
@@ -615,12 +615,12 @@ jobs:
         tar czf ttk-sccache.tar.gz cache
 
     - name: Upload sccache archive
-      if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+      #if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
       uses: actions/upload-artifact@v3
       with:
         name: ttk-sccache-windows
         path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\ttk-sccache.tar.gz
-        retention-days: 2
+        retention-days: 30
 
 
   # ---------------------------------------- #
@@ -631,7 +631,7 @@ jobs:
     needs: [test-build-ubuntu, test-build-macos, test-build-windows]
     # trigger job only on the "topology-tool-kit" repository in case
     # of a branch push (pull requests and tags not affected)
-    if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
+    #if: ${{ github.repository_owner == 'topology-tool-kit' && contains(github.ref, 'heads') }}
     steps:
 
     - name: Delete previous release

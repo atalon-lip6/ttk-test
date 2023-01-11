@@ -2,21 +2,24 @@
 ///
 /// \ingroup base
 /// \class ttk::DistanceMatrixDistorsion
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Alexandre Talon <alexandre.talon@lip6.fr>
+/// \date January 2022
 ///
-/// This module defines the %DistanceMatrixDistorsion class that computes for each vertex of a
-/// triangulation the average scalar value of itself and its direct neighbors.
+/// This module defines the %DistanceMatrixDistorsion class that computes a score telling
+/// how good the low dimension distance matrix represents the high dimension one. The score
+/// is computed according to the distorsion formula.
 ///
-/// \b Related \b publication: \n
-/// 'DistanceMatrixDistorsion'
-/// Jonas Lukasczyk and Julien Tierny.
+///
+/// TODO \b Related \b publication: \n
+/// 'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
+/// Mathieu Pont, Jules Vidal and Julien Tierny.
 /// TTK Publications.
-/// 2021.
+/// 2022.
 ///
 
 #pragma once
 
+#include <vector>
 // ttk common includes
 #include <Debug.h>
 #include <Triangulation.h>
@@ -24,35 +27,15 @@
 namespace ttk {
 
   /**
-   * The DistanceMatrixDistorsion class provides methods to compute for each vertex of a
-   * triangulation the average scalar value of itself and its direct neighbors.
+   * The DistanceMatrixDistorsion class provides a method to compute the distorsion score between
+   * two distance matrix representing the same points.
    */
   class DistanceMatrixDistorsion : virtual public Debug {
 
   public:
     DistanceMatrixDistorsion();
 
-    /**
-     * TODO 2: This method preconditions the triangulation for all operations
-     *         the algorithm of this module requires. For instance,
-     *         preconditionVertexNeighbors, preconditionBoundaryEdges, ...
-     *
-     *         Note: If the algorithm does not require a triangulation then
-     *               this method can be deleted.
-     */
-    int preconditionTriangulation(
-      ttk::AbstractTriangulation *triangulation) const {
-      return triangulation->preconditionVertexNeighbors();
-    }
-
-    /**
-     * TODO 3: Implementation of the algorithm.
-     *
-     *         Note: If the algorithm requires a triangulation then this
-     *               method must be called after the triangulation has been
-     *               preconditioned for the upcoming operations.
-     */
-    template <class dataType,
+template <class dataType,
               class triangulationType = ttk::AbstractTriangulation>
     int computeAverages(dataType *outputData,
                         const dataType *inputData,
@@ -123,6 +106,9 @@ namespace ttk {
 
       return 1; // return success
     }
+
+    int execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const;
+
 
   }; // DistanceMatrixDistorsion class
 

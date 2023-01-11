@@ -4,17 +4,18 @@
 ///
 /// \ingroup vtk
 /// \class ttkDistanceMatrixDistorsion
-/// \author Your Name Here <your.email@address.here>
-/// \date The Date Here.
+/// \author Alexandre Talon <alexandre.talon@lip6.fr>
+/// \date January 2022.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistorsion module.
 ///
-/// This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute an averaging of
+/// TODO This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute an averaging of
 /// the data values of an input point data array defined on the input
 /// vtkDataSet.
 ///
-/// \param Input vtkDataSet.
-/// \param Output vtkDataSet.
+/// \param Input0 vtkTable.
+/// \param Input1 vtkTable.
+/// \param Output vtkTable.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
@@ -79,7 +80,7 @@ private:
    * TODO 5: Add all filter parameters only as private member variables and
    *         initialize them here.
    */
-  std::string OutputArrayName{"AveragedScalarField"};
+  std::string OutputArrayName{"TODO"};
 
 public:
   /**

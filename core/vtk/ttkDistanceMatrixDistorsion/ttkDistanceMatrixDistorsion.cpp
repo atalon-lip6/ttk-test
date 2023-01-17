@@ -11,6 +11,8 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+#include <regex>
+
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
@@ -107,15 +109,40 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
     return 0;
 #endif
 
+  if(SelectFieldsWithRegexpHigh) {
+    // select all input columns whose name is matching the regexp
+    ScalarFieldsHigh.clear();
+    const auto n = inputHigh->GetNumberOfColumns();
+    for(int i = 0; i < n; ++i) {
+      const auto &name = inputHigh->GetColumnName(i);
+      if(std::regex_match(name, std::regex(RegexpStringHigh))) {
+        ScalarFieldsHigh.emplace_back(name);
+      }
+    }
+  }
+
+  if(SelectFieldsWithRegexpLow) {
+    // select all input columns whose name is matching the regexp
+    ScalarFieldsLow.clear();
+    const auto n = inputLow->GetNumberOfColumns();
+    for(int i = 0; i < n; ++i) {
+      const auto &name = inputLow->GetColumnName(i);
+      if(std::regex_match(name, std::regex(RegexpStringLow))) {
+        ScalarFieldsLow.emplace_back(name);
+      }
+    }
+  }
+
+
   const auto nRowsHigh = inputHigh->GetNumberOfRows();
   const auto nRowsLow = inputLow->GetNumberOfRows();
 
-  const auto nColsHigh = inputHigh->GetNumberOfColumns();
-  const auto nColsLow = inputLow->GetNumberOfColumns();
+  const auto nColsHigh = ScalarFieldsHigh.size()
+  const auto nColsLow = ScalarFieldsLow.size()
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (nRowsHigh <= 0 || nRowsHigh != nColsHigh) {
-    this->printErr("High input matrix is not a valid square matrix (rows: "
+    this->printErr("High input matrix cannot be a valid square matrix (rows: "
                    + std::to_string(nRowsHigh)
                    + ", columns: " + std::to_string(nColsHigh) + ")");
     return 0;
@@ -127,7 +154,7 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
                    + ", columns: " + std::to_string(nColsLow) + ")");
     return 0;
   }
-  if (nRowsHigh != nRowsLow ) {
+  if (nRowsHigh != nRowsLow) {
     this->printErr("High and low input matrices must have same size (rows(high): "
                    + std::to_string(nRowsHigh)
                    + ", rows(low): " + std::to_string(nRowsLow) + ")");
@@ -143,15 +170,27 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
 */
+
+  std::vector<vtkAbstractArray *> arraysHigh{}, arraysLow{};
+  for (const auto &s : ScalarFieldsHigh)
+  {
+    arraysHigh.push_back(inputHigh->GetColumnByName(s.data()));
+    this->printMsg(" coucou high: " + std::string(s.data()) + "\n");
+  }
+  for (const auto &s : ScalarFieldsLow)
+  {
+    arraysLow.push_back(inputLow->GetColumnByName(s.data()));
+    this->printMsg(" coucou low: " + std::string(s.data()) + "\n");
+  }
+
   for (int i = 0; i < n; i++)
   {
     vectMatHigh[i].resize(n);
     vectMatLow[i].resize(n);
     for (int j = 0; j < n; j++)
     {
-      //getvalue avec trois paramètres, le troisième ptr vers la valeur retournée
-      vectMatHigh[i][j] = inputHigh->GetValue(i, j).ToDouble();
-      vectMatLow[i][j] = inputLow->GetValue(i, j).ToDouble();
+      vectMatHigh[i][j] = arraysHigh[j]->GetVariantValue(i).ToDouble();
+      vectMatLow[i][j] = arraysLow[j]->GetVariantValue(i).ToDouble();
     }
   }
 
@@ -159,16 +198,17 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   double distorsionValue;
   this->printMsg("Starting computation of sim distorsion value...");
   this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
+  this->printMsg(std::to_string(n) + " VS " + std::to_string(vectOutput.size()) + "\n");
 
 
-  // Putting the results into the vtk output structure.
   output->SetNumberOfRows(n);
-  vtkNew<vtkDoubleArray>distorsionValArray{};
+  vtkNew<vtkDoubleArray>distorsionValArray{}, tmpCol{};
+  this->printMsg("totot1\n");
+  tmpCol->SetNumberOfTuples(n);
+  tmpCol->SetName("SimValue");
   for (int i = 0; i < n; i++)
-  {
-    output->GetRow(i)->SetNumberOfTuples(1);
-    output->GetRow(i)->SetValue(i, vectOutput[i]);
-  }
+    tmpCol->SetTuple1(i, vectOutput[i]);
+  output->AddColumn(tmpCol);
 
   distorsionValArray->SetName("DistorsionValue");
   distorsionValArray->SetNumberOfTuples(1);

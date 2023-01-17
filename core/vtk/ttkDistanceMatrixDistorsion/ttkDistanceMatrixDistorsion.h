@@ -81,6 +81,11 @@ private:
    *         initialize them here.
    */
   std::string OutputArrayName{"TODO"};
+  // To store which column names we want to extract from the inputs.
+  std::vector<std::string> ScalarFieldsHigh{}, ScalarFieldsLow{};
+  std::string RegexpStringHigh{".*"}, RegexpStringLow{".*"};
+  bool SelectFieldsWithRegexpHigh{false};
+  bool SelectFieldsWithRegexpLow{false};
 
 public:
   /**
@@ -89,6 +94,29 @@ public:
    */
   vtkSetMacro(OutputArrayName, const std::string &);
   vtkGetMacro(OutputArrayName, std::string);
+
+  // Variable to choose which columns to use. Two different inputs:
+  // the low one and the high one, hence dupplicate variables.
+  vtkSetMacro(SelectFieldsWithRegexpHigh, bool);
+  vtkGetMacro(SelectFieldsWithRegexpHigh, bool);
+  vtkSetMacro(SelectFieldsWithRegexpLow, bool);
+  vtkGetMacro(SelectFieldsWithRegexpLow, bool);
+
+  vtkSetMacro(RegexpStringHigh, const std::string &);
+  vtkGetMacro(RegexpStringHigh, std::string);
+  vtkSetMacro(RegexpStringLow, const std::string &);
+  vtkGetMacro(RegexpStringLow, std::string);
+
+  // Two functions because two inputs.
+  void ClearScalarFieldsHigh() {
+    ScalarFieldsHigh.clear();
+    Modified();
+  }
+  void ClearScalarFieldsLow() {
+    ScalarFieldsLow.clear();
+    Modified();
+  }
+
 
   /**
    * This static method and the macro below are VTK conventions on how to

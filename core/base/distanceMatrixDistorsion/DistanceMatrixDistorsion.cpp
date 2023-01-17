@@ -11,7 +11,7 @@ ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
 int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const
 {
   ttk::Timer timer;
-  int n = highDistMatrix.size();
+  auto n = highDistMatrix.size();
 
   // print horizontal separator
   this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
@@ -36,23 +36,23 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
   this->printMsg("\n La high matrice :\n\n");
-  for (int i = 0; i < n; i++)
+  for (long unsigned int i = 0; i < n; i++)
   {
-    for (int j = 0; j < n; j++)
+    for (long unsigned int j = 0; j < n; j++)
       this->printMsg("\t"+std::to_string(highDistMatrix[i][j]));
     this->printMsg("\n");
   }
   this->printMsg("\n Et la low matrice :\n\n");
-  for (int i = 0; i < n; i++)
+  for (long unsigned int i = 0; i < n; i++)
   {
-    for (int j = 0; j < n; j++)
+    for (long unsigned int j = 0; j < n; j++)
       this->printMsg("\t"+std::to_string(lowDistMatrix[i][j]));
     this->printMsg("\n");
   }
 
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  for (int i = 0; i < n; i++)
+  for (long unsigned int i = 0; i < n; i++)
   {
     if (highDistMatrix[i].size() != n)
     {
@@ -68,11 +68,11 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 #endif
 
 
-  for (int i = 0; i < n; i++)
+  for (long unsigned int i = 0; i < n; i++)
   {
     deltaBis[i].resize(n);
 
-    for (int j = 0; j < n; j++)
+    for (long unsigned int j = 0; j < n; j++)
     {
       double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
       deltaBis[i][j] = diff*diff;
@@ -86,10 +86,10 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 
   // Then the actual delta'(x,y) = 1-(delta(x,y)/max{delta}).
   double totalSum = 0;
-  for (int i = 0; i < n; i++)
+  for (long unsigned int i = 0; i < n; i++)
   {
     double sum = 0;
-    for (int j = 0; j < n; j++)
+    for (long unsigned int j = 0; j < n; j++)
     {
       deltaBis[i][j] = 1-(deltaBis[i][j]/maxi);
       sum += deltaBis[i][j];

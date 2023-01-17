@@ -76,10 +76,6 @@ class TTKDISTANCEMATRIXDISTORSION_EXPORT ttkDistanceMatrixDistorsion
     protected ttk::DistanceMatrixDistorsion // and we inherit from the base class
 {
 private:
-  /**
-   * TODO 5: Add all filter parameters only as private member variables and
-   *         initialize them here.
-   */
   std::string OutputArrayName{"TODO"};
   // To store which column names we want to extract from the inputs.
   std::vector<std::string> ScalarFieldsHigh{}, ScalarFieldsLow{};
@@ -125,30 +121,25 @@ public:
   static ttkDistanceMatrixDistorsion *New();
   vtkTypeMacro(ttkDistanceMatrixDistorsion, ttkAlgorithm);
 
+  // Two functions because two inputs. Used for columns selection.
+  void SetScalarFieldsHigh(const std::string &s) {
+    ScalarFieldsHigh.emplace_back(s);
+    Modified();
+  }
+  void SetScalarFieldsLow(const std::string &s) {
+    ScalarFieldsLow.emplace_back(s);
+    Modified();
+  }
+
+
 protected:
-  /**
-   * TODO 7: Implement the filter constructor and destructor
-   *         (see cpp file)
-   */
   ttkDistanceMatrixDistorsion();
   ~ttkDistanceMatrixDistorsion() override = default;
 
-  /**
-   * TODO 8: Specify the input data type of each input port
-   *         (see cpp file)
-   */
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
-  /**
-   * TODO 9: Specify the data object type of each output port
-   *         (see cpp file)
-   */
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  /**
-   * TODO 10: Pass VTK data to the base code and convert base code output to VTK
-   *          (see cpp file)
-   */
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;

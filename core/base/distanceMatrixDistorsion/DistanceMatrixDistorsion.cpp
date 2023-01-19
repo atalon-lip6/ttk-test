@@ -97,10 +97,14 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 
 
   for (long unsigned int i = 0; i < n; i++)
-  {
     deltaBis[i].resize(n);
 
-    for (long unsigned int j = 0; j < n; j++)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_), reduction(max:maxi)
+#endif // TTK_ENABLE_OPENMP
+  for (long unsigned int i = 0; i < n; i++)
+  {
+    for (long unsigned int j = 0; j < n; j++) // plus lent si seulement calcul triangle supérieur
     {
       double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
       deltaBis[i][j] = diff*diff;
@@ -110,10 +114,12 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   if (maxi < 1e-8)
     maxi = 1;
   //TODO et si maxi ~= 0 ?
-
-
   // Then the actual delta'(x,y) = 1-(delta(x,y)/max{delta}).
   double totalSum = 0;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_), reduction(+:totalSum)
+#endif // TTK_ENABLE_OPENMP
   for (long unsigned int i = 0; i < n; i++)
   {
     double sum = 0;

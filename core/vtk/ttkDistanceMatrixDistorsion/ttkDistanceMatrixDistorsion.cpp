@@ -128,12 +128,12 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   for (const auto &s : ScalarFieldsHigh)
   {
     arraysHigh.push_back(inputHigh->GetColumnByName(s.data()));
-    this->printMsg(" coucou high: " + std::string(s.data()) + "\n");
+    //this->printMsg(" coucou high: " + std::string(s.data()) + "\n");
   }
   for (const auto &s : ScalarFieldsLow)
   {
     arraysLow.push_back(inputLow->GetColumnByName(s.data()));
-    this->printMsg(" coucou low: " + std::string(s.data()) + "\n");
+    //this->printMsg(" coucou low: " + std::string(s.data()) + "\n");
   }
 
   for (int i = 0; i < n; i++)
@@ -151,12 +151,11 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   double distorsionValue;
   this->printMsg("Starting computation of sim distorsion value...");
   this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
-  this->printMsg(std::to_string(n) + " VS " + std::to_string(vectOutput.size()) + "\n");
+  //this->printMsg(std::to_string(n) + " VS " + std::to_string(vectOutput.size()) + "\n");
 
 
   output->SetNumberOfRows(n);
   vtkNew<vtkDoubleArray>distorsionValArray{}, tmpCol{};
-  this->printMsg("totot1\n");
   tmpCol->SetNumberOfTuples(n);
   tmpCol->SetName("SimValue");
   for (int i = 0; i < n; i++)

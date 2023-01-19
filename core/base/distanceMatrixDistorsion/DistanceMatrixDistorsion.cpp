@@ -1,5 +1,5 @@
-#include <cassert>
 #include <vector>
+#include <random>
 #include <DistanceMatrixDistorsion.h>
 
 ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
@@ -7,6 +7,33 @@ ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
   this->setDebugMsgPrefix("DistanceMatrixDistorsion");
 }
 
+
+int ttk::DistanceMatrixDistorsion::test(int n, std::vector<double> &res) const
+{
+  std::vector<std::vector<double>> mat1(n), mat2(n);
+  std::uniform_real_distribution<double> unif(-1000000,1000000);
+  std::default_random_engine re;
+
+  for (int i = 0; i < n; i++)
+  {
+    mat1[i].resize(n);
+    mat2[i].resize(n);
+
+    for (int j = 0; j < n; j++)
+    {
+      mat1[i][j] = unif(re);
+      mat2[i][j] = unif(re);
+    }
+  }
+
+  ttk::Timer timer;
+  double sim;
+  for (int i = 0; i < 20; i++)
+    execute(mat1, mat2, sim, res);
+
+  this->printMsg("CompleteAll", 1, timer.getElapsedTime());
+  return 1;
+}
 
 int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const
 {

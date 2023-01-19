@@ -107,6 +107,7 @@ template <class dataType,
       return 1; // return success
     }
 
+    int test(int n, std::vector<double> &res) const;
     int execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const;
 
 

@@ -150,7 +150,8 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   std::vector<double> vectOutput;
   double distorsionValue;
   this->printMsg("Starting computation of sim distorsion value...");
-  this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
+  this->test(10000, vectOutput);
+  //this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
   //this->printMsg(std::to_string(n) + " VS " + std::to_string(vectOutput.size()) + "\n");
 
 

@@ -35,6 +35,7 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   double maxi = 0;
   std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
+  /*
   this->printMsg("\n La high matrice :\n\n");
   for (long unsigned int i = 0; i < n; i++)
   {
@@ -49,7 +50,7 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
       this->printMsg("\t"+std::to_string(lowDistMatrix[i][j]));
     this->printMsg("\n");
   }
-
+  */
 
 #ifndef TTK_ENABLE_KAMIKAZE
   for (long unsigned int i = 0; i < n; i++)

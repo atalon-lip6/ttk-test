@@ -9,9 +9,8 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistorsion module.
 ///
-/// TODO This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute an averaging of
-/// the data values of an input point data array defined on the input
-/// vtkDataSet.
+/// TODO This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute the distorsion
+/// between two distance matrices representing the same points (for instance in low and high dimension.
 ///
 /// \param Input0 vtkTable.
 /// \param Input1 vtkTable.
@@ -45,28 +44,6 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 
-/* Note on including VTK modules
- *
- * Each VTK module that you include a header from needs to be specified in this
- * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
- * header is included in the cpp file only) sections.
- *
- * In order to find the corresponding module, check its location within the VTK
- * source code. The VTK module name is composed of the path to the header. You
- * can also find the module name within the vtk.module file located in the same
- * directory as the header file.
- *
- * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
- * so its corresponding VTK module is called VTK::FiltersSources. In this case,
- * the vtk.module file would need to be extended to
- *
- * NAME
- *   ttkDistanceMatrixDistorsion
- * DEPENDS
- *   ttkAlgorithm
- *   VTK::FiltersSources
- */
-
 // TTK Base Includes
 #include <DistanceMatrixDistorsion.h>
 
@@ -76,7 +53,7 @@ class TTKDISTANCEMATRIXDISTORSION_EXPORT ttkDistanceMatrixDistorsion
     protected ttk::DistanceMatrixDistorsion // and we inherit from the base class
 {
 private:
-  std::string OutputArrayName{"TODO"};
+  std::string OutputArrayName{"SIM Value"};
   // To store which column names we want to extract from the inputs.
   std::vector<std::string> ScalarFieldsHigh{}, ScalarFieldsLow{};
   std::string RegexpStringHigh{".*"}, RegexpStringLow{".*"};
@@ -84,15 +61,11 @@ private:
   bool SelectFieldsWithRegexpLow{false};
 
 public:
-  /**
-   * TODO 6: Automatically generate getters and setters of filter
-   *         parameters via vtkMacros.
-   */
   vtkSetMacro(OutputArrayName, const std::string &);
   vtkGetMacro(OutputArrayName, std::string);
 
   // Variable to choose which columns to use. Two different inputs:
-  // the low one and the high one, hence dupplicate variables.
+  // the low one and the high one, hence duplicate variables.
   vtkSetMacro(SelectFieldsWithRegexpHigh, bool);
   vtkGetMacro(SelectFieldsWithRegexpHigh, bool);
   vtkSetMacro(SelectFieldsWithRegexpLow, bool);
@@ -114,10 +87,6 @@ public:
   }
 
 
-  /**
-   * This static method and the macro below are VTK conventions on how to
-   * instantiate VTK objects. You don't have to modify this.
-   */
   static ttkDistanceMatrixDistorsion *New();
   vtkTypeMacro(ttkDistanceMatrixDistorsion, ttkAlgorithm);
 

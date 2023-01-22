@@ -3,7 +3,6 @@
 #include <DistanceMatrixDistorsion.h>
 
 ttk::DistanceMatrixDistorsion::DistanceMatrixDistorsion() {
-  // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("DistanceMatrixDistorsion");
 }
 
@@ -40,6 +39,7 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   ttk::Timer timer;
   auto n = highDistMatrix.size();
 
+#ifndef TTK_ENABLE_KAMIKAZE
   // print horizontal separator
   this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
                                              // print input parameters in table format
@@ -49,18 +49,12 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
       });
   this->printMsg(ttk::debug::Separator::L1);
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if (lowDistMatrix.size() != n)
   {
     this->printMsg(" Sizes mismatch: the high distance matrix has " + std::to_string(n) + " rows and the low distance matrix has " + std::to_string(lowDistMatrix.size()) + " rows\n.");
     return 0;
   }
 #endif
-  distorsionVerticesValues.resize(n);
-
-  // Actually we first compute delta(x,y) = (d_l(x,y)-d_h(x,y))^2
-  double maxi = 0;
-  std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
   /*
   this->printMsg("\n La high matrice :\n\n");
@@ -95,10 +89,16 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   }
 #endif
 
+  distorsionVerticesValues.resize(n);
+
+  double maxi = 0;
+  std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
   for (long unsigned int i = 0; i < n; i++)
     deltaBis[i].resize(n);
 
+  // We first compute delta(x,y) = (d_l(x,y)-d_h(x,y))^2
+  // Then we compute deltabis(x,y) = 1-delta(x,y)/maxi, maxi being the max of delta(x,y) over all x,y
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(max:maxi)
 #endif // TTK_ENABLE_OPENMP
@@ -132,6 +132,7 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
     totalSum += sum;
   }
 
+#ifndef TTK_ENABLE_KAMIKAZE
   this->printMsg("Size of output in ttk/base = " + std::to_string(distorsionVerticesValues.size()) + "\n");
 
   this->printMsg("Computed distorsion value: " + std::to_string(totalSum/(n*n)));
@@ -139,6 +140,6 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
   this->printMsg("Complete", 1, timer.getElapsedTime());
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
-
+#endif
   return 1;
 }

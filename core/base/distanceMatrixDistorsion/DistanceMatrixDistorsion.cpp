@@ -91,24 +91,32 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 
   distorsionVerticesValues.resize(n);
 
+  /* The computation, which is optimised for performance here, can be decomposed as follows:
+   * compute for each (x,y) delta(x,y) = (dist_low(x,y)-dist_high(x,y))^2.
+   * Compute maxi = maximum (delta(x,y)) over all (x,y).
+   * Compute delta2(x,y) = 1-delta(x,y) for each (x,y).
+   * The sim value is the mean of the n^2 values of delta2(x,y).
+   * The distorsion for a vertex x0 is the mean of delta2(x0,y) over all y's.
+  */
+
   double maxi = 0;
-  std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
+  /*std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
   for (long unsigned int i = 0; i < n; i++)
-    deltaBis[i].resize(n);
+    deltaBis[i].resize(n);*/
 
-  // We first compute delta(x,y) = (d_l(x,y)-d_h(x,y))^2
-  // Then we compute deltabis(x,y) = 1-delta(x,y)/maxi, maxi being the max of delta(x,y) over all x,y
+  // We first compute   // Then we compute deltabis(x,y) = 1-delta(x,y)/maxi, maxi being the max of delta(x,y) over all x,y
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(max:maxi)
 #endif // TTK_ENABLE_OPENMP
   for (long unsigned int i = 0; i < n; i++)
   {
-    for (long unsigned int j = 0; j < n; j++) // plus lent si seulement calcul triangle supérieur
+    for (long unsigned int j = i+1; j < n; j++) // plus lent si seulement calcul triangle supérieur
     {
       double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
-      deltaBis[i][j] = diff*diff;
-      maxi = std::max(maxi, deltaBis[i][j]);
+      maxi = std::max(maxi, diff*diff);
+      //deltaBis[i][j] = diff*diff;
+      //maxi = std::max(maxi, deltaBis[i][j]);
     }
   }
   if (maxi < 1e-8)
@@ -117,26 +125,33 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   // Then the actual delta'(x,y) = 1-(delta(x,y)/max{delta}).
   double totalSum = 0;
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP      //deltaBis[i][j] = diff*diff;
+
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(+:totalSum)
 #endif // TTK_ENABLE_OPENMP
+
   for (long unsigned int i = 0; i < n; i++)
+      //deltaBis[i][j] = diff*diff;
   {
     double sum = 0;
     for (long unsigned int j = 0; j < n; j++)
     {
-      deltaBis[i][j] = 1-(deltaBis[i][j]/maxi);
-      sum += deltaBis[i][j];
+      double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
+      double diff2 = diff*diff;
+      //deltaBis[i][j] = 1-(diff2/maxi);
+      //sum += deltaBis[i][j];
+      sum += diff2;
     }
-    distorsionVerticesValues[i] = sum/n;
-    totalSum += sum;
+    double sumHarmonized = sum/maxi;
+    distorsionVerticesValues[i] = 1-sumHarmonized/n;
+    totalSum += 1-sumHarmonized/n;
   }
 
+  distorsionValue = totalSum/n;
 #ifndef TTK_ENABLE_KAMIKAZE
   this->printMsg("Size of output in ttk/base = " + std::to_string(distorsionVerticesValues.size()) + "\n");
 
-  this->printMsg("Computed distorsion value: " + std::to_string(totalSum/(n*n)));
-  distorsionValue = totalSum/(n*n);
+  this->printMsg("Computed distorsion value: " + std::to_string(distorsionValue));
   this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
   this->printMsg("Complete", 1, timer.getElapsedTime());
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator

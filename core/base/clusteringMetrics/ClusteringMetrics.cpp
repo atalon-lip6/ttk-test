@@ -12,7 +12,7 @@ inline int nChoose2(int x)
   return x*(x-1)/2;
 }
 
-int ttk::ClusteringMetrics::compute_contengency_table(const std::vector<double> &clust1, const std::vector<double> &clust2, std::vector<std::vector<double>> &contingencyMatrix) const
+int ttk::ClusteringMetrics::compute_contingency_table(const std::vector<double> &clust1, const std::vector<double> &clust2, std::vector<std::vector<double>> &contingencyMatrix) const
 {
   unsigned long int n = clust1.size();
 
@@ -82,7 +82,7 @@ int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<double>> &contin
 }
 
 
-int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<double>> &contingencyMatrix, double &ariValue) const
+int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<double>> &contingencyMatrix, double &ariValue) const
 {
   unsigned long int nCluster = contingencyMatrix.size();
   std::vector<double> sum1(nCluster), sum2(nCluster);

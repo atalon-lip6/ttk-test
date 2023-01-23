@@ -14,7 +14,7 @@ inline int nChoose2(int x)
 
 int ttk::ClusteringMetrics::compute_contingency_table(const std::vector<double> &clust1, const std::vector<double> &clust2, std::vector<std::vector<double>> &contingencyMatrix) const
 {
-  unsigned long int n = clust1.size();
+  size_t n = clust1.size();
 
   int max1 = *std::max_element(clust1.begin(), clust1.end());
   int max2 = *std::max_element(clust2.begin(), clust2.end());
@@ -35,38 +35,38 @@ int ttk::ClusteringMetrics::compute_contingency_table(const std::vector<double> 
 
 int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<double>> &contingencyMatrix, double &ariValue) const
 {
-  unsigned long int nCluster = contingencyMatrix.size();
+  size_t nCluster = contingencyMatrix.size();
   std::vector<double> sum1(nCluster), sum2(nCluster);
 
-  for (int i1 = 0; i1 < nCluster; i1++)
+  for (size_t i1 = 0; i1 < nCluster; i1++)
   {
     int sum = 0;
-    for (int i2 = 0; i2 < nCluster; i2++)
+    for (size_t i2 = 0; i2 < nCluster; i2++)
       sum += contingencyMatrix[i1][i2];
 
     sum1[i1] = sum;
   }
 
   //TODO changer cache miss...
-  for (int i2 = 0; i2 < nCluster; i2++)
+  for (size_t i2 = 0; i2 < nCluster; i2++)
   {
     int sum = 0;
-    for (int i1 = 0; i1 < nCluster; i1++)
+    for (size_t i1 = 0; i1 < nCluster; i1++)
       sum += contingencyMatrix[i1][i2];
 
     sum2[i2] = sum;
   }
 
   double sumNChooseContingency = 0;
-  for (int i1 = 0; i1 < nCluster; i1++)
+  for (size_t i1 = 0; i1 < nCluster; i1++)
   {
-    for (int i2 = 0; i2 < nCluster; i2++)
+    for (size_t i2 = 0; i2 < nCluster; i2++)
       sumNChooseContingency += nChoose2(contingencyMatrix[i1][i2]);
   }
 
   double sumNChoose2_1 = 0;
   double sumNChoose2_2 = 0;
-  for (int i = 0; i < nCluster; i++)
+  for (size_t i = 0; i < nCluster; i++)
   {
     sumNChoose2_1 += nChoose2(sum1[i]);
     sumNChoose2_2 += nChoose2(sum2[i]);
@@ -84,23 +84,23 @@ int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<double>> &contin
 
 int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<double>> &contingencyMatrix, double &ariValue) const
 {
-  unsigned long int nCluster = contingencyMatrix.size();
+  size_t nCluster = contingencyMatrix.size();
   std::vector<double> sum1(nCluster), sum2(nCluster);
 
-  for (int i1 = 0; i1 < nCluster; i1++)
+  for (size_t i1 = 0; i1 < nCluster; i1++)
   {
     int sum = 0;
-    for (int i2 = 0; i2 < nCluster; i2++)
+    for (size_t i2 = 0; i2 < nCluster; i2++)
       sum += contingencyMatrix[i1][i2];
 
     sum1[i1] = sum;
   }
 
   //TODO changer cache miss...
-  for (int i2 = 0; i2 < nCluster; i2++)
+  for (size_t i2 = 0; i2 < nCluster; i2++)
   {
     int sum = 0;
-    for (int i1 = 0; i1 < nCluster; i1++)
+    for (size_t i1 = 0; i1 < nCluster; i1++)
       sum += contingencyMatrix[i1][i2];
 
     sum2[i2] = sum;
@@ -109,24 +109,24 @@ int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<double>> &contin
 
   double mutualInfo = 0;
 
-  for (int i1 = 0; i1 < nCluster; i1++)
+  for (size_t i1 = 0; i1 < nCluster; i1++)
   {
-    for (int i2 = 0; i2 < nCluster; i2++)
+    for (size_t i2 = 0; i2 < nCluster; i2++)
     {
 
     }
   }
 
   double sumNChooseContingency = 0;
-  for (int i1 = 0; i1 < nCluster; i1++)
+  for (size_t i1 = 0; i1 < nCluster; i1++)
   {
-    for (int i2 = 0; i2 < nCluster; i2++)
+    for (size_t i2 = 0; i2 < nCluster; i2++)
       sumNChooseContingency += nChoose2(contingencyMatrix[i1][i2]);
   }
 
   double sumNChoose2_1 = 0;
   double sumNChoose2_2 = 0;
-  for (int i = 0; i < nCluster; i++)
+  for (size_t i = 0; i < nCluster; i++)
   {
     sumNChoose2_1 += nChoose2(sum1[i]);
     sumNChoose2_2 += nChoose2(sum2[i]);

@@ -58,23 +58,23 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 
   /*
   this->printMsg("\n La high matrice :\n\n");
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
-    for (long unsigned int j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
       this->printMsg("\t"+std::to_string(highDistMatrix[i][j]));
     this->printMsg("\n");
   }
   this->printMsg("\n Et la low matrice :\n\n");
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
-    for (long unsigned int j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
       this->printMsg("\t"+std::to_string(lowDistMatrix[i][j]));
     this->printMsg("\n");
   }
   */
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
     if (highDistMatrix[i].size() != n)
     {
@@ -102,16 +102,16 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   double maxi = 0;
   /*std::vector<std::vector<double>> deltaBis(lowDistMatrix.size());
 
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
     deltaBis[i].resize(n);*/
 
   // We first compute   // Then we compute deltabis(x,y) = 1-delta(x,y)/maxi, maxi being the max of delta(x,y) over all x,y
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(max:maxi)
 #endif // TTK_ENABLE_OPENMP
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
-    for (long unsigned int j = i+1; j < n; j++) // plus lent si seulement calcul triangle supérieur
+    for (size_t j = i+1; j < n; j++) // plus lent si seulement calcul triangle supérieur
     {
       double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
       maxi = std::max(maxi, diff*diff);
@@ -130,11 +130,11 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(+:totalSum)
 #endif // TTK_ENABLE_OPENMP
 
-  for (long unsigned int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
       //deltaBis[i][j] = diff*diff;
   {
     double sum = 0;
-    for (long unsigned int j = 0; j < n; j++)
+    for (size_t j = 0; j < n; j++)
     {
       double diff = lowDistMatrix[i][j] - highDistMatrix[i][j];
       double diff2 = diff*diff;

@@ -2,6 +2,7 @@
 
 #include <vtkInformation.h>
 
+#include <vtkIntArray.h>
 #include <vtkTable.h>
 #include <vtkDoubleArray.h>
 #include <vtkVariantArray.h> //TODO pourquoi et voir dans sim truc
@@ -50,65 +51,28 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector *outputVector) {
 
   // Get input object from input vector
- vtkTable *input1 = vtkTable::GetData(inputVector[0]);
+  vtkTable *input1 = vtkTable::GetData(inputVector[0]);
   //tester taille de l'inputVector ? => request dit taille inputvector
   vtkTable *input2 = vtkTable::GetData(inputVector[1]);
   vtkTable *output = vtkTable::GetData(outputVector);
   //tester si sortie vide
   if(!input1 || ! input2 || !output)
     return 0;
-
-  // Get input array that will be processed
-  //
-  // Note: VTK provides abstract functionality to handle array selections, but
-  //       this essential functionality is unfortunately not well documented.
-  //       Before you read further, please keep in mind the the TTK developer
-  //       team is not responsible for the existing VTK Api ;-)
-  //
-  //       In a nutshell, prior to the RequestData execution one has to call
-  //
-  //           SetInputArrayToProcess (
-  //               int idx,
-  //               int port,
-  //               int connection,
-  //               int fieldAssociation,
-  //               const char *name
-  //            )
-  //
-  //       The parameter 'idx' is often misunderstood: lets say the filter
-  //       requires n arrays, then idx enumerates them from 0 to n-1.
-  //
-  //       The 'port' is the input port index at which the object is connected
-  //       from which we want to get the array.
-  //
-  //       The 'connection' is the connection index at that port (we have to
-  //       specify this because VTK allows multiple connections at the same
-  //       input port).
-  //
-  //       The 'fieldAssociation' integer specifies if the array should be taken
-  //       from 0: point data, 1: cell data, or 2: field data.
-  //
-  //       The final parameter is the 'name' of the array.
-  //
-  //       Example: SetInputArrayToProcess(3,1,0,1,"EdgeLength") will store that
-  //                for the 3rd array the filter needs the cell data array named
-  //                "EdgeLength" that it will retrieve from the vtkDataObject
-  //                at input port 1 (first connection). During the RequestData
-  //                method one can then actually retrieve the 3rd array it
-  //                requires for its computation by calling
-  //                GetInputArrayToProcess(3, inputVector)
-  //
-  //       If this filter is run within ParaView, then the UI will automatically
-  //       call SetInputArrayToProcess (see ClusteringMetrics.xml file).
-  //
-  //       During the RequestData execution one can then retrieve an actual
+ //       During the RequestData execution one can then retrieve an actual
   //       array with the method "GetInputArrayToProcess".
-  vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+  vtkAbstractArray *inputClustering1 = this->GetInputAbstractArrayToProcess(0, input1);
+  vtkAbstractArray *inputClustering2 = this->GetInputAbstractArrayToProcess(1, input2);
+  vtkDataArray *inputArray = this->GetInputArrayToProcess(0, input1);
   if(!inputArray) {
     this->printErr("Unable to retrieve input array.");
-    return 0;
+    return 1;
   }
 
+  const auto intArray1 = vtkIntArray::SafeDownCast(inputClustering1);//    this->GetInputAbstractArrayToProcess(0, inputVector));
+  const auto intArray2 = vtkIntArray::SafeDownCast(inputClustering2);//    this->GetInputAbstractArrayToProcess(0, inputVector));
+
+
+/*
   // To make sure that the selected array can be processed by this filter,
   // one should also check that the array association and format is correct.
   if(this->GetInputArrayAssociation(0, inputVector) != 0) {
@@ -119,27 +83,56 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Input array needs to be a scalar array.");
     return 0;
   }
-
+*/
   // If all checks pass then log which array is going to be processed.
   this->printMsg("Starting computation...");
   this->printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
+  // TODO ^
 
-  // Create an output array that has the same data type as the input array
-  // Note: vtkSmartPointers are well documented
-  //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
-  vtkSmartPointer<vtkDataArray> outputArray
-    = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
-  outputArray->SetName(this->OutputArrayName.data()); // set array name
-  outputArray->SetNumberOfComponents(1); // only one component per tuple
-  outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
-
-  // Get ttk::triangulation of the input vtkDataSet (will create one if one does
-  // not exist already).
-  /*ttk::Triangulation *triangulation
-    = ttkAlgorithm::GetTriangulation(inputDataSet);
-  if(!triangulation)
+  size_t nbVal1 = inputClustering1->GetNumberOfTuples();
+  size_t nbVal2 = inputClustering2->GetNumberOfTuples();
+  this->printMsg("toto1 = " + std::to_string(nbVal1) + "\n");
+  this->printMsg("toto2 = " + std::to_string(nbVal2) + "\n");
+  if (nbVal1 != nbVal2)
+  {
+    this->printMsg("Error : the two columns must have the same size\n");
     return 0;
+  }
+
+  size_t nbVal = nbVal1;
+  //TODO assert same size
+  std::vector<int> values1(nbVal), values2(nbVal);
+  for (size_t i = 0; i < nbVal; i++)
+  {
+    values1[i] = intArray1->GetValue(i);
+    values2[i] = intArray2->GetValue(i);
+    this->printMsg(std::to_string(values1[i]) + " " + std::to_string(values2[i]) + "\n");
+  }
+
+
+  double nmiValue = 0, ariValue = 0;
+  //TODO calculer
+
+  output->SetNumberOfRows(0);
+  /*vtkNew<vtkDoubleArray>distorsionValArray{}, tmpCol{};
+  tmpCol->SetNumberOfTuples(n);
+  tmpCol->SetName("SimValue");
+  for (int i = 0; i < n; i++)
+    tmpCol->SetTuple1(i, vectOutput[i]);
+  output->AddColumn(tmpCol);
   */
+
+  vtkNew<vtkDoubleArray>nmiValArray{}, ariValArray{};
+
+  nmiValArray->SetName("NMIValue");
+  nmiValArray->SetNumberOfTuples(1);
+  nmiValArray->SetTuple1(0, nmiValue);
+  output->GetFieldData()->AddArray(nmiValArray);
+
+  ariValArray->SetName("ARIValue");
+  ariValArray->SetNumberOfTuples(1);
+  ariValArray->SetTuple1(0, ariValue);
+  output->GetFieldData()->AddArray(ariValArray);
 
 
   // return success

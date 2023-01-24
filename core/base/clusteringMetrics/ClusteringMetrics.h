@@ -126,11 +126,11 @@ namespace ttk {
       return 1; // return success
     }
 
-  int compute_contingency_table(const std::vector<double> &clust1, const std::vector<double> &clust2, std::vector<std::vector<double>> &contingencyMatrix) const;
+  int compute_contingency_tables(const std::vector<double> &clust1, const std::vector<double> &clust2, std::vector<std::vector<double>> &contingencyMatrix, std::vector<double> &sumLin, std::vector<double> &sumCol) const;
 
 
-  int compute_ARI(std::vector<std::vector<double>> &contingencyMatrix, double &ariValue) const;
-  int compute_NMI(std::vector<std::vector<double>> &contingencyMatrix, double &nmiValue) const;
+  int compute_ARI(std::vector<std::vector<double>> &contingencyMatrix, const std::vector<double> &sumLin, const std::vector<double> &sumCol, double &ariValue) const;
+  int compute_NMI(std::vector<std::vector<double>> &contingencyMatrix, const std::vector<double> &sumLin, const std::vector<double> &sumCol, double &nmiValue) const;
   }; // ClusteringMetrics class
 
 } // namespace ttk

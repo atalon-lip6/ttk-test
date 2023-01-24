@@ -44,8 +44,6 @@ namespace ttk {
 
     int test(int n, std::vector<double> &res) const;
     int execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const;
-
-
   };
 
 } // namespace ttk

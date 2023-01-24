@@ -20,8 +20,21 @@ int ttk::DistanceMatrixDistorsion::test(int n, std::vector<double> &res) const
 
     for (int j = 0; j < n; j++)
     {
-      mat1[i][j] = unif(re);
-      mat2[i][j] = unif(re);
+      if (i < j)
+      {
+        mat1[i][j] = unif(re);
+        mat2[i][j] = unif(re);
+      }
+      else if (i > j)
+      {
+        mat1[i][j] = mat1[j][i];
+        mat2[i][j] = mat2[j][i];
+      }
+      else
+      {
+        mat1[i][j] = 0;
+        mat2[i][j] = 0;
+      }
     }
   }
 
@@ -79,12 +92,12 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
     if (highDistMatrix[i].size() != n)
     {
       this->printMsg(" Sizes mismatch: high distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(highDistMatrix[i].size()) + " elements.\n");
-      return 0;
+      return 1;
     }
     if (lowDistMatrix[i].size() != n)
     {
       this->printMsg(" Sizes mismatch: low distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(lowDistMatrix[i].size()) + "elements .\n");
-      return 0;
+      return 1;
     }
   }
 #endif
@@ -156,5 +169,5 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   this->printMsg("Complete", 1, timer.getElapsedTime());
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
 #endif
-  return 1;
+  return 0;
 }

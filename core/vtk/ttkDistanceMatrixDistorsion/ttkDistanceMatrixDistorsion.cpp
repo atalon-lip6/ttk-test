@@ -77,8 +77,8 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   if(SelectFieldsWithRegexpLow) {
     // select all input columns whose name is matching the regexp
     ScalarFieldsLow.clear();
-    const auto n = inputLow->GetNumberOfColumns();
-    for(int i = 0; i < n; ++i) {
+    const size_t n = inputLow->GetNumberOfColumns();
+    for(size_t i = 0; i < n; ++i) {
       const auto &name = inputLow->GetColumnName(i);
       if(std::regex_match(name, std::regex(RegexpStringLow))) {
         ScalarFieldsLow.emplace_back(name);
@@ -87,11 +87,11 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   }
 
 
-  const auto nRowsHigh = inputHigh->GetNumberOfRows();
-  const auto nRowsLow = inputLow->GetNumberOfRows();
+  const size_t nRowsHigh = inputHigh->GetNumberOfRows();
+  const size_t nRowsLow = inputLow->GetNumberOfRows();
 
-  const auto nColsHigh = ScalarFieldsHigh.size();
-  const auto nColsLow = ScalarFieldsLow.size();
+  const size_t nColsHigh = ScalarFieldsHigh.size();
+  const size_t nColsLow = ScalarFieldsLow.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (nRowsHigh <= 0 || nRowsHigh != nColsHigh) {
@@ -148,7 +148,7 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   }
 
   std::vector<double> vectOutput;
-  double distorsionValue;
+  double distorsionValue = 0;
   this->printMsg("Starting computation of sim distorsion value...");
   this->test(10000, vectOutput);
   //this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);

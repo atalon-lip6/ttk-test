@@ -1,7 +1,3 @@
-/// TODO 4: Provide your information and **update** the documentation (in
-/// particular regarding the order convention if input arrays need to be
-/// specified with the standard VTK call SetInputArrayToProcess()).
-///
 /// \ingroup vtk
 /// \class ttkDistanceMatrixDistorsion
 /// \author Alexandre Talon <alexandre.talon@lip6.fr>
@@ -10,7 +6,7 @@
 /// \brief TTK VTK-filter that wraps the ttk::DistanceMatrixDistorsion module.
 ///
 /// TODO This VTK filter uses the ttk::DistanceMatrixDistorsion module to compute the distorsion
-/// between two distance matrices representing the same points (for instance in low and high dimension.
+/// between two distance matrices representing the same points (for instance in low and high dimensions).
 ///
 /// \param Input0 vtkTable.
 /// \param Input1 vtkTable.

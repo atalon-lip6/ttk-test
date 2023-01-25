@@ -45,6 +45,19 @@ int ttkDistanceMatrixDistorsion::FillOutputPortInformation(int port, vtkInformat
   return 0;
 }
 
+inline void fillWithInputColumns(vtkTable *input, const std::string &regExpStr, std::vector<std::string> &vectToFill)
+{
+  // select all input columns whose name is matching the regexp
+  vectToFill.clear();
+  const size_t n = input->GetNumberOfColumns();
+  for(size_t i = 0; i < n; ++i) {
+    const auto &name = input->GetColumnName(i);
+    if(std::regex_match(name, std::regex(regExpStr))) {
+      vectToFill.emplace_back(name);
+    }
+  }
+}
+
 int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
@@ -62,7 +75,10 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
     return 0;
 #endif
 
-  if(SelectFieldsWithRegexpHigh) {
+  if(SelectFieldsWithRegexpHigh)
+    fillWithInputColumns(inputHigh, RegexpStringHigh, ScalarFieldsHigh);
+
+  /*{
     // select all input columns whose name is matching the regexp
     ScalarFieldsHigh.clear();
     const auto n = inputHigh->GetNumberOfColumns();
@@ -72,9 +88,12 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
         ScalarFieldsHigh.emplace_back(name);
       }
     }
-  }
+  }*/
 
-  if(SelectFieldsWithRegexpLow) {
+  if(SelectFieldsWithRegexpLow)
+    fillWithInputColumns(inputLow, RegexpStringLow, ScalarFieldsLow);
+
+  /*{
     // select all input columns whose name is matching the regexp
     ScalarFieldsLow.clear();
     const size_t n = inputLow->GetNumberOfColumns();
@@ -84,7 +103,8 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
         ScalarFieldsLow.emplace_back(name);
       }
     }
-  }
+  }*/
+  // Faire une méthode pour factoriser
 
 
   const size_t nRowsHigh = inputHigh->GetNumberOfRows();
@@ -150,8 +170,8 @@ int ttkDistanceMatrixDistorsion::RequestData(vtkInformation *ttkNotUsed(request)
   std::vector<double> vectOutput;
   double distorsionValue = 0;
   this->printMsg("Starting computation of sim distorsion value...");
-  this->test(10000, vectOutput);
-  //this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
+  //this->test(10000, vectOutput);
+  this->execute(vectMatHigh, vectMatLow, distorsionValue, vectOutput);
   //this->printMsg(std::to_string(n) + " VS " + std::to_string(vectOutput.size()) + "\n");
 
 

@@ -64,7 +64,7 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
 
   if (lowDistMatrix.size() != n)
   {
-    this->printMsg(" Sizes mismatch: the high distance matrix has " + std::to_string(n) + " rows and the low distance matrix has " + std::to_string(lowDistMatrix.size()) + " rows\n.");
+    this->printErr(" Sizes mismatch: the high distance matrix has " + std::to_string(n) + " rows and the low distance matrix has " + std::to_string(lowDistMatrix.size()) + " rows\n.");
     return 0;
   }
 #endif
@@ -91,12 +91,12 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   {
     if (highDistMatrix[i].size() != n)
     {
-      this->printMsg(" Sizes mismatch: high distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(highDistMatrix[i].size()) + " elements.\n");
+      this->printErr(" Sizes mismatch: high distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(highDistMatrix[i].size()) + " elements.\n");
       return 1;
     }
     if (lowDistMatrix[i].size() != n)
     {
-      this->printMsg(" Sizes mismatch: low distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(lowDistMatrix[i].size()) + "elements .\n");
+      this->printErr(" Sizes mismatch: low distance matrix is not a square matrix: it has " + std::to_string(n) + " rows and  row " + std::to_string(i) + " has " + std::to_string(lowDistMatrix[i].size()) + "elements .\n");
       return 1;
     }
   }
@@ -118,9 +118,8 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
   for (size_t i = 0; i < n; i++)
     deltaBis[i].resize(n);*/
 
-  // We first compute   // Then we compute deltabis(x,y) = 1-delta(x,y)/maxi, maxi being the max of delta(x,y) over all x,y
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_), reduction(max:maxi)
+#pragma omp parallel for num_threads(this->threadNumber_) reduction(max:maxi) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for (size_t i = 0; i < n; i++)
   {
@@ -132,17 +131,17 @@ int ttk::DistanceMatrixDistorsion::execute(const std::vector<std::vector<double>
       //maxi = std::max(maxi, deltaBis[i][j]);
     }
   }
-  if (maxi < 1e-8)
+  if (maxi < 1e-8) // TODO nbbits
     maxi = 1;
   //TODO et si maxi ~= 0 ?
-  // Then the actual delta'(x,y) = 1-(delta(x,y)/max{delta}).
   double totalSum = 0;
 
-#ifdef TTK_ENABLE_OPENMP      //deltaBis[i][j] = diff*diff;
+#ifdef TTK_ENABLE_OPENMP
 
 #pragma omp parallel for num_threads(this->threadNumber_), reduction(+:totalSum)
 #endif // TTK_ENABLE_OPENMP
 
+  //TODO attention parallèle sommes flottantes
   for (size_t i = 0; i < n; i++)
       //deltaBis[i][j] = diff*diff;
   {

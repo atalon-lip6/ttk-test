@@ -37,6 +37,12 @@ int ttk::ClusteringMetrics::compute_contingency_tables(const std::vector<int> &c
     contingencyMatrix[x1][x2]++;
   }
   this->printMsg("toto1.5\n");
+  for (int i = 0; i < nCluster; i++)
+  {
+    for (int j = 0; j < nCluster; j++)
+      this->printMsg(std::to_string(contingencyMatrix[i][j])+"\t");
+    this->printMsg("\n");
+  }
 
   for (size_t i1 = 0; i1 < nCluster; i1++)
   {
@@ -62,9 +68,10 @@ int ttk::ClusteringMetrics::compute_contingency_tables(const std::vector<int> &c
 }
 
 
-int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, double &ariValue) const
+int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, int nPoint, double &ariValue) const
 {
   size_t nCluster = contingencyMatrix.size();
+  this->printMsg(std::to_string(nCluster) + " was nb of cluster values\n");
 
   double sumNChooseContingency = 0;
   for (size_t i1 = 0; i1 < nCluster; i1++)
@@ -72,17 +79,21 @@ int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<int>> &contingen
     for (size_t i2 = 0; i2 < nCluster; i2++)
       sumNChooseContingency += nChoose2(contingencyMatrix[i1][i2]);
   }
+  this->printMsg(std::to_string(sumNChooseContingency) + " was contingency choose sum\n");
 
   double sumNChoose2_1 = 0;
   double sumNChoose2_2 = 0;
   for (size_t i = 0; i < nCluster; i++)
   {
-    sumNChoose2_1 += nChoose2(sumLin[i]);
-    sumNChoose2_2 += nChoose2(sumCol[i]);
+    this->printMsg(std::to_string(i) + "->"+std::to_string(sumCol[i])+"\n");
+    sumNChoose2_1 += nChoose2(sumCol[i]);
+    sumNChoose2_2 += nChoose2(sumLin[i]);
   }
+  this->printMsg(std::to_string(sumNChoose2_1) + " was col choose sum\n");
+  this->printMsg(std::to_string(sumNChoose2_2) + " was lin choose sum\n");
 
-  double numerator = sumNChooseContingency - (sumNChoose2_1*sumNChoose2_2)/nChoose2(nCluster);
-  double denominator = 0.5*(sumNChoose2_1+sumNChoose2_2)-(sumNChoose2_1*sumNChoose2_2)/nChoose2(nCluster);
+  double numerator = sumNChooseContingency - (sumNChoose2_1*sumNChoose2_2)/nChoose2(nPoint);
+  double denominator = 0.5*(sumNChoose2_1+sumNChoose2_2)-(sumNChoose2_1*sumNChoose2_2)/nChoose2(nPoint);
 
   ariValue = numerator/denominator;
 
@@ -166,7 +177,7 @@ int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<int>> &contingen
   std::vector<int> sumLines, sumColumns;
   compute_contingency_tables(clustering1, clustering2, contingencyMatrix, sumLines, sumColumns);
 
-  compute_ARI(contingencyMatrix, sumLines, sumColumns, ariValue);
+  compute_ARI(contingencyMatrix, sumLines, sumColumns, n, ariValue);
   compute_NMI(contingencyMatrix, sumLines, sumColumns, nmiValue);
 
 #ifndef TTK_ENABLE_KAMIKAZE

@@ -39,7 +39,7 @@ namespace ttk {
   int compute_contingency_tables(const std::vector<int> &clust1, const std::vector<int> &clust2, std::vector<std::vector<int>> &contingencyMatrix, std::vector<int> &sumLin, std::vector<int> &sumCol) const;
 
 
-  int compute_ARI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, double &ariValue) const;
+  int compute_ARI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, int nPoint, double &ariValue) const;
   int compute_NMI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, double &nmiValue) const;
   }; // ClusteringMetrics class
 

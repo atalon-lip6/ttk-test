@@ -40,7 +40,7 @@ namespace ttk {
 
 
   int compute_ARI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, int nPoint, double &ariValue) const;
-  int compute_NMI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, double &nmiValue) const;
+  int compute_NMI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, int nPoint, double &nmiValue) const;
   }; // ClusteringMetrics class
 
 } // namespace ttk

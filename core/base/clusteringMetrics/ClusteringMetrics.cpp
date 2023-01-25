@@ -102,7 +102,7 @@ int ttk::ClusteringMetrics::compute_ARI(std::vector<std::vector<int>> &contingen
 }
 
 
-int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, double &nmiValue) const
+int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<int>> &contingencyMatrix, const std::vector<int> &sumLin, const std::vector<int> &sumCol, int nPoint, double &nmiValue) const
 {
   size_t nCluster = contingencyMatrix.size();
 
@@ -114,24 +114,36 @@ int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<int>> &contingen
     {
       if (contingencyMatrix[i1][i2] == 0)
         continue;
-      double logArg = contingencyMatrix[i1][i2]/(sumLin[i1]*sumCol[i2]);
-      double curAdd = contingencyMatrix[i1][i2]*log2(logArg);
+      if (sumLin[i1] == 0 || sumCol[i2] == 0)// TODO ne dois plus arriver quand généraliser étiquettes clusters
+        continue;
+      double logArg = (double)nPoint*contingencyMatrix[i1][i2]/(sumLin[i1]*sumCol[i2]);
+      double curAdd = contingencyMatrix[i1][i2]*log2(logArg)/(nPoint);
       mutualInfo += curAdd;
+      this->printMsg("toto : "+std::to_string(curAdd) + "( " + std::to_string(logArg));
+      this->printMsg("\t : "+std::to_string(contingencyMatrix[i1][i2]) + "( " + std::to_string(sumLin[i1]));
+      this->printMsg("\t : "+std::to_string(contingencyMatrix[i1][i2]) + "( " + std::to_string(sumCol[i2]));
     }
   }
 
   double entropy1 = 0, entropy2 = 0;
   for (size_t i = 0; i < nCluster; i++)
   {
+    double eltLin = (double)sumLin[i]/nPoint;
+    double eltCol = (double)sumCol[i]/nPoint;
     //TODO plutôt assert plus tôt, je devrait pas arriver
     if (sumLin[i] != 0)
-      entropy1 -= sumLin[i]*log2(sumLin[i]);
+      entropy1 -= eltLin*log2(eltLin);
     if (sumCol[i] != 0)
-      entropy2 -= sumCol[i]*log2(sumCol[i]);
+      entropy2 -= eltCol*log2(eltCol);
   }
 
   nmiValue = 2*mutualInfo/(entropy1+entropy2);
+  this->printMsg("entropy1 = "+std::to_string(entropy1));
+  this->printMsg("entropy2 = "+std::to_string(entropy2));
+  this->printMsg("ou bien nmi = "+std::to_string(2*mutualInfo/(entropy1+entropy2)));
+  this->printMsg("ou bien mi = "+std::to_string(mutualInfo));
 
+  //nmiValue = 1-mutualInfo/(entropy1+entropy2);
   return 0;
 }
 
@@ -177,8 +189,8 @@ int ttk::ClusteringMetrics::compute_NMI(std::vector<std::vector<int>> &contingen
   std::vector<int> sumLines, sumColumns;
   compute_contingency_tables(clustering1, clustering2, contingencyMatrix, sumLines, sumColumns);
 
-  compute_ARI(contingencyMatrix, sumLines, sumColumns, n, ariValue);
-  compute_NMI(contingencyMatrix, sumLines, sumColumns, nmiValue);
+  //compute_ARI(contingencyMatrix, sumLines, sumColumns, n, ariValue);
+  compute_NMI(contingencyMatrix, sumLines, sumColumns, n, nmiValue);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   this->printMsg("Size of output in ttk/base = 2\n");

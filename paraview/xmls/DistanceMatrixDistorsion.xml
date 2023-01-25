@@ -73,8 +73,7 @@
          name="RegexpHigh"
          command="SetRegexpStringHigh"
          number_of_elements="1"
-         default_values=".*"
-         panel_visibility="advanced">
+         default_values=".*">
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -149,8 +148,7 @@
          name="RegexpLow"
          command="SetRegexpStringLow"
          number_of_elements="1"
-         default_values=".*"
-         panel_visibility="advanced">
+         default_values=".*">
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"

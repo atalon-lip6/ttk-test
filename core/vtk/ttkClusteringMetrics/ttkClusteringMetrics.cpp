@@ -111,8 +111,8 @@ int ttkClusteringMetrics::RequestData(vtkInformation *ttkNotUsed(request),
 
 
   double nmiValue = 0, ariValue = 0;
-  this->execute(values1, values2, nmiValue, ariValue);
-
+  //this->execute(values1, values2, nmiValue, ariValue);
+  this->test();
   output->SetNumberOfRows(0);
   /*vtkNew<vtkDoubleArray>distorsionValArray{}, tmpCol{};
   tmpCol->SetNumberOfTuples(n);

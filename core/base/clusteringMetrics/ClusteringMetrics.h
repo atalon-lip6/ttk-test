@@ -34,6 +34,9 @@ namespace ttk {
   public:
     ClusteringMetrics();
 
+
+  int test(void) const;
+  
   int execute(const std::vector<int> &clustering1, const std::vector<int> &clustering2, double &nmiValue, double &ariValue) const;
 
   int compute_contingency_tables(const std::vector<int> &clust1, const std::vector<int> &clust2, std::vector<std::vector<int>> &contingencyMatrix, std::vector<int> &sumLin, std::vector<int> &sumCol) const;

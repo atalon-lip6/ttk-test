@@ -5,8 +5,8 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::ClusteringMetrics module.
 ///
-/// This VTK filter uses the ttk::ClusteringMetrics module to compute two scores (NMI and ARI) to compare two clustering for
-/// the same points.
+/// This VTK filter uses the ttk::ClusteringMetrics module to compute two scores
+/// (NMI and ARI) to compare two clustering for the same points.
 ///
 /// \param Input0 vtkTable.
 /// \param Input1 vtkTable.
@@ -57,6 +57,7 @@ private:
   std::string OutputArrayName{"TODO"};
   // To store which column names we want to extract from the inputs.
   std::vector<std::string> ScalarFieldsHigh{}, ScalarFieldsLow{};
+
 public:
   /**
    * TODO 6: Automatically generate getters and setters of filter
@@ -79,7 +80,6 @@ protected:
    */
   ttkClusteringMetrics();
   ~ttkClusteringMetrics() override = default;
-
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

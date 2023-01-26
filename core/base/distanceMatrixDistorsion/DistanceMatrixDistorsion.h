@@ -3,9 +3,9 @@
 /// \author Alexandre Talon <alexandre.talon@lip6.fr>
 /// \date January 2022
 ///
-/// This module defines the %DistanceMatrixDistorsion class that computes a score telling
-/// how good the low dimension distance matrix represents the high dimension one. The score
-/// is computed according to the SIM formula.
+/// This module defines the %DistanceMatrixDistorsion class that computes a
+/// score telling how good the low dimension distance matrix represents the high
+/// dimension one. The score is computed according to the SIM formula.
 ///
 ///
 /// TODO \b Related \b publication: \n
@@ -21,9 +21,6 @@
 ///   href="https://topology-tool-kit.github.io/examples/clusteringKelvinHelmholtzInstabilities/">
 ///   Clustering Kelvin Helmholtz Instabilities example</a> \n
 
-
-
-
 #pragma once
 
 #include <vector>
@@ -34,8 +31,9 @@
 namespace ttk {
 
   /**
-   * The DistanceMatrixDistorsion class provides a method to compute the distorsion score between
-   * two distance matrices representing the same points.
+   * The DistanceMatrixDistorsion class provides a method to compute the
+   * distorsion score between two distance matrices representing the same
+   * points.
    */
   class DistanceMatrixDistorsion : virtual public Debug {
 
@@ -43,7 +41,10 @@ namespace ttk {
     DistanceMatrixDistorsion();
 
     int test(int n, std::vector<double> &res) const;
-    int execute(const std::vector<std::vector<double>> &highDistMatrix, const std::vector<std::vector<double>> &lowDistMatrix, double &distorsionValue, std::vector<double> &distorsionVerticesValues) const;
+    int execute(const std::vector<std::vector<double>> &highDistMatrix,
+                const std::vector<std::vector<double>> &lowDistMatrix,
+                double &distorsionValue,
+                std::vector<double> &distorsionVerticesValues) const;
   };
 
 } // namespace ttk

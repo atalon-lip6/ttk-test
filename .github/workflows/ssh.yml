@@ -1,0 +1,21 @@
+name: docker_build
+
+on:
+  - push
+jobs:
+
+  ssh:
+    runs-on: ${{ matrix.os }}
+    # trigger job when push event on a branch (not on a tag) only for
+    # the "topology-tool-kit/ttk" repository
+    # (pull-requests and tag pushes not affected)
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos, windows]
+    
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+    - name: lsdo
+      run: ls

@@ -26,6 +26,10 @@ namespace ttk {
     }
 
     template <typename T>
+    int execute_raw(std::vector<double*> &output,
+                const std::vector<const T *> &inputs,
+                const size_t nPoints) const;
+    template <typename T>
     int execute(std::vector<std::vector<double>> &output,
                 const std::vector<const T *> &inputs,
                 const size_t nPoints) const;
@@ -34,6 +38,40 @@ namespace ttk {
     std::string DistanceType{"2"};
   };
 } // namespace ttk
+
+template <typename T>
+int ttk::LDistanceMatrix::execute_raw(std::vector<double*> &output,
+                                  const std::vector<const T *> &inputs,
+                                  const size_t nPoints) const {
+
+  const auto nInputs = inputs.size();
+
+  if (output.size() != nInputs)
+    this->printErr(" When using execute_raw in LDistanceMatrix module, the output must be initialized.");
+  for (int i = 0; i < nInputs; i++)
+    if (output[i] == NULL)
+      this->printErr(" When using execute_raw in LDistanceMatrix module, the output must be initialized.");
+
+  LDistance worker{};
+  worker.setThreadNumber(1);
+  worker.setPrintRes(false);
+
+  // compute matrix upper triangle
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_) firstprivate(worker)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nInputs; ++i) {
+    for(size_t j = i + 1; j < nInputs; ++j) {
+      // call execute with nullptr output
+      worker.execute(inputs[i], inputs[j], {}, this->DistanceType, nPoints);
+      // store result
+      output[i][j] = worker.getResult();
+      output[j][i] = worker.getResult();
+    }
+  }
+
+  return 0;
+}
 
 template <typename T>
 int ttk::LDistanceMatrix::execute(std::vector<std::vector<double>> &output,

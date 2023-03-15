@@ -26,6 +26,14 @@
 #include <limits>
 #include <set>
 
+
+inline double max(double &a, double &b)
+{
+  if (a < b)
+    return b;
+  return a;
+}
+
 namespace ttk {
 
   class Mapper : virtual public Debug {
@@ -119,7 +127,7 @@ namespace ttk {
     /**
      * @brief Compute mapper
      *
-     * @param[out] outputBucket Bucket id for each vertex
+     * @param[out] outputBucket associate its Bucket id to each vertex
      * @param[out] outputConnComps Component id for each vertex (in
      * the strict sense i.e. vertices belonging to the corresponding
      * bucket)
@@ -297,12 +305,14 @@ int ttk::Mapper::execute(int *const outputBucket,
                          float *const outputPointsCoords,
                          const Matrix &distMat,
                          const dataType *const inputSf,
-                         const triangulationType &triangulation) const {
+                         const triangulationType &triangulation,
+                std::vector<std::vector<double>> &distMatCentroids) const {
 
   Timer tm{}, tmsec{};
 
   std::vector<std::vector<SimplexId>> bucketEdges(this->NumberOfBuckets);
-
+  // We fill outputBucket: associates to each vertex its bucket id,
+  // and bucketEdes array: associates to each bucket the list of edges crossing this bucket.
   this->findBuckets(outputBucket, bucketEdges, inputSf, triangulation);
 
   // allocate memory
@@ -319,6 +329,7 @@ int ttk::Mapper::execute(int *const outputBucket,
 #pragma omp parallel for num_threads(this->threadNumber_) \
   firstprivate(edgeGidToLid, uf, connCompIds)
 #endif // TTK_ENABLE_OPENMP
+  // We compute the connected components inside buckets.
   for(int i = 0; i < this->NumberOfBuckets; ++i) {
     this->processBucket(i, outputConnComp, outputBucket,
                         connCompsEdgesPerBucket[i], bucketEdges[i],
@@ -370,6 +381,7 @@ int ttk::Mapper::execute(int *const outputBucket,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
+  // We compute the barycentre of each connected component. This will be used to reduce the component to its barycentre: we take the barycentre of the middle of each edge in this component.
   for(size_t i = 0; i < nConnComps; ++i) {
     this->computeCompBarycenter(
       compBaryCoords[i], connCompEdges[i], triangulation);
@@ -394,7 +406,9 @@ int ttk::Mapper::execute(int *const outputBucket,
     connCompBucket[p.second] = p.first.first;
   }
 
-  // detect arcs between connected components
+
+  // We detect the arcs between connected components:
+  // for each edge in our base graph, if it belongs to two components of contiguous buckets, then we put an edge between the barycenters that represents them.
   compArcs.resize(nConnComps);
   for(size_t i = 0; i < edgeConnComps.size(); ++i) {
     // an arc edge should at least cover two connected components
@@ -405,12 +419,24 @@ int ttk::Mapper::execute(int *const outputBucket,
       const auto currCompId{edgeConnComps[i][j]};
       for(size_t k = 0; k < j; ++k) {
         const auto prevCompId{edgeConnComps[i][k]};
+        // We compute an adjacency list, putting only the backlink (idx ->idx-1)
         if(connCompBucket[prevCompId] == connCompBucket[currCompId] - 1) {
           compArcs[currCompId].emplace(prevCompId);
         }
       }
     }
   }
+  /*
+  for (size_t i1 = 0; i1 < nConnComps; i1++)
+  {
+    size_t idBucket1 = connCompBucket[i1];
+    for (size_t i2 = i1+1; i2 < nConnComps; i2++)
+    {
+      size_t idBucket2 = connCompBucket[i2];
+      if (abs((int)(idBucket2-idBucket1)) == 0)
+        compArcs[i1].emplace(i2);
+    }
+  }*/
 
   this->printMsg("Detected arcs between connected components", 1.0,
                  tmsec.getElapsedTime(), this->threadNumber_,
@@ -421,6 +447,12 @@ int ttk::Mapper::execute(int *const outputBucket,
     tm.getElapsedTime(), this->threadNumber_);
 
   if(this->ReEmbedMapper) {
+    // Resetting the coordinates so that if we passe from 3D to 2D, the third coordinate will not remain there.
+    for (auto & t : compBaryCoords)
+    {
+      for (float& x : t)
+        x = 0;
+    }
     this->reEmbedMapper(compBaryCoords, outputPointsCoords, distMat,
                         outputConnComp, compArcs, connCompEdges, triangulation);
   }
@@ -490,6 +522,7 @@ int ttk::Mapper::findBuckets(int *const vertsBucket,
   return 0;
 }
 
+// On associe aussi aux sommets (et arêtes) les id des composantes connexes auxquelles ils apparaissent. Et attention, deux types d'appartenance pour les sommets : appartient à un bucket si une arête incidente le croise (v1), ou bien s'il est contenu lui-même dans le bucket (v2)
 template <typename triangulationType>
 int ttk::Mapper::processBucket(
   const int bucketId,
@@ -606,6 +639,7 @@ int ttk::Mapper::computeCompBarycenter(
   return 0;
 }
 
+// Never called so far.
 template <typename triangulationType>
 int ttk::Mapper::computeCompHighDimBarycenter(
   double *const highDimBaryCoords,
@@ -642,7 +676,7 @@ int ttk::Mapper::reEmbedMapper(
 
   Timer tm{};
 
-  // 1. extract vertices in component edges
+  // 1. extract vertices in component edges. A vertex is considered in a bucket if it lies insied or if it is the extremity of an edge which crosses that bucked.
   std::vector<std::set<SimplexId>> connCompVertices(connCompEdges.size());
   for(size_t i = 0; i < connCompEdges.size(); ++i) {
     const auto &cce{connCompEdges[i]};
@@ -656,38 +690,88 @@ int ttk::Mapper::reEmbedMapper(
     }
   }
 
-  // 2. sort vertices per connected component
+  // 2. sort vertices per connected component. Here a vertex belongs to a connected component at a stricter sense: it must belong to the component bucket.
   std::vector<std::vector<SimplexId>> connCompVertsStrict(
     connCompVertices.size());
   for(SimplexId i = 0; i < triangulation.getNumberOfVertices(); ++i) {
     connCompVertsStrict[outputConnComp[i]].emplace_back(i);
   }
 
-  // 3. compute connected components centroids from input distance matrix
+  // 3. compute connected components centroids from input distance matrix: one centroid per component. The centroid is the existing point with minimum average distance to the other points. Difference with a barycentre: the barycentre might not belong to the input points.
   std::vector<SimplexId> centroidId{};
   this->computeCompCentroid(
     centroidId, distMat, connCompVertices, outputConnComp);
+  
+  // 4+5: try to obtain an embedding (low-dimension coordinates) from the list of cendroids and the distance matrix. 
 
-  // 4. extract distance matrix between centroids
-  Matrix centroidsDistMat(compArcs.size(), compArcs.size());
-  for(size_t i = 0; i < compArcs.size(); ++i) {
+  // 4. extract distance matrix between centroids. TODO choices
+  const double DOUBLE_MAX = std::numeric_limits<double>::max();
+  Matrix centroidsDistMat(compArcs.size(), compArcs.size(), DOUBLE_MAX);
+  size_t nComp = compArcs.size();
+
+
+ for(size_t i = 0; i < compArcs.size(); ++i) {
     for(const auto el : compArcs[i]) {
+    //for(size_t el = 0; el < compArcs.size(); ++el) {
       // TODO what matrix to be reduced?
       // - distance matrix between centroids?
       // - adjacency matrix from arcs? (current)
-      // - distance matrix masked by adjacency matrix?
+      // - distance matrix masked by adjacency matrix? (i.e. des distances, mais multiplié par la valeur de  la *matrice d'adjacence*
       // - keep 0? replace with high values?
-      centroidsDistMat.get(i, el) = 1.0;
-      centroidsDistMat.get(el, i) = 1.0;
+      //centroidsDistMat.get(i, el) = 1.0;
+      //centroidsDistMat.get(el, i) = 1.0;
+      //if (abs(vertsBucket[i] - vertsBucket[el]) <= 1)
+      {
+        centroidsDistMat.get(i, el) = distMat.get(centroidId[i], centroidId[el]);
+        centroidsDistMat.get(el, i) = distMat.get(centroidId[i], centroidId[el]);
+      }
+    }
+  }
+
+    
+ for (size_t u = 0; u < nComp; u++)
+     centroidsDistMat.get(u,u) = 0;
+  for (size_t inter = 0; inter < nComp; inter++)
+  {
+    for (size_t u = 0; u < nComp; u++)
+    {
+      for (size_t v = 0; v < nComp; v++)
+      {
+        if (centroidsDistMat.get(u, inter)+centroidsDistMat.get(inter, v) < centroidsDistMat.get(u,v))
+          centroidsDistMat.get(u,v) = centroidsDistMat.get(u, inter)+centroidsDistMat.get(inter, v);
+      }
+    }
+  }
+
+
+    double distMax = 0;
+    for (size_t i1 = 0; i1 < nComp; i1++)
+    {
+      for (size_t i2 = 0; i2 < nComp; i2++)
+      {
+        double cur = distMat.get(i1,i2);
+        distMax = max(distMax, cur);
+      }
+    }
+
+  Matrix centroidsDistMat2(compArcs.size(), compArcs.size(), DOUBLE_MAX);
+  for(size_t i = 0; i < compArcs.size(); ++i) {
+    for(size_t el = 0; el < compArcs.size(); ++el) {
+    //for(const auto el : compArcs[i]) {
+      centroidsDistMat2.get(i, el) = centroidsDistMat.get(i, el);
+      centroidsDistMat2.get(el, i) = centroidsDistMat.get(el, i);
     }
   }
 
   // 5. get an embedding of the distance matrix between the centroids
   std::vector<std::vector<double>> embedCentroids{};
-  this->reduceMatrix(embedCentroids, centroidsDistMat, true,
-                     // TODO check DimensionReduction algorithm
-                     ttk::DimensionReduction::METHOD::SE);
+  this->reduceMatrix(embedCentroids, centroidsDistMat2, true,
+                     this->ReductionAlgo);
+  this->printErr(std::to_string(embedCentroids.size()) + " : dimension\n");
+  //for (int i = 0; i < nComp; i++)
+    //this->printErr("coords "+std::to_string(i)+": "+std::to_string(embedCentroids[0][i]) + ","+std::to_string(embedCentroids[1][i]));
 
+  // Conversion between storage x0,y0,z0,x1,y1,z1... and x0, x1...,y0,y1...,z0,z1...
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -696,7 +780,10 @@ int ttk::Mapper::reEmbedMapper(
       compBaryCoords[j][i] = embedCentroids[i][j];
     }
   }
+  
 
+  // matrice à partir des coordonnées calculées
+  // TODO: voir si on peut extraire à partir matrice de l'entrée
   // 6. compute a distance matrix from the embedded centroids
   std::vector<const float *> inputs(compBaryCoords.size());
   for(size_t i = 0; i < compBaryCoords.size(); ++i) {
@@ -715,6 +802,7 @@ int ttk::Mapper::reEmbedMapper(
                  debug::Priority::DETAIL);
 
   // 7. get an embedding for all vertices of each connected component
+  // Not in parallel because it calls some Python. Parallelising would cause errors.
   for(size_t i = 0; i < connCompEdges.size(); ++i) {
 
     Timer tmcomp{};
@@ -731,13 +819,13 @@ int ttk::Mapper::reEmbedMapper(
       }
       continue;
     }
+    
+    return 0;
 
     Matrix distMatConnComp{};
     std::vector<std::vector<double>> embedConnComp{};
     this->extractSubDistMat(distMatConnComp, connCompVertsStrict[i], distMat);
-    this->reduceMatrix(
-      embedConnComp, distMatConnComp, true, this->ReductionAlgo);
-
+    this->reduceMatrix(embedConnComp, distMatConnComp, true, this->ReductionAlgo);
     // get max distance between points in sub-distance matrix
     double compDiag{};
     for(size_t j = 0; j < distMatConnComp.nCols() - 1; ++j) {
@@ -760,6 +848,7 @@ int ttk::Mapper::reEmbedMapper(
     }
 
     // resize & shift component reduced coordinates
+    // after this operation, it is centered on 0,0
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -777,12 +866,13 @@ int ttk::Mapper::reEmbedMapper(
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
       for(size_t k = 0; k < embedConnComp.size(); ++k) {
-        if(std::isfinite(embedConnComp[k][j])) {
+        if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = embedConnComp[k][j];
-        } else {
+          //connCompVertsStrict[i][j] : global id of the jth point in the ith connected component
+        } else { // in case the value is infinite, we take the centroid coordinate
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
-            = compBaryCoords[i][k];
+            = compBaryCoords[i][k]; // = embedCentroids[k][i]
         }
       }
     }

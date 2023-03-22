@@ -70,6 +70,8 @@ public:
   ttkSetEnumMacro(ReductionAlgo, REDUCTION_ALGO);
   vtkGetEnumMacro(ReductionAlgo, REDUCTION_ALGO);
 
+  ttkSetEnumMacro(ReembedMethod, REEMBED_METHOD);
+  vtkGetEnumMacro(ReembedMethod, REEMBED_METHOD);
 protected:
   ttkMapper();
 

@@ -47,6 +47,10 @@ namespace ttk {
     };
     using REDUCTION_ALGO = DimensionReduction::METHOD;
 
+    enum class REEMBED_METHOD {
+      ARCS_GEODESIC,
+      BUCKETS_GEODESIC,
+    };
     /**
      * @brief Utility class to store matrices/2-dimensional arrays
      * inside a single buffer
@@ -292,6 +296,7 @@ namespace ttk {
     int NumberOfBuckets{10};
     LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D};
     REDUCTION_ALGO ReductionAlgo{REDUCTION_ALGO::MDS};
+    REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
   };
 
@@ -429,17 +434,6 @@ int ttk::Mapper::execute(int *const outputBucket,
     }
   }
   
-  /*for (size_t i1 = 0; i1 < nConnComps; i1++)
-  {
-    size_t idBucket1 = connCompBucket[i1];
-    for (size_t i2 = i1+1; i2 < nConnComps; i2++)
-    {
-      size_t idBucket2 = connCompBucket[i2];
-      if (abs((int)(idBucket2-idBucket1)) <= 1)
-        compArcs[i1].emplace(i2);
-    }
-  }*/
-
   this->printMsg("Detected arcs between connected components", 1.0,
                  tmsec.getElapsedTime(), this->threadNumber_,
                  debug::LineMode::NEW, debug::Priority::DETAIL);
@@ -712,6 +706,10 @@ int ttk::Mapper::reEmbedMapper(
   Matrix centroidsDistMat(compArcs.size(), compArcs.size(), DOUBLE_MAX);
   size_t nComp = compArcs.size();
 
+  std::vector<std::pair<std::pair<int, int>, double>> initAdjListWithCosts;
+  initAdjListWithCosts.reserve(2*nComp); // Guess because linked to about 2 buckets (prev and next ones)
+  
+  /*
   double distMax = 0;
   for (size_t i1 = 0; i1 < nComp; i1++)
   {
@@ -720,25 +718,56 @@ int ttk::Mapper::reEmbedMapper(
       double cur = distMat.get(i1,i2);
       distMax = max(distMax, cur);
     }
-  }
+  }*/
 
 
 
- for(size_t i = 0; i < nComp; ++i) {
-    for(const auto el : compArcs[i]) {
-    //for(size_t el = 0; el < nComp; ++el) {
-      if (abs(connCompBucket[i] - connCompBucket[el]) <= 1)
-      {
-        centroidsDistMat.get(i, el) = distMat.get(centroidId[i], centroidId[el]);
-        centroidsDistMat.get(el, i) = distMat.get(centroidId[i], centroidId[el]);
+
+  if (ReembedMethod == REEMBED_METHOD::ARCS_GEODESIC) {
+    for(size_t i = 0; i < nComp; ++i) {
+      for(const auto el : compArcs[i]) {
+        double curDist = distMat.get(centroidId[i], centroidId[el]);
+        centroidsDistMat.get(i, el) = curDist;
+        centroidsDistMat.get(el, i) = curDist;
+        initAdjListWithCosts.push_back({{i, el}, curDist});
       }
     }
   }
 
-   
+  else if (ReembedMethod == REEMBED_METHOD::BUCKETS_GEODESIC)
+  {
+    for(size_t i = 0; i < nComp; ++i) {
+      for(size_t el = i+1; el < nComp; ++el) {
+        if (abs(connCompBucket[i] - connCompBucket[el]) == 1)
+        {
+         double curDist = distMat.get(centroidId[i], centroidId[el]);
+        centroidsDistMat.get(i, el) = curDist;
+        centroidsDistMat.get(el, i) = curDist;
+        initAdjListWithCosts.push_back({{i, el}, curDist});
+        }
+      }
+    }
+  }
+  else
+  {
+    this->printErr(" The reembed method must be chosen between arcs or buckets geodesic. The current value is " + std::to_string((int)ReembedMethod) + ".");
+    return 0;
+  }
+
+  this->printMsg("Computed initial arcs", 1, tm.getElapsedTime(),
+                 this->threadNumber_);
+  tm.reStart();
+
+
  //TODO faster algorithm for sparse graph
- for (size_t u = 0; u < nComp; u++)
-     centroidsDistMat.get(u,u) = 0;
+  for (size_t u = 0; u < nComp; u++)
+    centroidsDistMat.get(u,u) = 0;
+  for (int u = 0; u < nComp; u++)
+  {
+
+
+  }
+
   for (size_t inter = 0; inter < nComp; inter++)
   {
     for (size_t u = 0; u < nComp; u++)
@@ -751,6 +780,7 @@ int ttk::Mapper::reEmbedMapper(
     }
   }
 
+  /*
   for(size_t i = 0; i < compArcs.size(); ++i) {
     for(const auto el : compArcs[i]) {
     //for(size_t el = 0; el < compArcs.size(); ++el) {
@@ -761,8 +791,11 @@ int ttk::Mapper::reEmbedMapper(
       }
     }
   }
+}
+*/
 
-
+  this->printMsg("Computed geodesics", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  tm.reStart();
 
   // 5. get an embedding of the distance matrix between the centroids
   std::vector<std::vector<double>> embedCentroids{};
@@ -881,6 +914,7 @@ int ttk::Mapper::reEmbedMapper(
                    debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
+  std::cout << "lol" << std::endl;
   this->printMsg(
     "Re-embedded mapper", 1.0, tm.getElapsedTime(), this->threadNumber_);
 

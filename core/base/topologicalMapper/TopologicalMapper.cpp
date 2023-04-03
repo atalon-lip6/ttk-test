@@ -32,6 +32,13 @@ ttk::TopologicalMapper::TopologicalMapper() {
 
 int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> distMatrix, unsigned int nDim, std::vector<std::vector<double>> &outputCoords)
 {
+#ifndef TTK_ENABLE_QHULL
+  printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
+  return 1;
+#else
+  printErr("Trobi1");
+#endif
+
   size_t n = distMatrix.size();
   outputCoords.resize(n);
   for (size_t i = 0; i < n; i++)

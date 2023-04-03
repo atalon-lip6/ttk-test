@@ -289,6 +289,17 @@ else()
   message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
 endif()
 
+set(CMAKE_FIND_DEBUG_MODE TRUE)
+find_package(Qhull QUIET)
+if(Qhull_FOUND)
+  option(TTK_ENABLE_QHULL "Enable Qhull support" ON)
+  message(STATUS "Found Qhull ${Qhull_VERSION}")
+else()
+  option(TTK_ENABLE_QHULL "Enable Qhull support" OFF)
+  message(STATUS "Qhull not found, disabling Qhull support in TTK.")
+endif()
+set(CMAKE_FIND_DEBUG_MODE FALSE)
+
 # --- Install path
 
 include(GNUInstallDirs)

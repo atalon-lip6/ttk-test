@@ -60,7 +60,29 @@
         <Documentation>
           Number of buckets.
         </Documentation>
-      </IntVectorProperty>
+        </IntVectorProperty>
+
+
+        <DoubleVectorProperty
+        name="DilatationCoeff"
+        label="Dilatation coefficient for points around centroids"
+        command="SetDilatationCoeff"
+        number_of_elements="1"
+        default_values="0.4" >
+        <DoubleRangeDomain name="range" min="0" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ReEmbedMapper"
+                                   value="1" />
+        </Hints>
+
+        <Documentation>
+          When we project the initial points around the centroids, we use this dilatation coefficient.
+        </Documentation>
+      </DoubleVectorProperty>
+
+
 
       <IntVectorProperty
         name="ReEmbedMapper"
@@ -236,6 +258,7 @@
         <Property name="ScalarFieldNew" />
         <Property name="NumberOfBuckets" />
         <Property name="ReEmbedMapper" />
+        <Property name="DilatationCoeff" />
         <Property name="SelectMatrixWithRegexp" />
         <Property name="DistMat" />
         <Property name="DistanceMatrixRegexp" />

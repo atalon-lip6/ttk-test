@@ -763,14 +763,12 @@ int ttk::Mapper::reEmbedMapper(
  //TODO faster algorithm for sparse graph
   for (size_t u = 0; u < nComp; u++)
     centroidsDistMat.get(u,u) = 0;
-  for (int u = 0; u < nComp; u++)
-  {
-
-
-  }
 
   for (size_t inter = 0; inter < nComp; inter++)
   {
+    #ifdef TTK_ENABLE_OPENMP
+    #pragma omp parallel for num_threads(threadNumber_)
+    #endif // TTK_ENABLE_OPENMP
     for (size_t u = 0; u < nComp; u++)
     {
       for (size_t v = 0; v < nComp; v++)
@@ -886,7 +884,6 @@ int ttk::Mapper::reEmbedMapper(
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
       for(auto &coords : embedConnComp[j]) {
-        // TODO expose the 0.4 hard-coded here in the ParaView GUI?
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }

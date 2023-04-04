@@ -72,6 +72,9 @@ public:
 
   ttkSetEnumMacro(ReembedMethod, REEMBED_METHOD);
   vtkGetEnumMacro(ReembedMethod, REEMBED_METHOD);
+  
+  ttkSetEnumMacro(DilatationCoeff, double);
+  vtkGetEnumMacro(DilatationCoeff, double);
 protected:
   ttkMapper();
 

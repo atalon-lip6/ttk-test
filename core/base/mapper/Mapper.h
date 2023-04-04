@@ -298,6 +298,7 @@ namespace ttk {
     REDUCTION_ALGO ReductionAlgo{REDUCTION_ALGO::MDS};
     REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
+    double DilatationCoeff{0.4};
   };
 
 } // namespace ttk
@@ -813,7 +814,6 @@ int ttk::Mapper::reEmbedMapper(
     }
   }
   
-  return 0;
   // matrice à partir des coordonnées calculées
   // TODO: voir si on peut extraire à partir matrice de l'entrée
   // 6. compute a distance matrix from the embedded centroids
@@ -887,7 +887,7 @@ int ttk::Mapper::reEmbedMapper(
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
       for(auto &coords : embedConnComp[j]) {
         // TODO expose the 0.4 hard-coded here in the ParaView GUI?
-        coords *= 0.4 * maxDistNeigh / compDiag;
+        coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }
     }

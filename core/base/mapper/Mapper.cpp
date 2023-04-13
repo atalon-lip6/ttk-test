@@ -1,45 +1,68 @@
 #include <Mapper.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
 
 ttk::Mapper::Mapper() {
   this->setDebugMsgPrefix("Mapper");
 }
 
 int ttk::Mapper::reduceMatrix(
-  std::vector<std::vector<double>> &outputCoords,
+  double **outputCoords,
   const Matrix &mat,
   const bool isDistanceMatrix,
   const ttk::DimensionReduction::METHOD method) const {
 
-  if(isDistanceMatrix) {
-    if(this->ReductionAlgo == REDUCTION_ALGO::LLE
-       || this->ReductionAlgo == REDUCTION_ALGO::PCA) {
-      this->printErr("LLE and PCA don't support distances matrices as input");
-      return -1;
+  // this->printMsg("Before call fork");
+  std::cout << "BEFORE CALL FORK" << std::endl;
+  int pid = fork();
+  if(pid == 0) {
+    std::cout << "INSIDE CALL FORK" << std::endl;
+    if(isDistanceMatrix) {
+      if(this->ReductionAlgo == REDUCTION_ALGO::LLE
+         || this->ReductionAlgo == REDUCTION_ALGO::PCA) {
+        this->printErr("LLE and PCA don't support distances matrices as input");
+        return -1;
+      }
     }
+
+    ttk::DimensionReduction dimRed{};
+    dimRed.setDebugLevel(0);
+    dimRed.setThreadNumber(1);
+
+    if(!dimRed.isPythonFound()) {
+      this->printErr(
+        "Missing Python modules, could not perform Dimension Reduction");
+      return -2; // TODO exit si fork
+    }
+
+    dimRed.setInputMethod(method);
+    dimRed.setIsInputDistanceMatrix(isDistanceMatrix);
+    dimRed.setInputNumberOfComponents(static_cast<int>(this->LowerDimension));
+
+    const auto ret
+      = dimRed.execute(outputCoords, mat.data(), mat.nRows(), mat.nCols());
+    printErr("Exiting child process!");
+    if(ret != 0) {
+      this->printErr("DimensionReduction returned error code "
+                     + std::to_string(ret));
+      return ret;
+    }
+    this->printErr("After call fork");
+    std::cout << "CHILD : ptr = " << outputCoords << " and " << outputCoords[0]
+              << std::endl;
+    std::cout << "CHILD: " << outputCoords[0] << " => " << outputCoords[0][3]
+              << std::endl;
+    exit(0);
   }
 
-  ttk::DimensionReduction dimRed{};
-  dimRed.setDebugLevel(0);
-  dimRed.setThreadNumber(1);
-
-  if(!dimRed.isPythonFound()) {
-    this->printErr(
-      "Missing Python modules, could not perform Dimension Reduction");
-    return -2;
+  else {
+    waitpid(pid, NULL, 0);
+    std::cout << "PARENT : ptr = " << outputCoords << " and " << outputCoords[0]
+              << std::endl;
+    std::cout << "PARENT: " << outputCoords[0] << " => " << outputCoords[0][3]
+              << std::endl;
+    printErr("Exiting main process!");
   }
-
-  dimRed.setInputMethod(method);
-  dimRed.setIsInputDistanceMatrix(isDistanceMatrix);
-  dimRed.setInputNumberOfComponents(static_cast<int>(this->LowerDimension));
-
-  const auto ret
-    = dimRed.execute(outputCoords, mat.data(), mat.nRows(), mat.nCols());
-  if(ret != 0) {
-    this->printErr("DimensionReduction returned error code "
-                   + std::to_string(ret));
-    return ret;
-  }
-
   return 0;
 }
 

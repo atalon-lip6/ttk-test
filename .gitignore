@@ -1,7 +1,8 @@
 # Hidden files
 .*
-!.gitignore
+#!.gitignore
 !.github
+.gitignore
 
 # Temporary and backup files
 \#*\#
@@ -11,6 +12,10 @@
 *.autosave
 *.swp
 *.kate-swp
+core/base/dimensionReduction/__pycache__/
+dates-réunions.txt
+para*
+*.pvsm
 
 # Project files specific to a local user
 CMakeLists.txt.user

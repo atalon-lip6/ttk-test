@@ -9,3 +9,6 @@ ttk_add_base_library(mapper
     dimensionReduction
     lDistanceMatrix
   )
+
+  target_compile_options(mapper PUBLIC -ggdb -O0)# -fsanitize=address)
+  #target_link_options(mapper PUBLIC -fsanitize=address)

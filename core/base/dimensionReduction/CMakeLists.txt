@@ -6,6 +6,8 @@ ttk_add_base_library(dimensionReduction
   DEPENDS
     triangulation
   )
+  target_compile_options(dimensionReduction PUBLIC -ggdb)# -fsanitize=address)
+  #target_link_options(dimensionReduction PUBLIC -fsanitize=address)
 
 install(
   FILES

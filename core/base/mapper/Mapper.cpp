@@ -56,7 +56,7 @@ int ttk::Mapper::reduceMatrix(
   }
 
   else {
-    waitpid(pid, NULL, 0);
+    //waitpid(pid, NULL, 0); TODO car fork au niveau du dessus !
     std::cout << "PARENT : ptr = " << outputCoords << " and " << outputCoords[0]
               << std::endl;
     std::cout << "PARENT: " << outputCoords[0] << " => " << outputCoords[0][3]

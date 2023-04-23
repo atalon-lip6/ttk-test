@@ -1,7 +1,8 @@
 /// \ingroup base
 /// \class ttk::Mapper
 /// \author (mainly) Pierre Guillou <pierre.guillou@lip6.fr>
-/// \author (a bit) Alexandre Talon <alexandre.talon@lip6.fr>
+/// \author (a little) Alexandre Talon <alexandre.talon@lip6.fr>
+/// \author TODO si haute dim, que prendre comme champs scalaire => permettre d'en prendre plusieurs, et faire des n-upplets pour les buckets, et définir proximité de deux buckets
 /// \date March 2023.
 ///
 /// \brief TTK processing package for mapper.
@@ -816,8 +817,6 @@ centroidId[el]);
     }
   }
   }
-  }
-  }
   */
 
   this->printMsg(
@@ -830,6 +829,7 @@ centroidId[el]);
   double **embedCentroids = (double **)mmap(NULL, targetDim * sizeof(double **),
                                             PROT_READ | PROT_WRITE,
                                             MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  //TODO parallel map?
   for(size_t i = 0; i < targetDim; i++)
     embedCentroids[i]
       = (double *)mmap(NULL, nComp * sizeof(double *), PROT_READ | PROT_WRITE,
@@ -868,20 +868,43 @@ centroidId[el]);
     ldm.execute(centroidsEmbedDistMat, inputs, 3);
   }
 
-  this->printMsg(". Re-embedded centroids", 1.0, tm.getElapsedTime(),
-                 this->threadNumber_, debug::LineMode::NEW,
-                 debug::Priority::PERFORMANCE);
-
   //TODO libérer le mmap
+  this->printMsg(
+    ". Re-embedded centroids", 1.0, tm.getElapsedTime(),
+    this->threadNumber_); //, debug::LineMode::NEW,
+                          //                 debug::Priority::DETAIL);
 
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
-#if TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < connCompEdges.size(); ++i) // TODO rename i...
+//#if TTK_ENABLE_OPENMP
+//#pragma omp parallel for num_threads(threadNumber_)
+//#endif // TTK_ENABLE_OPENMP
+  int forkIndex = 0, myPid = 0;
+  vector<int> pids(threadNumber_);
+  for (int iFork = 0; iFork < threadNumber_; iFork++)
   {
+    forkIndex = iFork;
+    myPid = fork();
+    if (myPid != 0)
+    {
+      break;
+    }
+    else
+      pids[iFork] = myPid;
+  }/*
+  size_t nbPerFork = connCompEdges.size()/threadNumber_;
+  size_t iMax = min(connCompEdges.size(), (forkIndex+1)*nbPerFork);
+    double **embedConnComp = (double **)mmap(
+      NULL, targetDim * sizeof(double **), PROT_READ | PROT_WRITE,
+      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    for(size_t j = 0; j < targetDim; j++)
+      embedConnComp[j] = (double *)mmap(NULL, nVertCurComp * sizeof(double *),
+                                        PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+*/
+  for(size_t i = forkIndex*nbPerFork; i < iMax; ++i) // TODO rename i...
+ {
     Timer tmcomp{};
 
     if(connCompVertsStrict[i].empty()) {
@@ -968,6 +991,13 @@ centroidId[el]);
     this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
                    tmcomp.getElapsedTime(), this->threadNumber_,
                    debug::LineMode::NEW, debug::Priority::DETAIL);
+  }
+  if (myPid != 0)
+    exit(0);
+  else
+  {
+    for (int pidToWait : pids)
+      waitpid(NULL, pidToWait);
   }
   this->printMsg(
     "Re-embedded mapper", 1.0, tm.getElapsedTime(), this->threadNumber_);

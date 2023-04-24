@@ -880,9 +880,9 @@ centroidId[el]);
 //#if TTK_ENABLE_OPENMP
 //#pragma omp parallel for num_threads(threadNumber_)
 //#endif // TTK_ENABLE_OPENMP
-  int forkIndex = 0, myPid = 0;
-  vector<int> pids(threadNumber_);
-  for (int iFork = 0; iFork < threadNumber_; iFork++)
+  int forkIndex = -1, myPid = 0;
+  std::vector<int> pids(threadNumber_);
+  for (int iFork = 0; iFork < threadNumber_-1; iFork++)
   {
     forkIndex = iFork;
     myPid = fork();
@@ -891,31 +891,42 @@ centroidId[el]);
       break;
     }
     else
+    {
       pids[iFork] = myPid;
-  }/*
+      forkIndex++; // parent process is the last "subprocess"
+    }
+
+  }
   size_t nbPerFork = connCompEdges.size()/threadNumber_;
-  size_t iMax = min(connCompEdges.size(), (forkIndex+1)*nbPerFork);
-    double **embedConnComp = (double **)mmap(
+  size_t iMax = std::min(connCompEdges.size(), (forkIndex+1)*nbPerFork);
+
+  double ***embedConnComp = (double ***)mmap(
       NULL, targetDim * sizeof(double **), PROT_READ | PROT_WRITE,
       MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    for(size_t j = 0; j < targetDim; j++)
-      embedConnComp[j] = (double *)mmap(NULL, nVertCurComp * sizeof(double *),
-                                        PROT_READ | PROT_WRITE,
-                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-*/
-  for(size_t i = forkIndex*nbPerFork; i < iMax; ++i) // TODO rename i...
+  for(size_t iComp = forkIndex*nbPerFork; iComp < iMax; ++iComp)
  {
     Timer tmcomp{};
 
-    if(connCompVertsStrict[i].empty()) {
+    if(connCompVertsStrict[iComp].empty()) {
       continue;
     }
+    size_t nVertCurComp = connCompVertsStrict[iComp].size();
+    embedConnComp[iComp] = (double**)mmap(NULL, targetDim * sizeof(double*),
+                                        PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    if(connCompVertsStrict[i].size() == 1) {
+    for(size_t j = 0; j < 3+0*targetDim; j++)
+      embedConnComp[iComp][j] = (double *)mmap(NULL, nVertCurComp * sizeof(double),
+                                        PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+
+
+    if(connCompVertsStrict[iComp].size() == 1) {
       // lock point to centroid
       for(size_t k = 0; k < 3; ++k) {
-        outputPointsCoords[3 * connCompVertsStrict[i][0] + k]
-          = compBaryCoords[i][k];
+        embedConnComp[iComp][k][0]
+          = compBaryCoords[iComp][k];
       }
       continue;
     }
@@ -923,18 +934,10 @@ centroidId[el]);
     // return 0;
 
     Matrix distMatConnComp{};
-    size_t nVertCurComp = connCompVertsStrict[i].size();
-    double **embedConnComp = (double **)mmap(
-      NULL, targetDim * sizeof(double **), PROT_READ | PROT_WRITE,
-      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    for(size_t j = 0; j < targetDim; j++)
-      embedConnComp[j] = (double *)mmap(NULL, nVertCurComp * sizeof(double *),
-                                        PROT_READ | PROT_WRITE,
-                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
-    this->extractSubDistMat(distMatConnComp, connCompVertsStrict[i], distMat);
+    this->extractSubDistMat(distMatConnComp, connCompVertsStrict[iComp], distMat);
     this->reduceMatrix(
-      embedConnComp, distMatConnComp, true, this->ReductionAlgo);
+      embedConnComp[iComp], distMatConnComp, true, this->ReductionAlgo);
     // get max distance between points in sub-distance matrix
     double compDiag{};
     for(size_t j = 0; j < distMatConnComp.nCols() - 1; ++j) {
@@ -947,12 +950,12 @@ centroidId[el]);
 
     // get min distance to neighbor in centroidsEmbedDistMat
     auto maxDistNeigh = std::numeric_limits<double>::max();
-    for(size_t j = 0; j < centroidsEmbedDistMat[i].size(); ++j) {
-      if(j == i) {
+    for(size_t j = 0; j < centroidsEmbedDistMat[iComp].size(); ++j) {
+      if(j == iComp) {
         continue;
       }
-      if(centroidsEmbedDistMat[i][j] < maxDistNeigh) {
-        maxDistNeigh = centroidsEmbedDistMat[i][j];
+      if(centroidsEmbedDistMat[iComp][j] < maxDistNeigh) {
+        maxDistNeigh = centroidsEmbedDistMat[iComp][j];
       }
     }
 
@@ -963,21 +966,34 @@ centroidId[el]);
     // #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < targetDim; ++j) {
       for(size_t k = 0; k < nVertCurComp; k++) {
-        auto &coords = embedConnComp[j][k];
+        auto &coords = embedConnComp[iComp][j][k];
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
-        coords += embedCentroids[j][i];
+        coords += embedCentroids[j][iComp];
       }
     }
+this->printMsg(".. Re-embedded component " + std::to_string(iComp), 1.0,
+                   tmcomp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
 
+  }
+  if (myPid != 0)
+    exit(0);
+  else
+  {
+    for (int pidToWait : pids)
+      waitpid(pidToWait, NULL, 0);
+  }
     // store reduced components in output vector
-    // #ifdef TTK_ENABLE_OPENMP
-    // #pragma omp parallel for num_threads(threadNumber_)
-    // #endif // TTK_ENABLE_OPENMP
+     #ifdef TTK_ENABLE_OPENMP
+     #pragma omp parallel for num_threads(threadNumber_)
+     #endif // TTK_ENABLE_OPENMP
+    for (size_t i = 0; i < connCompEdges.size(); i++)
+    {
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
       for(size_t k = 0; k < targetDim; ++k) {
-        if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
+        if(std::isfinite(embedConnComp[i][k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
-            = embedConnComp[k][j];
+            = embedConnComp[i][k][j];
           // connCompVertsStrict[i][j] : global id of the jth point in the ith
           // connected component
         } else { // in case the value is infinite, we take the centroid
@@ -987,18 +1003,13 @@ centroidId[el]);
         }
       }
     }
+  }
 
-    this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
+    /*this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
                    tmcomp.getElapsedTime(), this->threadNumber_,
                    debug::LineMode::NEW, debug::Priority::DETAIL);
-  }
-  if (myPid != 0)
-    exit(0);
-  else
-  {
-    for (int pidToWait : pids)
-      waitpid(NULL, pidToWait);
-  }
+  }*/
+  
   this->printMsg(
     "Re-embedded mapper", 1.0, tm.getElapsedTime(), this->threadNumber_);
 

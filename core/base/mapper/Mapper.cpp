@@ -12,11 +12,6 @@ int ttk::Mapper::reduceMatrix(
   const bool isDistanceMatrix,
   const ttk::DimensionReduction::METHOD method) const {
 
-  // this->printMsg("Before call fork");
-  std::cout << "BEFORE CALL FORK" << std::endl;
-  int pid = fork();
-  if(pid == 0) {
-    std::cout << "INSIDE CALL FORK" << std::endl;
     if(isDistanceMatrix) {
       if(this->ReductionAlgo == REDUCTION_ALGO::LLE
          || this->ReductionAlgo == REDUCTION_ALGO::PCA) {
@@ -41,29 +36,12 @@ int ttk::Mapper::reduceMatrix(
 
     const auto ret
       = dimRed.execute(outputCoords, mat.data(), mat.nRows(), mat.nCols());
-    printErr("Exiting child process!");
     if(ret != 0) {
       this->printErr("DimensionReduction returned error code "
                      + std::to_string(ret));
       return ret;
     }
-    this->printErr("After call fork");
-    std::cout << "CHILD : ptr = " << outputCoords << " and " << outputCoords[0]
-              << std::endl;
-    std::cout << "CHILD: " << outputCoords[0] << " => " << outputCoords[0][3]
-              << std::endl;
-    exit(0);
-  }
-
-  else {
-    //waitpid(pid, NULL, 0); TODO car fork au niveau du dessus !
-    std::cout << "PARENT : ptr = " << outputCoords << " and " << outputCoords[0]
-              << std::endl;
-    std::cout << "PARENT: " << outputCoords[0] << " => " << outputCoords[0][3]
-              << std::endl;
-    printErr("Exiting main process!");
-  }
-  return 0;
+   return 0;
 }
 
 void ttk::Mapper::computeCompCentroid(
@@ -118,9 +96,9 @@ void ttk::Mapper::extractSubDistMat(Matrix &subDistMat,
   const auto nConnComps{vertsId.size()};
   subDistMat.alloc(nConnComps, nConnComps);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) collapse(2)
-#endif // TTK_ENABLE_OPENMP
+//#ifdef TTK_ENABLE_OPENMP
+//#pragma omp parallel for num_threads(this->threadNumber_) collapse(2)
+//#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nConnComps - 1; ++i) {
     for(size_t j = i + 1; j < nConnComps; ++j) {
       const auto dij = distMat.get(vertsId[i], vertsId[j]);

@@ -1,11 +1,13 @@
 #include <Mapper.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
 
 ttk::Mapper::Mapper() {
   this->setDebugMsgPrefix("Mapper");
 }
 
 int ttk::Mapper::reduceMatrix(
-  std::vector<std::vector<double>> &outputCoords,
+  double **outputCoords,
   const Matrix &mat,
   const bool isDistanceMatrix,
   const ttk::DimensionReduction::METHOD method) const {
@@ -25,7 +27,7 @@ int ttk::Mapper::reduceMatrix(
   if(!dimRed.isPythonFound()) {
     this->printErr(
       "Missing Python modules, could not perform Dimension Reduction");
-    return -2;
+    return -2; // TODO exit si fork
   }
 
   dimRed.setInputMethod(method);
@@ -95,9 +97,9 @@ void ttk::Mapper::extractSubDistMat(Matrix &subDistMat,
   const auto nConnComps{vertsId.size()};
   subDistMat.alloc(nConnComps, nConnComps);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_) collapse(2)
-#endif // TTK_ENABLE_OPENMP
+//#ifdef TTK_ENABLE_OPENMP
+//#pragma omp parallel for num_threads(this->threadNumber_) collapse(2)
+//#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nConnComps - 1; ++i) {
     for(size_t j = i + 1; j < nConnComps; ++j) {
       const auto dij = distMat.get(vertsId[i], vertsId[j]);

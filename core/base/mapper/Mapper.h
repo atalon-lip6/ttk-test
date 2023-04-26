@@ -1,7 +1,8 @@
 /// \ingroup base
 /// \class ttk::Mapper
 /// \author (mainly) Pierre Guillou <pierre.guillou@lip6.fr>
-/// \author (a bit) Alexandre Talon <alexandre.talon@lip6.fr>
+/// \author (a little) Alexandre Talon <alexandre.talon@lip6.fr>
+/// \author TODO si haute dim, que prendre comme champs scalaire => permettre d'en prendre plusieurs, et faire des n-upplets pour les buckets, et définir proximité de deux buckets
 /// \date March 2023.
 ///
 /// \brief TTK processing package for mapper.
@@ -26,6 +27,8 @@
 #include <array>
 #include <limits>
 #include <set>
+#include <sys/mman.h>
+#include <sys/wait.h>
 
 inline double max(double &a, double &b) {
   if(a < b)
@@ -231,7 +234,7 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    int reduceMatrix(std::vector<std::vector<double>> &outputCoords,
+    int reduceMatrix(double **outputCoords,
                      const Matrix &mat,
                      const bool isDistanceMatrix,
                      const ttk::DimensionReduction::METHOD method
@@ -412,12 +415,17 @@ int ttk::Mapper::execute(int *const outputBucket,
       edgeConnComps[e].emplace_back(i);
     }
   }
+  this->printMsg("Blah blah yen a " + std::to_string(edgeConnComps.size())
+                   + " beforefirst connected components",
+                 1, tm.getElapsedTime(), this->threadNumber_);
 
   // global component id -> bucket id
   connCompBucket.resize(nConnComps);
   for(const auto &p : connCompLidToGid) {
     connCompBucket[p.second] = p.first.first;
   }
+  this->printMsg("Blah blah first connected components", 1, tm.getElapsedTime(),
+                 this->threadNumber_);
 
   // We detect the arcs between connected components:
   // for each edge in our base graph, if it belongs to two components of
@@ -812,18 +820,21 @@ centroidId[el]);
   tm.reStart();
 
   // 5. get an embedding of the distance matrix between the centroids
-  std::vector<std::vector<double>> embedCentroids{};
+  size_t targetDim = this->LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3;
+  double **embedCentroids = (double **)malloc(targetDim * sizeof(double *));
+  for(size_t i = 0; i < targetDim; i++)
+    embedCentroids[i] = (double*) malloc(nComp*sizeof(double));
   this->reduceMatrix(
     embedCentroids, centroidsDistMat, true, this->ReductionAlgo);
-  this->printErr(std::to_string(embedCentroids.size()) + " : dimension\n");
 
   // Conversion between storage layout x0,y0,z0,x1,y1,z1... and x0,
   // x1...,y0,y1...,z0,z1...
+  // TODO schedule DYNAMIC
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < embedCentroids.size(); ++i) {
-    for(size_t j = 0; j < embedCentroids[i].size(); ++j) {
+  for(size_t i = 0; i < targetDim; ++i) {
+    for(size_t j = 0; j < nComp; ++j) {
       compBaryCoords[j][i] = embedCentroids[i][j];
     }
   }
@@ -843,26 +854,69 @@ centroidId[el]);
     ldm.execute(centroidsEmbedDistMat, inputs, 3);
   }
 
-  this->printMsg(". Re-embedded centroids", 1.0, tm.getElapsedTime(),
-                 this->threadNumber_, debug::LineMode::NEW,
-                 debug::Priority::PERFORMANCE);
+  this->printMsg(
+    ". Re-embedded centroids", 1.0, tm.getElapsedTime(),
+    this->threadNumber_); //, debug::LineMode::NEW,
+                          //                 debug::Priority::DETAIL);
 
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
-  for(size_t i = 0; i < connCompEdges.size(); ++i) {
+  double ***embedConnComp = (double ***)mmap(
+      NULL, nComp * sizeof(double **), PROT_READ | PROT_WRITE,
+      MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  for (size_t iComp = 0; iComp < connCompVertsStrict.size(); iComp++)
+  {
+    size_t nVertCurComp = connCompVertsStrict[iComp].size();
+    embedConnComp[iComp] = (double**)mmap(NULL, targetDim * sizeof(double*),
+                                        PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 
+    for(size_t j = 0; j < targetDim; j++)
+      embedConnComp[iComp][j] = (double *)mmap(NULL, nVertCurComp * sizeof(double),
+                                        PROT_READ | PROT_WRITE,
+                                        MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+  }
+
+  int forkIndex = -1, myPid = 0;
+  std::vector<int> pids(threadNumber_-1);
+  std::cout << "threads = " << threadNumber_ << std::endl;
+  for (int iFork = 0; iFork < threadNumber_-1; iFork++)
+  {
+    forkIndex = iFork;
+    myPid = fork();
+    if (myPid == 0)
+    {
+      break;
+      std::cout << "launching fork " << forkIndex << std::endl;
+    }
+    else
+    {
+      pids[iFork] = myPid;
+      forkIndex++; // parent process is the last "subprocess"
+    }
+
+  }
+  size_t nbPerFork = connCompEdges.size()/threadNumber_;
+  size_t iMax = forkIndex == this->threadNumber_-1 ? connCompEdges.size(): (forkIndex+1)*nbPerFork;
+  //std::cout << "yeah now running fork " << forkIndex << " running now between " << forkIndex*nbPerFork << " and " << iMax << std::endl;
+  for(size_t iComp = forkIndex*nbPerFork; iComp < iMax; ++iComp)
+ {
+  //std::cout << "\tyeah now running fork " << forkIndex << " and comp " << iComp  << std::endl;
     Timer tmcomp{};
 
-    if(connCompVertsStrict[i].empty()) {
+    size_t nVertCurComp = connCompVertsStrict[iComp].size();
+    if(nVertCurComp == 0) {
       continue;
     }
 
-    if(connCompVertsStrict[i].size() == 1) {
+
+    if(nVertCurComp == 1) {
       // lock point to centroid
-      for(size_t k = 0; k < 3; ++k) {
-        outputPointsCoords[3 * connCompVertsStrict[i][0] + k]
-          = compBaryCoords[i][k];
+      for(size_t k = 0; k < targetDim; ++k) {
+        embedConnComp[iComp][k][0]
+          = compBaryCoords[iComp][k];
       }
       continue;
     }
@@ -870,10 +924,12 @@ centroidId[el]);
     // return 0;
 
     Matrix distMatConnComp{};
-    std::vector<std::vector<double>> embedConnComp{};
-    this->extractSubDistMat(distMatConnComp, connCompVertsStrict[i], distMat);
+
+    this->extractSubDistMat(distMatConnComp, connCompVertsStrict[iComp], distMat);
+    //std::cout << "\tyeah BEFORE DIMRED " << forkIndex << " and comp " << iComp  << std::endl;
     this->reduceMatrix(
-      embedConnComp, distMatConnComp, true, this->ReductionAlgo);
+      embedConnComp[iComp], distMatConnComp, true, this->ReductionAlgo);
+    //std::cout << "\tyeah AFTER DIMRED " << forkIndex << " and comp " << iComp  << std::endl;
     // get max distance between points in sub-distance matrix
     double compDiag{};
     for(size_t j = 0; j < distMatConnComp.nCols() - 1; ++j) {
@@ -886,36 +942,52 @@ centroidId[el]);
 
     // get min distance to neighbor in centroidsEmbedDistMat
     auto maxDistNeigh = std::numeric_limits<double>::max();
-    for(size_t j = 0; j < centroidsEmbedDistMat[i].size(); ++j) {
-      if(j == i) {
+    for(size_t j = 0; j < centroidsEmbedDistMat[iComp].size(); ++j) {
+      if(j == iComp) {
         continue;
       }
-      if(centroidsEmbedDistMat[i][j] < maxDistNeigh) {
-        maxDistNeigh = centroidsEmbedDistMat[i][j];
+      if(centroidsEmbedDistMat[iComp][j] < maxDistNeigh) {
+        maxDistNeigh = centroidsEmbedDistMat[iComp][j];
       }
     }
 
     // resize & shift component reduced coordinates
     // after this operation, it is centered on 0,0
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(size_t j = 0; j < embedCentroids.size(); ++j) {
-      for(auto &coords : embedConnComp[j]) {
+    for(size_t j = 0; j < targetDim; ++j) {
+      for(size_t k = 0; k < nVertCurComp; k++) {
+        auto &coords = embedConnComp[iComp][j][k];
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
-        coords += embedCentroids[j][i];
+        coords += embedCentroids[j][iComp];
       }
     }
-
+/*this->printMsg(".. Re-embedded component " + std::to_string(iComp), 1.0,
+                   tmcomp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::PERFORMANCE);//DETAIL);
+*/
+  }
+  if (myPid == 0)
+  {
+    std::cout << "Exiting child " << forkIndex << std::endl;
+    exit(0);
+  }
+  else
+  {
+    std::cout << "waiting for pids" << std::endl;
+    for (int pidToWait : pids)
+    {
+      //std::cout << "waiting for " << iToto << "th pid" << std::endl;
+      waitpid(pidToWait, NULL, 0);
+				}
+  }
+  std::cout << "ARRIVED " << std::endl;
     // store reduced components in output vector
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
+  for (size_t i = 0; i < connCompEdges.size(); i++)
+  {
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
-      for(size_t k = 0; k < embedConnComp.size(); ++k) {
-        if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
+      for(size_t k = 0; k < targetDim; ++k) {
+        if(std::isfinite(embedConnComp[i][k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
-            = embedConnComp[k][j];
+            = embedConnComp[i][k][j];
           // connCompVertsStrict[i][j] : global id of the jth point in the ith
           // connected component
         } else { // in case the value is infinite, we take the centroid
@@ -925,15 +997,28 @@ centroidId[el]);
         }
       }
     }
-
-    this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
-                   tmcomp.getElapsedTime(), this->threadNumber_,
-                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
-  std::cout << "lol" << std::endl;
+    /*this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
+                   tmcomp.getElapsedTime(), this->threadNumber_,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
+  }*/
+  
   this->printMsg(
     "Re-embedded mapper", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  //TODO parallel map?
+  for(size_t i = 0; i < targetDim; i++)
+    free(embedCentroids[i]);
+  free(embedCentroids);
 
+  for (size_t iComp = 0; iComp < connCompVertsStrict.size(); iComp++)
+  {
+    for (size_t iDim = 0; iDim < targetDim; iDim++)
+    {
+      munmap(embedConnComp[iComp][iDim], connCompVertsStrict[iComp].size()*sizeof(double));
+    }
+    munmap(embedConnComp[iComp], targetDim * sizeof(double*));
+  }
+  munmap(embedConnComp, nComp * sizeof(double**));
   return 0;
 }

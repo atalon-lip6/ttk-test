@@ -39,7 +39,7 @@ using namespace std;
 int main(int argc, char **argv) {
 
   ttk::CommandLineParser parser;
-  ttk::globalDebugLevel_ = 3;
+  ttk::globalDebugLevel_ = 2;
 
   std::string inputFilePath;
 
@@ -60,12 +60,13 @@ int main(int argc, char **argv) {
   mapper->SetDistanceMatrixRegexp("Distance.*");
 
   ttk::Mapper::Matrix inputDistMat{};
-  mapper->SetNumberOfBuckets(10);
+  mapper->SetNumberOfBuckets(500);
   mapper->SetReEmbedMapper(true);
   vtkNew<vtkXMLUnstructuredGridWriter> mapperWriter{};
   mapperWriter->SetInputConnection(mapper->GetOutputPort());
   mapperWriter->SetFileName("mapper.vtu");
   mapperWriter->Write();
+  std::cout << "YEAH\n";
 
   return 0;
 }

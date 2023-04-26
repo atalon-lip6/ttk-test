@@ -290,6 +290,11 @@ namespace ttk {
                       const std::vector<int> &connCompBucket,
                       const triangulationType &triangulation) const;
 
+    void enableReEmbed(void) {
+      this->ReEmbedMapper = true;
+    };
+
+
   protected:
     int NumberOfBuckets{10};
     LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D};

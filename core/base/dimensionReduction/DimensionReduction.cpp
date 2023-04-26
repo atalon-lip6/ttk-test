@@ -14,6 +14,14 @@
 using namespace std;
 using namespace ttk;
 
+DimensionReduction::~DimensionReduction()
+{
+  if(false && Py_IsInitialized()) {
+    Py_Finalize();
+  }
+}
+
+
 DimensionReduction::DimensionReduction() {
   this->setDebugMsgPrefix("DimensionReduction");
 
@@ -22,7 +30,6 @@ DimensionReduction::DimensionReduction() {
 
   if(!Py_IsInitialized()) {
     Py_Initialize();
-    atexit(finalize_callback);
   }
 
   const char *version = Py_GetVersion();

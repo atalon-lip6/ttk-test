@@ -46,6 +46,7 @@ namespace ttk {
   public:
     DimensionReduction();
 
+    ~DimensionReduction();
     /** Scikit-Learn Dimension Reduction algorithms */
     enum class METHOD {
       /** Spectral Embedding */

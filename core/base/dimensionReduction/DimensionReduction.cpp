@@ -56,8 +56,10 @@ bool DimensionReduction::isPythonFound() const {
 #endif
 }
 
+
+
 int DimensionReduction::execute(
-  std::vector<std::vector<double>> &outputEmbedding,
+  double **outputEmbedding,
   const std::vector<double> &inputMatrix,
   const int nRows,
   const int nColumns) const {
@@ -345,9 +347,7 @@ int DimensionReduction::execute(
      and PyLong_AsLong(pNColumns) == numberOfComponents) {
     npEmbedding = reinterpret_cast<PyArrayObject *>(pEmbedding);
 
-    outputEmbedding.resize(numberOfComponents);
     for(int i = 0; i < numberOfComponents; ++i) {
-      outputEmbedding[i].resize(nRows);
       if(PyArray_TYPE(npEmbedding) == NPY_FLOAT) {
         float *c_out = reinterpret_cast<float *>(PyArray_DATA(npEmbedding));
         for(int j = 0; j < nRows; ++j)
@@ -380,4 +380,22 @@ collect_garbage:
 #endif
 
   return 0;
+}
+
+
+int DimensionReduction::execute(
+  std::vector<std::vector<double>> &outputEmbedding,
+  const std::vector<double> &inputMatrix,
+  const int nRows,
+  const int nColumns) const {
+
+  const auto nPoint = nColumns;
+  double **outputRaw = (double**) malloc(nPoint * sizeof(double**));
+  outputEmbedding.resize(this->NumberOfComponents);
+
+  for(size_t i = 0; i < this->NumberOfComponents; i++) {
+    outputEmbedding[i].resize(nPoint);
+    outputRaw[i] = outputEmbedding[i].data();
+  }
+  return execute(outputRaw, inputMatrix, nRows, nColumns);
 }

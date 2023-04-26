@@ -205,6 +205,13 @@ namespace ttk {
     bool isPythonFound() const;
 
     int execute(std::vector<std::vector<double>> &outputEmbedding,
+  const std::vector<double> &inputMatrix,
+  const int nRows,
+  const int nColumns) const;
+
+
+
+    int execute(double **outputEmbedding,
                 const std::vector<double> &inputMatrix,
                 const int nRows,
                 const int nColumns) const;

@@ -4,6 +4,7 @@
 #include <set>
 #include <queue>
 #include <map>
+#include <utility>
 #include <algorithm>
 #include "libqhullcpp/Qhull.h"
 
@@ -16,21 +17,20 @@ ttk::TopologicalMapper::TopologicalMapper() {
   //1. Sort the edges
   //2. For each edge uv with cost c_uv
 
-  //TODO 1 'n' ou 2 'n' ? :p
-    // Get conected components comp(u), comp(v)
+    // Get connected components comp(u), comp(v)
 
     // Compute convex hull of comp(u) and of (comp(v))
 
 
     // Find longest edge (between two points) e_u of comp(u), same for e_v
 
-    // Rotate the two conected components so that they are paraller to the x axis
+    // Rotate the two connected components so that they are paraller to the x axis
 
     // Put c_uv distance between the two components
 
 
-
-int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> distMatrix, unsigned int nDim, std::vector<std::vector<double>> &outputCoords)
+template <typename triangulationType>
+int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &distMatrix, unsigned int nDim, const triangulationType &triangulation, std::vector<std::vector<double>> &outputCoords) const
 {
 #ifndef TTK_ENABLE_QHULL
   printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
@@ -124,6 +124,18 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> distM
     ufToSets.erase(otherRepr); // TODO vérifier que ça clear le set;
     //TODO faire des trucs;
 
+
+    // We change the coordinates
+    double minXUnion = 1e50, maxXOther = -1e50;
+    for (size_t id : unionSet)
+      minXUnion = std::min(minXUnion, outputCoords[id][0]);
+
+    for (size_t id : otherSet)
+      minXUnion = std::max(maxXOther, outputCoords[id][0]);
+
+    double shift = maxXOther + edgeCost - minXUnion;
+    for (size_t id : unionSet)
+      outputCoords[id][0] += shift;
   }
 
   return 0;

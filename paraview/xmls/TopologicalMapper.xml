@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ttkTopologicalMapper"
+      class="ttkTopologicalMapper"
+      label="TTK Topological Mapper">
+      <Documentation
+        long_help="TTK plugin for TODO."
+        short_help="TTK plugin for TODO.">
+
+        This class generates a mapper from a data-set. It computes it
+        by first computing a MST of the points, then reducing the dimension by preserving the cost of the edges of the MST, and if possible the edges themselves (their endvertices).
+      </Documentation>
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkTable"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <!--attribute_type="point"  INPUT DATA OBJECTS -->
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Input data-set.
+        </Documentation>
+      </InputProperty>
+
+								<IntVectorProperty
+        name="SelectMatrixWithRegexp"
+        label="Select Matrix With Regexp"
+        command="SetSelectMatrixWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        
+        <Documentation>
+          Select input distance matrix Point Data arrays with a
+          regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty command="SetDistMat"
+        clean_command="ClearDistMat"
+        label="Input Distance Matrix"
+        name="DistMat"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        
+        <Documentation>
+          Select the input distance matrix scalar fields.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="DistanceMatrixRegexp"
+        label="Distance Matrix Regexp"
+        command="SetDistanceMatrixRegexp"
+        number_of_elements="1"
+        default_values=".*">
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="SelectMatrixWithRegexp"
+                                       value="1" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ReEmbedMapper"
+                                       value="1" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the Distance Matrix Point Data arrays with a regular
+          expression.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <IntVectorProperty
+        name="LowerDimension"
+        label="Lower Dimension"
+        command="SetLowerDimension"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="2" text="2D"/>
+          <Entry value="3" text="3D"/>
+        </EnumerationDomain>
+       <Documentation>
+          The dimension of the points once projected.
+       </Documentation>
+      </IntVectorProperty>
+      
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="LowerDimension" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <OutputPort name="Output" index="0" id="port0" />
+
+      <Hints>
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+      </Hints>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

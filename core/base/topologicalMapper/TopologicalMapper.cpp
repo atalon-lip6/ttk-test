@@ -47,10 +47,21 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
 
   std::priority_queue<std::pair<float, std::pair<size_t, size_t>>> edgeHeap; // We store elements as (c_uv,(u,v))
                                                                 //TODO reverse order
+  for (int u1 = 0; u1 < n; u1++)
+  {
+    for (int u2 = u1+1; u2 < n; u2++)
+    {
+      edgeHeap.push({distMatrix[u1][u2], {u1,u2}});
+
+    }
+  }
+
 
   std::map<UnionFind*, std::set<size_t>> ufToSets;
 
   std::vector<UnionFind> ufVector(n);
+  for (int i = 0; i < n; i++)
+    ufToSets[&ufVector[i]].insert(i);
 
 
   while (!edgeHeap.empty())
@@ -68,15 +79,16 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
 
     std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
 
-    if (compU.size() == 1 || compV.size() == 1) // We just put the point at the right of the convex hull
+    if (compU.size() <= 2 || compV.size() <= 2) // We just put the point at the right of the convex hull
     {
-      size_t idSingle = compU.size() == 1 ? u : v;
+      size_t idSingle = compU.size() <= 2 ? u : v;
       size_t idOther = idSingle ^ u ^ v;
       std::set<size_t> &compBig = (idSingle == u ? compV : compU);
       size_t nBig = std::max(compU.size(), compV.size());
       std::set<size_t> bigComp = (idSingle == u) ? compV : compU;
       float xMax = -DBL_MAX; //TODO include geometry?
-      std::vector<double> pointsBig(nBig*nDim);
+      std::vector<double> pointsBig((std::max(3,nBig)*nDim));
+      std::cout << "nb pts = " << nBig << endl;
       int indexInSetOtherVert = -1;
       int cpt = 0;
       for (int vertId : compBig)
@@ -84,9 +96,21 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
         if (vertId == idOther)
           indexInSetOtherVert = cpt;
         for (int k = 0; k < 3; k++) //TODO seulement la dimension ?
-          pointsBig[3*cpt+k] = outputCoords[3*cpt+k];
+          pointsBig[3*cpt+k] = outputCoords[3*vertId+k];
         cpt++;
+      }
+      if (compBig.size() <= 2)
+      {
+        pointsBig[3] = 0.34;
+        pointsBig[4] = 0;
+        pointsBig[5] = 0;
 
+        if (compBig.size() == 1)
+        {
+          pointsBig[6] = 0;
+          pointsBig[7] = 0.34;
+          pointsBig[8] = 0;
+        }
       }
       char qHullFooStr[1] = "";
 
@@ -128,9 +152,26 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     {
       size_t nU = compU.size(), nV = compV.size();
       std::vector<double> pointsU, pointsV;
-      pointsU.reserve(nU*nDim);
+      pointsU.reserve(nU*nDim); //TODO reserve before looop... scope
       pointsV.reserve(nV*nDim);
       char qHullFooStr[1] = "";
+
+      size_t cptU = 0;
+      for (int vertId : compU)
+      {
+        for (int k = 0; k < 3; k++) //TODO seulement la dimension ?
+          pointsU[3*cptU+k] = outputCoords[3*vertId+k];
+        cptU++;
+
+      }
+      size_t cptV = 0;
+      for (int vertId : compV)
+      {
+        for (int k = 0; k < 3; k++) //TODO seulement la dimension ?
+          pointsV[3*cptV+k] = outputCoords[3*vertId+k];
+        cptV++;
+
+      }
 
       /*for (size_t idU : compU)
         for (float& coord : outputCoords[idU])
@@ -142,6 +183,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       try
       {
         orgQhull::Qhull qhullU, qhullV;
+      std::cout << "nb ptsU, nbPtsV = " << nU << "," << nV << endl;
         qhullU.runQhull(qHullFooStr, nDim, nU, pointsU.data(), qHullFooStr);
         qhullV.runQhull(qHullFooStr, nDim, nV, pointsV.data(), qHullFooStr);
 

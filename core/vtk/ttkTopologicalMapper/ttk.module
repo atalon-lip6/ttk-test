@@ -1,0 +1,9 @@
+NAME
+  ttkTopologicalMapper
+SOURCES
+  ttkTopologicalMapper.cpp
+HEADERS
+  ttkTopologicalMapper.h
+DEPENDS
+  topologicalMapper
+  ttkAlgorithm

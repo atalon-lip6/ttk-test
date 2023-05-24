@@ -10,8 +10,9 @@ ttk_add_base_library(topologicalMapper
 )
 
 if(TTK_ENABLE_QHULL)
-  target_compile_definitions(topologicalCompression PUBLIC TTK_ENABLE_QHULL)
-  target_include_directories(topologicalCompression SYSTEM PRIVATE ${QHULL_INCLUDE_DIR})
-  target_link_libraries(topologicalCompression PRIVATE ${QHULL_LIBRARIES})
+SET(qhullLibs qhullcpp qhull_r)
+  target_compile_definitions(topologicalMapper PRIVATE TTK_ENABLE_QHULL)
+  target_include_directories(topologicalMapper PRIVATE ${Qhull_DIR})
+  target_link_libraries(topologicalMapper PRIVATE Qhull::qhullcpp)
 endif()
 

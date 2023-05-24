@@ -23,7 +23,6 @@
 // ttk common includes
 #include <Debug.h>
 #include <DimensionReduction.h>
-#include <Triangulation.h>
 
 namespace ttk {
 
@@ -34,17 +33,14 @@ namespace ttk {
 
   public:
     TopologicalMapper();
+    ~TopologicalMapper();
+    enum class LOWER_DIMENSION {
+      LOWER_DIM_2D = 2,
+      LOWER_DIM_3D = 3,
+    };
 
-    template <typename triangulationType>
-int execute(const std::vector<std::vector<double>> &distMatrix, unsigned int nDim, const triangulationType &triangulation, std::vector<std::vector<double>> &outputCoords) const;
-
-  private:
-    inline void
-      preconditionTriangulation(AbstractTriangulation *const triangulation) {
-      if(triangulation != nullptr) {
-        triangulation->preconditionEdges();
-        triangulation->preconditionVertexEdges();
-      }
-    }
+    int execute(float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const;
+  protected:
+    LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D}; //TODO enum de ttk...
   };
 } // namespace ttk

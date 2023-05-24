@@ -13,7 +13,7 @@ ttk::TopologicalMapper::TopologicalMapper() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("TopologicalMapper");
 }
-
+ttk::TopologicalMapper::~TopologicalMapper() = default;
   //1. Sort the edges
   //2. For each edge uv with cost c_uv
 
@@ -29,8 +29,8 @@ ttk::TopologicalMapper::TopologicalMapper() {
     // Put c_uv distance between the two components
 
 
-template <typename triangulationType>
-int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &distMatrix, unsigned int nDim, const triangulationType &triangulation, std::vector<std::vector<double>> &outputCoords) const
+//int ttk::TopologicalMapper::execute(const std::vector<std::vector<float>> &distMatrix, unsigned int nDim, const triangulationType &triangulation, std::vector<std::vector<float>> &outputCoords) const
+int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const
 {
 #ifndef TTK_ENABLE_QHULL
   printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
@@ -40,11 +40,12 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &dist
 #endif
 
   size_t n = distMatrix.size();
-  outputCoords.resize(n);
-  for (size_t i = 0; i < n; i++)
-    outputCoords[i].resize(nDim, 0);
+  size_t nDim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
+  //outputCoords.resize(n);
+  //for (size_t i = 0; i < n; i++)
+  //  outputCoords[i].resize(nDim, 0);
 
-  std::priority_queue<std::pair<double, std::pair<size_t, size_t>>> edgeHeap; // We store elements as (c_uv,(u,v))
+  std::priority_queue<std::pair<float, std::pair<size_t, size_t>>> edgeHeap; // We store elements as (c_uv,(u,v))
                                                                 //TODO reverse order
 
   std::map<UnionFind*, std::set<size_t>> ufToSets;
@@ -56,7 +57,7 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &dist
   {
     const auto &elt = edgeHeap.top();
     edgeHeap.pop();
-    double edgeCost = elt.first;
+    float edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
 
@@ -70,12 +71,57 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &dist
     if (compU.size() == 1 || compV.size() == 1) // We just put the point at the right of the convex hull
     {
       size_t idSingle = compU.size() == 1 ? u : v;
+      size_t idOther = idSingle ^ u ^ v;
+      std::set<size_t> &compBig = (idSingle == u ? compV : compU);
+      size_t nBig = std::max(compU.size(), compV.size());
       std::set<size_t> bigComp = (idSingle == u) ? compV : compU;
-      double xMax = -DBL_MAX; //TODO include geometry?
-      for (size_t eltBig : bigComp)
-        xMax = std::max(xMax, outputCoords[eltBig][0]);
+      float xMax = -DBL_MAX; //TODO include geometry?
+      std::vector<double> pointsBig(nBig*nDim);
+      int indexInSetOtherVert = -1;
+      int cpt = 0;
+      for (int vertId : compBig)
+      {
+        if (vertId == idOther)
+          indexInSetOtherVert = cpt;
+        for (int k = 0; k < 3; k++) //TODO seulement la dimension ?
+          pointsBig[3*cpt+k] = outputCoords[3*cpt+k];
+        cpt++;
 
-      outputCoords[idSingle][0] = xMax+edgeCost;
+      }
+      char qHullFooStr[1] = "";
+
+      orgQhull::Qhull qhullBig;
+      try
+      {
+        qhullBig.runQhull(qHullFooStr, nDim, nBig, pointsBig.data(), qHullFooStr);
+
+        {
+          std::cout << "qhullU.hullDimension(): " << qhullBig.hullDimension() << "\n";
+          std::cout << "qhullU.volume(): " << qhullBig.volume() << "\n";
+          std::cout << "qhullU.area(): " << qhullBig.area() << "\n";
+        }
+      }
+      catch (orgQhull::QhullError &e)
+      {
+        printErr("Error with qHull module: " + std::string(e.what()));
+        return -1;
+      }
+      size_t chosenVert = *compBig.begin();
+
+      for(const orgQhull::QhullVertex &vert: qhullBig.vertexList())
+      {
+        if (vert.id() == indexInSetOtherVert)
+        {
+          chosenVert = idOther;
+          break;
+        }
+      }
+
+
+      for (size_t eltBig : bigComp) //TODO tester chaque pt enveloppe
+        xMax = std::max(xMax, outputCoords[3*eltBig]);
+
+      outputCoords[3*idSingle] = xMax+edgeCost;
     }
 
     else // Each component has at least two points
@@ -85,18 +131,19 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &dist
       pointsU.reserve(nU*nDim);
       pointsV.reserve(nV*nDim);
       char qHullFooStr[1] = "";
-        for (size_t idU : compU)
-          for (double& coord : outputCoords[idU])
-            pointsU.reserve(coord);
-        for (size_t idV : compV)
-          for (double& coord : outputCoords[idV])
-            pointsV.reserve(coord);
 
+      /*for (size_t idU : compU)
+        for (float& coord : outputCoords[idU])
+          pointsU.reserve(coord);
+      for (size_t idV : compV)
+        for (float& coord : outputCoords[idV])
+          pointsV.reserve(coord);
+      */
       try
       {
         orgQhull::Qhull qhullU, qhullV;
         qhullU.runQhull(qHullFooStr, nDim, nU, pointsU.data(), qHullFooStr);
-        qhullV.runQhull(qHullFooStr, nDim, nU, pointsU.data(), qHullFooStr);
+        qhullV.runQhull(qHullFooStr, nDim, nV, pointsV.data(), qHullFooStr);
 
         //for (orgQhull::Qhull &qhull : {qhullU, qhullV})
         {
@@ -126,16 +173,16 @@ int ttk::TopologicalMapper::execute(const std::vector<std::vector<double>> &dist
 
 
     // We change the coordinates
-    double minXUnion = 1e50, maxXOther = -1e50;
+    float minXUnion = 1e50, maxXOther = -1e50;
     for (size_t id : unionSet)
-      minXUnion = std::min(minXUnion, outputCoords[id][0]);
+      minXUnion = std::min(minXUnion, outputCoords[3*id]);
 
     for (size_t id : otherSet)
-      minXUnion = std::max(maxXOther, outputCoords[id][0]);
+      minXUnion = std::max(maxXOther, outputCoords[3*id]);
 
-    double shift = maxXOther + edgeCost - minXUnion;
+    float shift = maxXOther + edgeCost - minXUnion;
     for (size_t id : unionSet)
-      outputCoords[id][0] += shift;
+      outputCoords[3*id] += shift;
   }
 
   return 0;

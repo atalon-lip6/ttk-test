@@ -36,6 +36,9 @@
 #include <Mapper.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
+#include <vtkNew.h>
+#include <vtkIntArray.h>
+#include <vtkUnstructuredGrid.h>
 
 class TTKMAPPER_EXPORT ttkMapper : public ttkAlgorithm, protected ttk::Mapper {
 public:
@@ -72,9 +75,22 @@ public:
 
   ttkSetEnumMacro(ReembedMethod, REEMBED_METHOD);
   vtkGetEnumMacro(ReembedMethod, REEMBED_METHOD);
-  
-  vtkSetMacro(DilatationCoeff, double);
+
   vtkGetMacro(DilatationCoeff, double);
+  void SetDilatationCoeff(double coeff)
+  {
+    this->DilatationCoeff = coeff;
+    ModifiedDilatation();
+  }
+  
+  void ModifiedDilatation() {
+    if (!firstTimeReembed_)
+    {
+      std::cerr <<"Modifying, yeah :-)";
+      needWholeUpdate_ = false;
+      ttkAlgorithm::Modified(); //Useless?
+    }
+  }
 protected:
   ttkMapper();
 
@@ -93,4 +109,9 @@ private:
   bool SelectMatrixWithRegexp{false};
   std::string DistanceMatrixRegexp{".*"};
   std::vector<std::string> DistanceMatrix{};
+  bool needWholeUpdate_{true}; // To avoid to recompute everything when not necessary.
+  bool firstTimeReembed_{true}; // To avoid to recompute everything when not necessary. //Check sze f arrays...
+  std::vector<float> pointsCoordsBackup_;
+  vtkNew<vtkIntArray> connCompPrev_{}, bucketPrev_{};
+  vtkNew<vtkUnstructuredGrid> arcsPrev_{}, nodesPrev_{};
 };

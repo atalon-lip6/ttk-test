@@ -38,7 +38,7 @@ namespace ttk {
   class Mapper : virtual public Debug {
   public:
     Mapper();
-
+    ~Mapper() { printErr("Destroying :'(");}
     enum class LOWER_DIMENSION {
       LOWER_DIM_2D = 2,
       LOWER_DIM_3D = 3,
@@ -128,6 +128,23 @@ namespace ttk {
     }
 
     /**
+     * @brief Update the projected points when the dilatation
+     * coefficient is modified. Avoids to recompute the whole
+     * mapper when there is no need for it, hence spees the
+     * calculations in this case.
+     *
+     * @param[out] outputPointsCoords stores the new coordinates:
+     *  outputPointsCoords[3*i+k] stores the k-th coordinate for
+     *  the i-th point.
+     * @param[in] pointsPrev pointsPrev contains the previous
+     * coordinates of each point, used to update them.
+     *
+     * @return 0 in case of success.
+     */
+    int updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<std::array<float, 3>> &pointsPrev);
+
+
+    /**
      * @brief Compute mapper
      *
      * @param[out] outputBucket associate its Bucket id to each vertex
@@ -152,7 +169,7 @@ namespace ttk {
                 float *const outputPointsCoords,
                 const Matrix &distMat,
                 const dataType *const inputSf,
-                const triangulationType &triangulation) const;
+                const triangulationType &triangulation);
 
   private:
     /**
@@ -288,7 +305,7 @@ namespace ttk {
                       const std::vector<std::set<SimplexId>> &compArcs,
                       const std::vector<std::vector<SimplexId>> &connCompEdges,
                       const std::vector<int> &connCompBucket,
-                      const triangulationType &triangulation) const;
+                      const triangulationType &triangulation);
 
   protected:
     int NumberOfBuckets{10};
@@ -297,9 +314,47 @@ namespace ttk {
     REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
     double DilatationCoeff{0.4};
+
+    // Variables used to update the coordinates when the dilatation
+    // coefficient is changed.
+    double prevDilatationCoeff_{-1};
+    std::vector<double> compSpecialCoeffToSave_{};
   };
 
 } // namespace ttk
+
+int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<std::array<float, 3>> &pointsPrev)
+{
+  const size_t nbPoint = compSpecialCoeffToSave_.size()/3;
+  if (pointsPrev.size() != nbPoint)
+  {
+    printErr("Error in updating the dilatation coefficient only. We want to update the coordinates of "
+        + std::to_string(nbPoint) + " points but the data we saved to do so concerns "
+        + std::to_string(compSpecialCoeffToSave_.size()) + " points.");
+    return 1;
+  }
+
+  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
+
+  for (size_t i = 0; i < nbPoint; i++)
+  {
+    if (i < 5)
+    {
+      std::cerr << i << " pPrev => " << pointsPrev[i][0] << "," << pointsPrev[i][1] << "," << pointsPrev[i][2] << std::endl;
+      std::cerr << " oh la qui voilà = " << compSpecialCoeffToSave_[3*i+0] << " - " << compSpecialCoeffToSave_[3*i+1] << std::endl;
+   }
+    for (size_t iDim = 0; iDim < dim; iDim++)
+    {
+      outputPointsCoords[3*i+iDim] = pointsPrev[i][iDim] + (DilatationCoeff - prevDilatationCoeff_) * compSpecialCoeffToSave_[3*i+iDim];
+    }
+    if (i < 5)
+      std::cerr << i << " => " << outputPointsCoords[3*i] << "," << outputPointsCoords[3*i+1] << "," << outputPointsCoords[3*i+2] << std::endl;
+  }
+  prevDilatationCoeff_ = DilatationCoeff;
+
+
+  return 0;
+}
 
 // template functions
 template <typename dataType, typename triangulationType>
@@ -311,7 +366,7 @@ int ttk::Mapper::execute(int *const outputBucket,
                          float *const outputPointsCoords,
                          const Matrix &distMat,
                          const dataType *const inputSf,
-                         const triangulationType &triangulation) const {
+                         const triangulationType &triangulation) {
 
   Timer tm{}, tmsec{};
 
@@ -457,7 +512,7 @@ int ttk::Mapper::execute(int *const outputBucket,
                         triangulation);
   }
 
-  return 0;
+    return 0;
 }
 
 template <typename dataType, typename triangulationType>
@@ -676,9 +731,13 @@ int ttk::Mapper::reEmbedMapper(
   const std::vector<std::set<SimplexId>> &compArcs,
   const std::vector<std::vector<SimplexId>> &connCompEdges,
   const std::vector<int> &connCompBucket,
-  const triangulationType &triangulation) const {
+  const triangulationType &triangulation) {
 
   Timer tm{};
+
+  compSpecialCoeffToSave_.clear();
+  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), 0.0);
+  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size());
 
   // 1. extract vertices in component edges. A vertex is considered in a bucket
   // if it lies insied or if it is the extremity of an edge which crosses that
@@ -896,7 +955,10 @@ centroidId[el]);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
-      for(auto &coords : embedConnComp[j]) {
+      for (size_t iPtComp = 0; iPtComp < embedConnComp[j].size(); iPtComp++)
+      {
+        auto &coords = embedConnComp[j][iPtComp];
+        compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] = coords*maxDistNeigh/compDiag;
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }
@@ -911,6 +973,7 @@ centroidId[el]);
         if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = embedConnComp[k][j];
+
           // connCompVertsStrict[i][j] : global id of the jth point in the ith
           // connected component
         } else { // in case the value is infinite, we take the centroid
@@ -929,6 +992,8 @@ centroidId[el]);
   std::cout << "lol" << std::endl;
   this->printMsg(
     "Re-embedded mapper", 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  prevDilatationCoeff_ = DilatationCoeff;
 
   return 0;
 }

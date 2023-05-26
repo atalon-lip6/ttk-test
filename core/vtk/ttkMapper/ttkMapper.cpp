@@ -45,6 +45,7 @@ static void setNodes(vtkUnstructuredGrid *const nodes,
                      const std::vector<std::array<float, 3>> &compBaryCoords,
                      const std::vector<int> &compBucketId) {
 
+  std::cerr << " IL Y A " << compBaryCoords.size() << " nodes\n";
   vtkNew<vtkIntArray> compId{};
   compId->SetName("ComponentId");
   compId->SetNumberOfComponents(1);
@@ -178,6 +179,48 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputArcs = vtkUnstructuredGrid::GetData(outputVector, 1);
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
 
+  if (!needWholeUpdate_)
+  {
+    auto vtu = vtkUnstructuredGrid::SafeDownCast(outputNodes);
+    if (vtu == nullptr)
+    {
+      printErr("Error : updating only the dilatation coefficient but the reembedding mapper was not computed and stored yet.");
+      return 0;
+    }
+
+    outputSegmentation->ShallowCopy(input);
+    outputSegmentation->GetPointData()->AddArray(bucketPrev_);
+    outputSegmentation->GetPointData()->AddArray(connCompPrev_);
+    outputNodes->ShallowCopy(nodesPrev_);
+    outputArcs->ShallowCopy(arcsPrev_);
+
+    const size_t nbPoint = input->GetNumberOfPoints();
+    std::vector<std::array<float, 3>> pointsPrev(nbPoint);
+    vtkNew<vtkPoints> outputPoints{};
+    outputPoints->SetNumberOfPoints(input->GetNumberOfPoints());
+    outputPoints->GetData()->Fill(0.0);
+    for (size_t i = 0; i < nbPoint; i++)
+    {
+      for (size_t k = 0; k < 3; k++)
+        pointsPrev[i][k] = pointsCoordsBackup_[3*i+k];
+    }
+    std::vector<int> compBucketId(input->GetNumberOfPoints());
+
+    this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsPrev);
+    auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
+    if(outSegVTU != nullptr) {
+      outSegVTU->SetPoints(outputPoints);
+    }
+
+    needWholeUpdate_ = true;
+    return 1;
+  }
+  if (this->ReEmbedMapper)
+  {
+    printErr("Setting to false :D");
+    firstTimeReembed_ = false;
+  }
+
   auto *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(triangulation == nullptr) {
     return 0;
@@ -223,6 +266,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
       this->printErr("Invalid input distance matrix");
       return 0;
     }
+    pointsCoordsBackup_.resize(3*input->GetNumberOfPoints());
     outputPoints->SetNumberOfPoints(input->GetNumberOfPoints());
     outputPoints->GetData()->Fill(0.0);
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
@@ -233,7 +277,6 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
                    this->threadNumber_, ttk::debug::LineMode::NEW,
                    ttk::debug::Priority::DETAIL);
   }
-
   std::vector<std::array<float, 3>> compBaryCoords{};
   std::vector<int> compBucketId{};
   std::vector<std::set<ttk::SimplexId>> compArcs{};
@@ -248,8 +291,14 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
                   inputDistMat, ttkUtils::GetPointer<VTK_TT>(inputScalarField),
                   *static_cast<TTK_TT *>(triangulation->getData())));
 
+  float* const outputCoordsPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
+  for (size_t i = 0; i < pointsCoordsBackup_.size(); i++)
+    pointsCoordsBackup_[i] = outputCoordsPtr[i];
   setNodes(outputNodes, compBaryCoords, compBucketId);
   setArcs(outputArcs, compArcs, outputNodes->GetPoints());
-
+  connCompPrev_->DeepCopy(connComp); // shallow semblait marcher, maiis pas de raison pour.
+  bucketPrev_->DeepCopy(bucket);
+  nodesPrev_->DeepCopy(outputNodes);
+  arcsPrev_->DeepCopy(outputArcs);
   return 1;
 }

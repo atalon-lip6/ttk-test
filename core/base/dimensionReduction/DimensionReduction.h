@@ -215,6 +215,11 @@ namespace ttk {
                 const std::vector<double> &inputMatrix,
                 const int nRows,
                 const int nColumns) const;
+    int execute_backup(std::vector<std::vector<double>> &outputEmbedding,
+                const std::vector<double> &inputMatrix,
+                const int nRows,
+                const int nColumns) const;
+
 
   protected:
     // se

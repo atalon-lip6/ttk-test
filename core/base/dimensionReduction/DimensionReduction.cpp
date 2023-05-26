@@ -56,6 +56,21 @@ bool DimensionReduction::isPythonFound() const {
 #endif
 }
 
+int DimensionReduction::execute_backup(
+  std::vector<std::vector<double>> &outputEmbedding,
+  const std::vector<double> &inputMatrix,
+  const int nRows,
+  const int nColumns) const {
+
+  //vector nbPoint x nbCoord
+  const int numberOfComponents = std::max(2, this->NumberOfComponents);
+  outputEmbedding.resize(numberOfComponents);
+  for(int i = 0; i < numberOfComponents; ++i)
+    outputEmbedding[i].resize(nRows, 2.0);
+
+
+  return 0;
+}
 
 
 int DimensionReduction::execute(

@@ -143,6 +143,12 @@ namespace ttk {
      */
     int updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<float> &pointsPrev);
 
+void updateNonCentroidPointsAlpha(float *outputPointsCoords,
+                                               //SimplexId* const centroidId,
+                                               SimplexId* const connCompId,
+                                               const Matrix &highDimDistMat,
+                                               const size_t nbPoint,
+                                               const double alpha);
 
     /**
      * @brief Compute mapper
@@ -286,6 +292,15 @@ namespace ttk {
                            const std::vector<SimplexId> &vertsId,
                            const Matrix &distMat) const;
 
+    //TODO doc
+    void computeGlobalWeightedDistMatrix(Matrix &globalDistMat,
+        const Matrix &centroidDistMat,
+        const std::vector<int> &centroidId,
+        const int *const outputConnComp,
+        const Matrix &highDimDistMat,
+        const size_t nbPoint,
+        const double alpha) const;
+    
     /**
      * @brief Re-embed by reducing centroids & individual connected components
      *
@@ -314,11 +329,14 @@ namespace ttk {
     REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
     double DilatationCoeff{0.4};
+    double AlphaCoeff{0.1};
 
     // Variables used to update the coordinates when the dilatation
     // coefficient is changed.
     double prevDilatationCoeff_{-1};
     std::vector<double> compSpecialCoeffToSave_{};
+    Matrix prevCentroidDistMat_;
+    std::vector<int> prevCentroidId_;
   };
 
 } // namespace ttk
@@ -355,6 +373,52 @@ int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const
 
   return 0;
 }
+
+void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
+                                               //SimplexId* const centroidId,
+                                               SimplexId* const connCompId,
+                                               const Matrix &highDimDistMat,
+                                               const size_t nbPoint,
+                                               const double alpha)
+{
+  printErr("Updating alpha :-)");
+  Matrix globalDistMat;
+  globalDistMat.alloc(nbPoint, nbPoint, 0);
+  for (size_t i1 = 0; i1 < nbPoint; i1++)
+  {
+    for (size_t i2 = 0; i2 < i1; i2++)
+    {
+      double squareCentroidDist = 0;
+      size_t comp1 = connCompId[i1], comp2 = connCompId[i2];
+      size_t centroid1 = prevCentroidId_[comp1], centroid2 = prevCentroidId_[comp2];
+      globalDistMat.get(i1, i2) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+prevCentroidDistMat_.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
+      globalDistMat.get(i2, i1) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+prevCentroidDistMat_.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
+    }
+  }
+    size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
+    std::vector<std::vector<double>> coordsAll;
+    reduceMatrix(coordsAll, globalDistMat, true, this->ReductionAlgo);
+    for (size_t iPt = 0; iPt < globalDistMat.nRows(); iPt++)
+    {
+      for (size_t iDim = 0; iDim < dim; iDim++)
+      {
+        outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
+      }
+    }
+
+  /*
+    for (size_t iCentr = 0; iCentr < compBaryCoords.size(); iCentr++)
+    {
+      size_t iVert = centroidId[iCentr];
+      for (size_t iDim = 0; iDim < 3; iDim++)
+      {
+        compBaryCoords[iVert][iDim] = outputConnComp[3*iVert+iDim];
+      }
+    }*/
+
+}
+
+
 
 // template functions
 template <typename dataType, typename triangulationType>
@@ -734,10 +798,11 @@ int ttk::Mapper::reEmbedMapper(
   const triangulationType &triangulation) {
 
   Timer tm{};
+  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
 
   compSpecialCoeffToSave_.clear();
-  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), 0.0);
-  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size())  << std::endl;
+  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), AlphaCoeff);
+  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size());
 
   // 1. extract vertices in component edges. A vertex is considered in a bucket
   // if it lies insied or if it is the extremity of an edge which crosses that
@@ -860,7 +925,8 @@ centroidId[el]);
   }
 }
 */
-
+  prevCentroidDistMat_ = centroidsDistMat;
+  prevCentroidId_ = centroidId;
   this->printMsg(
     "Computed geodesics", 1.0, tm.getElapsedTime(), this->threadNumber_);
   tm.reStart();
@@ -902,6 +968,57 @@ centroidId[el]);
                  debug::Priority::PERFORMANCE);
   //return 0; //To avoid computing segmentation for faster tests.
   
+
+
+  if (true) //TODO option
+  {
+    std::vector<Matrix> connCompDistMatrices(connCompEdges.size());
+    for (size_t iComp = 1e9; iComp < connCompEdges.size(); iComp++) //TODO paralellise
+    {
+      printErr("NOPE\n");
+      if (connCompVertsStrict[iComp].empty())
+        continue;
+      else if (connCompVertsStrict[iComp].size() == 1)
+        connCompDistMatrices[iComp].alloc(1,1,0);
+      else
+      {
+        Matrix &distMatConnComp = connCompDistMatrices[iComp];
+        //this->extractSubDistMat(distMatConnComp, connCompVertsStrict[iComp], distMat);
+      }
+    }
+
+    Matrix globalWeightedMatrix;
+    this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
+                                    centroidsDistMat,
+                                    centroidId,
+                                    outputConnComp,
+                                    distMat,
+                                    distMat.nRows(),
+                                    0.0);
+
+    std::vector<std::vector<double>> coordsAll;
+    reduceMatrix(coordsAll, globalWeightedMatrix, true, this->ReductionAlgo);
+    
+    for (size_t iPt = 0; iPt < distMat.nRows(); iPt++)
+    {
+      for (size_t iDim = 0; iDim < dim; iDim++)
+      {
+        outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
+      }
+    }
+    for (size_t iCentr = 0; iCentr < compBaryCoords.size(); iCentr++)
+    {
+      size_t iVert = centroidId[iCentr];
+      //printErr("ICentr = " + std::to_string(iCentr) + " and iVert = " + std::to_string(iVert));
+      for (size_t iDim = 0; iDim < dim; iDim++)
+      {
+        compBaryCoords.at(iCentr).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
+      }
+    }
+    printErr("RETURNING YEAH\n");
+    return 0;
+  }
+>>>>>>> dad4053f2 (WIP)
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
@@ -921,6 +1038,7 @@ centroidId[el]);
       }
       continue;
     }
+    //TODO dilatation en fait coefficient adaptable si lock sur centroide...
 
     // return 0;
 

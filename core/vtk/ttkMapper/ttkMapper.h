@@ -123,10 +123,28 @@ public:
     if (!firstTimeReembed_)
     {
       std::cerr <<"Modifying, yeah :-)";
-      needWholeUpdate_ = false;
+      needWholeUpdate_ = DILATATION;
       ttkAlgorithm::Modified(); //Useless?
     }
   }
+
+
+  vtkGetMacro(AlphaCoeff, double);
+  void SetAlphaCoeff(double coeff)
+  {
+    this->AlphaCoeff = coeff;
+    ModifiedAlpha();
+  }
+  
+  void ModifiedAlpha() {
+    if (!firstTimeReembed_)
+    {
+      std::cerr <<"Modifying, yeah :-)";
+      needWholeUpdate_ = ALPHA;
+      ttkAlgorithm::Modified(); //Useless?
+    }
+  }
+
 protected:
   ttkMapper();
 
@@ -142,10 +160,11 @@ protected:
 
 private:
   // domain vertices coordinates in high dimension
+  enum NEED_UPDATE{NOPE, DILATATION, ALPHA};
   bool SelectMatrixWithRegexp{false};
   std::string DistanceMatrixRegexp{".*"};
   std::vector<std::string> DistanceMatrix{};
-  bool needWholeUpdate_{true}; // To avoid to recompute everything when not necessary.
+  int needWholeUpdate_{NOPE}; // To avoid to recompute everything when not necessary.
   bool firstTimeReembed_{true}; // To avoid to recompute everything when not necessary. //Check sze f arrays...
   std::vector<float> pointsCoordsBackup_;
   vtkNew<vtkIntArray> connCompPrev_{}, bucketPrev_{};

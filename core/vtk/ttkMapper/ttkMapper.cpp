@@ -181,7 +181,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
   const size_t nbPoint = input->GetNumberOfPoints();
 
-  if (!needWholeUpdate_)
+  if (needWholeUpdate_ != NOPE)
   {
     auto vtu = vtkUnstructuredGrid::SafeDownCast(outputNodes);
     if (vtu == nullptr)
@@ -201,7 +201,36 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     outputPoints->GetData()->Fill(0.0);
     std::vector<int> compBucketId(input->GetNumberOfPoints());
 
-    this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
+    if (needWholeUpdate_ == DILATATION)
+    {
+      this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
+    }
+    else if (needWholeUpdate_ == ALPHA)
+    {
+      Matrix inputDistMat{};
+      if(this->ReEmbedMapper) {
+        ttk::Timer tm{};
+        extractInputMatrix(inputDistMat, this->DistanceMatrix,
+            input->GetPointData(), this->DistanceMatrixRegexp,
+            this->threadNumber_, this->SelectMatrixWithRegexp);
+        if(inputDistMat.nRows() != inputDistMat.nCols() || inputDistMat.nCols() == 0
+            || inputDistMat.nRows() == 0) {
+          this->printErr("Invalid input distance matrix");
+          return 0;
+        }
+
+        this->updateNonCentroidPointsAlpha(ttkUtils::GetPointer<float>(outputPoints->GetData()),
+            /*TODO,*/
+            ttkUtils::GetPointer<ttk::SimplexId>(connCompPrev_), inputDistMat, inputDistMat.nRows(), AlphaCoeff);
+
+      }
+      else
+      {
+        printErr("Error updating dilatation or alpha or va te faire voir !");
+        return 0;
+      }
+    }
+
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
     if(outSegVTU != nullptr) {
       outSegVTU->SetPoints(outputPoints);
@@ -213,7 +242,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
       for (size_t k = 0; k < 3; k++)
         pointsCoordsBackup_[3*i+k] = outputPtr[3*i+k];
     }
-    needWholeUpdate_ = true;
+    needWholeUpdate_ = NOPE;
     return 1;
   }
   if (this->ReEmbedMapper)
@@ -221,6 +250,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     printErr("Setting to false :D");
     firstTimeReembed_ = false;
   }
+  //TODO else firstTime = true TESTER
 
   auto *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(triangulation == nullptr) {

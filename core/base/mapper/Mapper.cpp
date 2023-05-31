@@ -106,3 +106,25 @@ void ttk::Mapper::extractSubDistMat(Matrix &subDistMat,
     }
   }
 }
+
+void ttk::Mapper::computeGlobalWeightedDistMatrix(Matrix &globalDistMat,
+                                                  const Matrix &centroidDistMat,
+                                                  const std::vector<int> &centroidId,
+                                                  const int *const outputConnComp,
+                                                  const Matrix &highDimDistMat,
+                                                  const size_t nbPoint,
+                                                  const double alpha) const
+{
+  globalDistMat.alloc(nbPoint, nbPoint, 0);
+  for (size_t i1 = 0; i1 < nbPoint; i1++)
+  {
+    for (size_t i2 = 0; i2 < i1; i2++)
+    {
+      size_t comp1 = outputConnComp[i1], comp2 = outputConnComp[i2];
+      size_t centroid1 = centroidId[comp1], centroid2 = centroidId[comp2];
+      globalDistMat.get(i1, i2) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
+      globalDistMat.get(i2, i1) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
+    }
+  }
+}
+

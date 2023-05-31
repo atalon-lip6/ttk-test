@@ -82,6 +82,25 @@
         </Documentation>
       </DoubleVectorProperty>
 
+        <DoubleVectorProperty
+        name="AlphaCoeff"
+        label="Coefficient to use more the input distance matrix."
+        command="SetAlphaCoeff"
+        number_of_elements="1"
+        default_values="0.1" >
+        <DoubleRangeDomain name="range" min="0" max="1" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ReEmbedMapper"
+                                   value="1" />
+        </Hints>
+
+        <Documentation>
+          When we project the initial points around the centroids, we use alpha such that, if non null, we give a global distance matrix of all points to the dimension reduction algorithm. The distance between two points will be a compromise using the newly computed coordinates of the centroids (weighted 1-alpha) and the input high dimension distance matrix (weighted alpha).
+        </Documentation>
+      </DoubleVectorProperty>
+
 
 
       <IntVectorProperty

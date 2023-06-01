@@ -141,7 +141,7 @@ namespace ttk {
      *
      * @return 0 in case of success.
      */
-    int updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<std::array<float, 3>> &pointsPrev);
+    int updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<float> &pointsPrev);
 
 
     /**
@@ -323,10 +323,10 @@ namespace ttk {
 
 } // namespace ttk
 
-int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<std::array<float, 3>> &pointsPrev)
+int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<float> &pointsPrev)
 {
   const size_t nbPoint = compSpecialCoeffToSave_.size()/3;
-  if (pointsPrev.size() != nbPoint)
+  if (pointsPrev.size() != 3*nbPoint)
   {
     printErr("Error in updating the dilatation coefficient only. We want to update the coordinates of "
         + std::to_string(nbPoint) + " points but the data we saved to do so concerns "
@@ -340,12 +340,12 @@ int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const
   {
     if (i < 5)
     {
-      std::cerr << i << " pPrev => " << pointsPrev[i][0] << "," << pointsPrev[i][1] << "," << pointsPrev[i][2] << std::endl;
+      std::cerr << i << " pPrev => " << pointsPrev[3*i] << "," << pointsPrev[3*i+1] << "," << pointsPrev[3*i+2] << std::endl;
       std::cerr << " oh la qui voilà = " << compSpecialCoeffToSave_[3*i+0] << " - " << compSpecialCoeffToSave_[3*i+1] << std::endl;
    }
     for (size_t iDim = 0; iDim < dim; iDim++)
     {
-      outputPointsCoords[3*i+iDim] = pointsPrev[i][iDim] + (DilatationCoeff - prevDilatationCoeff_) * compSpecialCoeffToSave_[3*i+iDim];
+      outputPointsCoords[3*i+iDim] = pointsPrev[3*i+iDim] + (DilatationCoeff - prevDilatationCoeff_) * compSpecialCoeffToSave_[3*i+iDim];
     }
     if (i < 5)
       std::cerr << i << " => " << outputPointsCoords[3*i] << "," << outputPointsCoords[3*i+1] << "," << outputPointsCoords[3*i+2] << std::endl;

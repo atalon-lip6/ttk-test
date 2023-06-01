@@ -46,16 +46,36 @@ public:
 
   vtkTypeMacro(ttkMapper, ttkAlgorithm);
 
-  vtkSetMacro(NumberOfBuckets, int);
+  void SetNumberOfBuckets(int nbBuckets)
+  {
+    this->NumberOfBuckets = nbBuckets;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetMacro(NumberOfBuckets, int);
 
-  vtkSetMacro(ReEmbedMapper, bool);
+  void SetReEmbedMapper(bool enable)
+  {
+    this->ReEmbedMapper = enable;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetMacro(ReEmbedMapper, bool);
 
-  vtkSetMacro(SelectMatrixWithRegexp, bool);
+  void SetSelectMatrixWithRegexp (bool enable)
+  {
+    this->SelectMatrixWithRegexp = enable;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetMacro(SelectMatrixWithRegexp, bool);
 
-  vtkSetMacro(DistanceMatrixRegexp, const std::string &);
+  void SetDistanceMatrixRegexp(const std::string &matName)
+  {
+    this->DistanceMatrixRegexp = matName;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetMacro(DistanceMatrixRegexp, std::string);
 
   void SetDistMat(const std::string &s) {
@@ -67,13 +87,29 @@ public:
     this->Modified();
   }
 
-  ttkSetEnumMacro(LowerDimension, LOWER_DIMENSION);
+  void SetLowerDimension(unsigned int lowDim)//(LOWER_DIMENSION lowDim)
+  {
+    this->LowerDimension = (LOWER_DIMENSION)lowDim;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetEnumMacro(LowerDimension, LOWER_DIMENSION);
 
-  ttkSetEnumMacro(ReductionAlgo, REDUCTION_ALGO);
+  void SetReductionAlgo(int redAlgo)//(REDUCTION_ALGO redAlgo)
+  {
+    this->ReductionAlgo = (REDUCTION_ALGO)redAlgo;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
+  //ttkSetEnumMacro(ReductionAlgo, REDUCTION_ALGO);
   vtkGetEnumMacro(ReductionAlgo, REDUCTION_ALGO);
 
-  ttkSetEnumMacro(ReembedMethod, REEMBED_METHOD);
+  void SetReembedMethod(int reembedMethod)//REEMBED_METHOD reembedMethod)
+  {
+    this->ReembedMethod = (REEMBED_METHOD)reembedMethod;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
   vtkGetEnumMacro(ReembedMethod, REEMBED_METHOD);
 
   vtkGetMacro(DilatationCoeff, double);

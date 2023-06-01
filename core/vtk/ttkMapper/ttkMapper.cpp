@@ -195,23 +195,23 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     outputArcs->ShallowCopy(arcsPrev_);
 
     const size_t nbPoint = input->GetNumberOfPoints();
-    std::vector<std::array<float, 3>> pointsPrev(nbPoint);
     vtkNew<vtkPoints> outputPoints{};
     outputPoints->SetNumberOfPoints(input->GetNumberOfPoints());
     outputPoints->GetData()->Fill(0.0);
-    for (size_t i = 0; i < nbPoint; i++)
-    {
-      for (size_t k = 0; k < 3; k++)
-        pointsPrev[i][k] = pointsCoordsBackup_[3*i+k];
-    }
     std::vector<int> compBucketId(input->GetNumberOfPoints());
 
-    this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsPrev);
+    this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
     if(outSegVTU != nullptr) {
       outSegVTU->SetPoints(outputPoints);
     }
 
+    float* outputPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
+    for (size_t i = 0; i < nbPoint; i++)
+    {
+      for (size_t k = 0; k < 3; k++)
+        pointsCoordsBackup_[3*i+k] = outputPtr[3*i+k];
+    }
     needWholeUpdate_ = true;
     return 1;
   }

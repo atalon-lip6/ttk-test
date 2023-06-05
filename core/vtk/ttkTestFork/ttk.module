@@ -1,0 +1,8 @@
+NAME
+  ttkTestFork
+SOURCES
+  ttkTestFork.cpp
+HEADERS
+  ttkTestFork.h
+DEPENDS
+  ttkAlgorithm

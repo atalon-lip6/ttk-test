@@ -1,6 +1,5 @@
 /// \defgroup examples examples
-/// \brief The Topology ToolKit - Example programs.
-/// @{
+/// \brief The Topology ToolKit - Example programs.  /// @{
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date October 2017.
 ///
@@ -23,9 +22,11 @@
 #include <ttkPersistenceCurve.h>
 #include <ttkPersistenceDiagram.h>
 #include <ttkTopologicalSimplification.h>
+#include <ttkTestFork.h>
 
 #include <vtkNew.h>
 #include <vtkTableWriter.h>
+#include <vtkDataSetWriter.h>
 #include <vtkThreshold.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
@@ -45,6 +46,22 @@ int main(int argc, char **argv) {
   vtkNew<vtkXMLUnstructuredGridReader> reader{};
   reader->SetFileName(inputFilePath.data());
 
+  vtkNew<ttkTestFork> testFork{};
+  testFork->SetInputConnection(reader->GetOutputPort());
+  std::cout << "TESTING" << std::endl;
+  //testFork->GetOutputPort();
+  std::cout << "TESTED" << std::endl;
+
+  vtkNew<vtkTableWriter> segWriter{};
+  segWriter->SetInputConnection(testFork->GetOutputPort(0));
+  std::cout << "TOTO" << std::endl;
+  segWriter->SetFileName("segmentation.vtu");
+  segWriter->Write();
+
+
+  return 0;
+
+  /*
   // 2. computing the persistence diagram
   vtkNew<ttkPersistenceDiagram> diagram{};
   diagram->SetInputConnection(reader->GetOutputPort());
@@ -105,6 +122,7 @@ int main(int argc, char **argv) {
   segWriter->Write();
 
   return 0;
+  */
 }
 
 /// @}

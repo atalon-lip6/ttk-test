@@ -122,8 +122,8 @@ void ttk::Mapper::computeGlobalWeightedDistMatrix(Matrix &globalDistMat,
     {
       size_t comp1 = outputConnComp[i1], comp2 = outputConnComp[i2];
       size_t centroid1 = centroidId[comp1], centroid2 = centroidId[comp2];
-      globalDistMat.get(i1, i2) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
-      globalDistMat.get(i2, i1) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
+      globalDistMat.get(i1, i2) = 0*(1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+1*highDimDistMat.get(i1, i2);
+      globalDistMat.get(i2, i1) = 0*(1-alpha)*(highDimDistMat.get(i1,centroid1)+centroidDistMat.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+1*highDimDistMat.get(i1, i2);
     }
   }
 }

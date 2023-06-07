@@ -205,7 +205,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     {
       this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
     }
-    else if (needWholeUpdate_ == ALPHA)
+    else if (false && needWholeUpdate_ == ALPHA)
     {
       Matrix inputDistMat{};
       if(this->ReEmbedMapper) {

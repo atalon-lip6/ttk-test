@@ -1001,20 +1001,35 @@ centroidId[el]);
     
     for (size_t iPt = 0; iPt < distMat.nRows(); iPt++)
     {
+      size_t idComp = outputConnComp[iPt];
+        size_t idCentroid = centroidId[idComp];
+      
       for (size_t iDim = 0; iDim < dim; iDim++)
       {
-        outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
+        double delta = coordsAll[iDim][iPt]-coordsAll[iDim][idCentroid];
+        if (!std::isfinite(coordsAll[iDim][iPt]))
+        {
+            std::cerr << "NO, INFINITE\n";
+            delta = 0;
+        }
+        //std::cout << delta << " + " << embedCentroids[iDim][idCentroid] << "    --->  " << idCentroid << "," << outputConnComp[iPt] << std::endl;
+        float newCoord = delta + embedCentroids[iDim][idComp];
+        //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
+        //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
+        outputPointsCoords[3*iPt+iDim] = newCoord;
       }
     }
-    for (size_t iCentr = 0; iCentr < compBaryCoords.size(); iCentr++)
+    /*
+    for (size_t iComp = 0; iComp < compBaryCoords.size(); iComp++)
     {
-      size_t iVert = centroidId[iCentr];
-      //printErr("ICentr = " + std::to_string(iCentr) + " and iVert = " + std::to_string(iVert));
+      size_t iVert = centroidId[iComp];
+      //printErr("ICentr = " + std::to_string(iComp) + " and iVert = " + std::to_string(iVert));
       for (size_t iDim = 0; iDim < dim; iDim++)
       {
-        compBaryCoords.at(iCentr).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
+        //compBaryCoords.at(iComp).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
+        compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
       }
-    }
+    }*/
     printErr("RETURNING YEAH\n");
     return 0;
   }

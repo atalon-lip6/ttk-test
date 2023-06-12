@@ -972,21 +972,6 @@ centroidId[el]);
 
   if (true) //TODO option
   {
-    std::vector<Matrix> connCompDistMatrices(connCompEdges.size());
-    for (size_t iComp = 1e9; iComp < connCompEdges.size(); iComp++) //TODO paralellise
-    {
-      printErr("NOPE\n");
-      if (connCompVertsStrict[iComp].empty())
-        continue;
-      else if (connCompVertsStrict[iComp].size() == 1)
-        connCompDistMatrices[iComp].alloc(1,1,0);
-      else
-      {
-        Matrix &distMatConnComp = connCompDistMatrices[iComp];
-        //this->extractSubDistMat(distMatConnComp, connCompVertsStrict[iComp], distMat);
-      }
-    }
-
     Matrix globalWeightedMatrix;
     this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
                                     centroidsDistMat,

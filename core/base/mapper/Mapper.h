@@ -998,13 +998,13 @@ centroidId[el]);
             delta = 0;
         }
         //std::cout << delta << " + " << embedCentroids[iDim][idCentroid] << "    --->  " << idCentroid << "," << outputConnComp[iPt] << std::endl;
-        float newCoord = delta + embedCentroids[iDim][idComp];
+        float newCoord = delta;// + embedCentroids[iDim][idComp];
         //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
         //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
         outputPointsCoords[3*iPt+iDim] = newCoord;
       }
     }
-    /*
+    /* Pour faire coller les barycentres à la projection globale nouvellement calculée
     for (size_t iComp = 0; iComp < compBaryCoords.size(); iComp++)
     {
       size_t iVert = centroidId[iComp];
@@ -1015,8 +1015,8 @@ centroidId[el]);
         compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
       }
     }*/
-    printErr("RETURNING YEAH\n");
-    return 0;
+    printErr("NOT RETURNING YEAH\n");
+    //return 0;
   }
 >>>>>>> dad4053f2 (WIP)
   // 7. get an embedding for all vertices of each connected component
@@ -1036,6 +1036,8 @@ centroidId[el]);
         outputPointsCoords[3 * connCompVertsStrict[i][0] + k]
           = compBaryCoords[i][k];
       }
+      for (size_t j = 0; j < dim; j++)
+        compSpecialCoeffToSave_[3*connCompVertsStrict[i][0]+j] = 0;
       continue;
     }
     //TODO dilatation en fait coefficient adaptable si lock sur centroide...
@@ -1076,7 +1078,7 @@ centroidId[el]);
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
       for (size_t iPtComp = 0; iPtComp < embedConnComp[j].size(); iPtComp++)
       {
-        auto &coords = embedConnComp[j][iPtComp];
+        auto &coords = outputPointsCoords[3*connCompVertsStrict[i][iPtComp]+j];//embedConnComp[j][iPtComp];
         compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] = coords*maxDistNeigh/compDiag;
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
@@ -1089,13 +1091,15 @@ centroidId[el]);
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
       for(size_t k = 0; k < embedConnComp.size(); ++k) {
-        if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
+        
+        /*if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = embedConnComp[k][j];
 
           // connCompVertsStrict[i][j] : global id of the jth point in the ith
           // connected component
-        } else { // in case the value is infinite, we take the centroid
+        } else*/
+        if (!std::isfinite(outputPointsCoords[3*connCompVertsStrict[i][j]+k])) { // in case the value is infinite, we take the centroid
                  // coordinate
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = compBaryCoords[i][k]; // = embedCentroids[k][i]

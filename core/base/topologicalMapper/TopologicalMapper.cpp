@@ -99,7 +99,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       for (int vertId : compBig)
       {
         if (vertId == idBig)
-          vertIdInSmallSet = cpt;
+          vertIdInSmallSet = cpt; //TODO in small or in big, utilisé ?
         for (int k = 0; k < nDim; k++) //TODO seulement la dimension ?
           pointsBig[nDim*cpt+k] = outputCoords[nDim*vertId+k];
         cpt++;
@@ -205,7 +205,6 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
         printErr("Error with qHull module: " + std::string(e.what()));
         return -1;
       }
-
     }
 
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
@@ -218,9 +217,10 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     else
       ufPtrVector[v] = unionRepr;
     unionSet.insert(otherSet.begin(), otherSet.end());
-    //ufToSets.erase(otherRepr); // TODO vérifier que ça clear le set;
     //TODO faire des trucs;
 
+    ufPtrVector[u] = unionRepr; //TODO plutôt inutile
+    ufPtrVector[v] = unionRepr;
 
     // We change the coordinates
     float minXUnion = 1e50, maxXOther = -1e50;
@@ -233,7 +233,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     float shift = maxXOther + edgeCost - minXUnion;
     for (size_t id : unionSet)
       outputCoords[nDim*id] += shift;
-
+    ufToSets.erase(otherRepr); // TODO vérifier que ça clear le set;
     //ufToSets[otherRepr] = unionSet;
   }
 

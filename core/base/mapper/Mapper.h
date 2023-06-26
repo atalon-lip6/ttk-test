@@ -1,4 +1,4 @@
-/// \ingroup base
+// \ingroup base
 /// \class ttk::Mapper
 /// \author (mainly) Pierre Guillou <pierre.guillou@lip6.fr>
 /// \author (a bit) Alexandre Talon <alexandre.talon@lip6.fr>
@@ -737,7 +737,7 @@ int ttk::Mapper::reEmbedMapper(
 
   compSpecialCoeffToSave_.clear();
   compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), 0.0);
-  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size());
+  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size())  << std::endl;
 
   // 1. extract vertices in component edges. A vertex is considered in a bucket
   // if it lies insied or if it is the extremity of an edge which crosses that
@@ -900,7 +900,7 @@ centroidId[el]);
   this->printMsg(". Re-embedded centroids", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::PERFORMANCE);
-
+  return 0;
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.

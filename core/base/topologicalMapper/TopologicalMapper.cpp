@@ -333,7 +333,7 @@ void getConvexHull(const std::vector<float>& coords, size_t dim, std::vector<siz
   size_t n = coords.size()/dim;
   for (size_t i = 1; i < n; i++)
   {
-    size_t iPt = nDim*i;
+    size_t iPt = dim*i;
     for (size_t k = 0; k < dim; k++)
     {
       if (coords[iPt+k] < coords[dim*idMins[k]+k])
@@ -342,12 +342,6 @@ void getConvexHull(const std::vector<float>& coords, size_t dim, std::vector<siz
         idMaxs[k] = iPt;
 
     }
-    if (coords[iPt] < coords[dim*idMinX])
-      idMinX = iPt;
-    if (coords[iPt] > coords[
-
-
-
   }
   if (dim == 3)
   {

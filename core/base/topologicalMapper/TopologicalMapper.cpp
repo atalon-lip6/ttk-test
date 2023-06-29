@@ -7,6 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include "libqhullcpp/Qhull.h"
+#include <cmath>
 
 using namespace std;
 
@@ -30,8 +31,8 @@ ttk::TopologicalMapper::~TopologicalMapper() = default;
     // Put c_uv distance between the two components
 
 
-//int ttk::TopologicalMapper::execute(const std::vector<std::vector<float>> &distMatrix, unsigned int nDim, const triangulationType &triangulation, std::vector<std::vector<float>> &outputCoords) const
-int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const
+//int ttk::TopologicalMapper::execute(const std::vector<std::vector<float>> &distMatrix, unsigned int dim, const triangulationType &triangulation, std::vector<std::vector<float>> &outputCoords) const
+int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const
 {
 #ifndef TTK_ENABLE_QHULL
   printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
@@ -41,10 +42,23 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
 #endif
 
   size_t n = distMatrix.size();
-  size_t nDim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
+  size_t dim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
+  std::vector<float> outputVect(n*dim);
+  for (size_t i = 0; i < inputPoints.size(); i++)
+  {
+    outputVect[i] = inputPoints[i];
+    //outputCoords[i] = inputPoints[i];
+  }
+  rotatePolygon(outputVect, dim, outputVect.data(), M_PI/2);
+  for (size_t i = 0; i < inputPoints.size(); i++)
+  {
+    outputCoords[i] = outputVect[i];
+  }
+  return 0;
+
   //outputCoords.resize(n);
   //for (size_t i = 0; i < n; i++)
-  //  outputCoords[i].resize(nDim, 0);
+  //  outputCoords[i].resize(dim, 0);
 
   std::priority_queue<std::pair<float, std::pair<size_t, size_t>>> edgeHeap; // We store elements as (c_uv,(u,v))
     //TODO reverse order
@@ -71,7 +85,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     //std::cerr << "item " << i << " ==> " << ufPtrVector[i] << std::endl;
   }
 
-  for (size_t i = 0; i < nDim*n; i++)
+  for (size_t i = 0; i < dim*n; i++)
     outputCoords[i] = 0;
 
 
@@ -106,7 +120,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     {
       cout << "nBIg = " << nBig << "    and     nSMall = " << nSmall << endl;
       float xMax = -DBL_MAX; //TODO include geometry?
-      std::vector<double> pointsBig(nDim*(std::max((size_t)3,nBig)));
+      std::vector<double> pointsBig(dim*(std::max((size_t)3,nBig)));
       std::cout << "nb pts = " << nBig << endl;
       int vertIdInSmallSet = -1;
       int cpt = 0;
@@ -114,10 +128,10 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       {
         if (vertId == idBig)
           vertIdInSmallSet = cpt; //TODO in small or in big, utilisé ?
-        for (int k = 0; k < nDim; k++) //TODO seulement la dimension ?
+        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
         {
-          cout << outputCoords[nDim*vertId+k] << " ";
-          pointsBig[nDim*cpt+k] = outputCoords[nDim*vertId+k];
+          cout << outputCoords[dim*vertId+k] << " ";
+          pointsBig[dim*cpt+k] = outputCoords[dim*vertId+k];
         }
         cout << "      WAS " << vertId << endl;
         cpt++;
@@ -125,17 +139,17 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       if (compBig.size() <= 2)
       {
         cout << "DOING STUFF\n";
-        pointsBig[nDim] = 0.34;
-        pointsBig[nDim+1] = 0.13;
-        if (nDim == 3)
-          pointsBig[nDim+2] = 0.07;
+        pointsBig[dim] = 0.34;
+        pointsBig[dim+1] = 0.13;
+        if (dim == 3)
+          pointsBig[dim+2] = 0.07;
 
         if (compBig.size() == 1)
         {
-          pointsBig[2*nDim] = 0.5;
-          pointsBig[2*nDim+1] = 0.34;
-          if (nDim == 3)
-            pointsBig[2*nDim+2] = 0.23;
+          pointsBig[2*dim] = 0.5;
+          pointsBig[2*dim+1] = 0.34;
+          if (dim == 3)
+            pointsBig[2*dim+2] = 0.23;
         }
       }
 
@@ -144,7 +158,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       orgQhull::Qhull qhullBig;
       try
       {
-        qhullBig.runQhull(qHullFooStr, nDim, std::max((size_t)3, nBig), pointsBig.data(), qHullFooStr);
+        qhullBig.runQhull(qHullFooStr, dim, std::max((size_t)3, nBig), pointsBig.data(), qHullFooStr);
 
         {
           std::cout << "qhullBig.hullDimension(): " << qhullBig.hullDimension() << "\n";
@@ -158,7 +172,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
         cout << endl;
         for (int i = 0; i < std::max((size_t)3, nBig); i++)
         {
-          for (int k = 0; k < nDim; k++)
+          for (int k = 0; k < dim; k++)
             cout << pointsBig[3*i+k] << " ";
           cout << endl;
         }
@@ -177,9 +191,9 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
 
 
       for (size_t eltBig : compBig) //TODO tester chaque pt enveloppe
-        xMax = std::max(xMax, outputCoords[nDim*eltBig]);
+        xMax = std::max(xMax, outputCoords[dim*eltBig]);
 
-      outputCoords[nDim*idSmall] = xMax+edgeCost;
+      outputCoords[dim*idSmall] = xMax+edgeCost;
     }
     */
 
@@ -195,13 +209,13 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       size_t idCur = idSet == 0 ? idSmall:idBig;
       std::set<size_t> &curComp = idCur == u ? compU:compV;
       size_t nCur = curComp.size();
-      curPointsSet.resize(nCur*nDim);
+      curPointsSet.resize(nCur*dim);
 
       size_t cptCur = 0;
       for (int vertId : curComp)
       {
-        for (int k = 0; k < nDim; k++) //TODO seulement la dimension ?
-          curPointsSet[nDim*cptCur+k] = outputCoords[nDim*vertId+k];
+        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
+          curPointsSet[dim*cptCur+k] = outputCoords[dim*vertId+k];
         cptCur++;
       }
 
@@ -209,7 +223,7 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       try
       {
         orgQhull::Qhull qhullCur;
-        qhullCur.runQhull(qHullFooStr, nDim, nCur, curPointsSet.data(), qHullFooStr);
+        qhullCur.runQhull(qHullFooStr, dim, nCur, curPointsSet.data(), qHullFooStr);
 
         //for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
         {
@@ -234,23 +248,23 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     //else // Each component has at least two points
     {
       std::vector<double> pointsBig, pointsSmall;
-      pointsBig.resize(nBig*nDim); //TODO reserve before looop... scope
-      pointsSmall.resize(nSmall*nDim);
+      pointsBig.resize(nBig*dim); //TODO reserve before looop... scope
+      pointsSmall.resize(nSmall*dim);
       char qHullFooStr[3] = "QJ";
 
       size_t cptBig = 0;
       for (int vertId : compBig)
       {
-        for (int k = 0; k < nDim; k++) //TODO seulement la dimension ?
-          pointsBig[nDim*cptBig+k] = outputCoords[nDim*vertId+k];
+        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
+          pointsBig[dim*cptBig+k] = outputCoords[dim*vertId+k];
         cptBig++;
 
       }
       size_t cptSMall = 0;
       for (int vertId : compSmall)
       {
-        for (int k = 0; k < nDim; k++) //TODO seulement la dimension ?
-          pointsSmall[nDim*cptSMall+k] = outputCoords[nDim*vertId+k];
+        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
+          pointsSmall[dim*cptSMall+k] = outputCoords[dim*vertId+k];
         cptSMall++;
 
       }
@@ -268,8 +282,8 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
       {
         orgQhull::Qhull qhullBig, qhullSmall;
         std::cout << "nb ptsU, nbPtsV = " << nBig << "," << nSmall << endl;
-        qhullBig.runQhull(qHullFooStr, nDim, nBig, pointsBig.data(), qHullFooStr);
-        qhullSmall.runQhull(qHullFooStr, nDim, nSmall, pointsSmall.data(), qHullFooStr);
+        qhullBig.runQhull(qHullFooStr, dim, nBig, pointsBig.data(), qHullFooStr);
+        qhullSmall.runQhull(qHullFooStr, dim, nSmall, pointsSmall.data(), qHullFooStr);
 
         //for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
         {
@@ -304,15 +318,15 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
     // We change the coordinates
     float minXUnion = 1e50, maxXOther = -1e50;
     for (size_t id : unionSet)
-      minXUnion = std::min(minXUnion, outputCoords[nDim*id]);
+      minXUnion = std::min(minXUnion, outputCoords[dim*id]);
 
     //auto it = otherSet.begin(;
     for (size_t id : otherSet)
-      maxXOther = std::max(maxXOther, outputCoords[nDim*id]);
+      maxXOther = std::max(maxXOther, outputCoords[dim*id]);
 
     float shift = maxXOther + edgeCost - minXUnion;
     for (size_t id : unionSet)
-      outputCoords[nDim*id] += shift;
+      outputCoords[dim*id] += shift;
     std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
     ufToSets.erase(otherRepr); // TODO vérifier que ça clear le set;
     //ufToSets[otherRepr] = unionSet;
@@ -321,6 +335,23 @@ int ttk::TopologicalMapper::execute(float* outputCoords, const std::vector<std::
   return 0;
 }
 
+void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t dim, float* centerCoords, const float angle) const
+{
+  //return;
+  float xCenter = centerCoords[0], yCenter = centerCoords[1];
+  size_t nbPoint = coords.size()/dim;
+  std::cout << "center = " << xCenter << "," << yCenter << std::endl;
+  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  {
+    float &x = coords[iPt*dim], &y = coords[iPt*dim+1];
+    float xNew, yNew;
+    std::cout << "point = " << x << "," << y << std::endl;
+    xNew = (x-xCenter)*cos(angle)-(y-yCenter)*sin(angle)+xCenter;
+    yNew = (y-yCenter)*cos(angle)+(x-xCenter)*sin(angle)+yCenter;
+    x = xNew;
+    y = yNew;
+  }
+}
 
 void getConvexHull(const std::vector<float>& coords, size_t dim, std::vector<size_t> &idsInHull)
 {

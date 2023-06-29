@@ -33,6 +33,7 @@ static void extractInputMatrix(//ttk::Mapper::Matrix &inputMatrix,
   if(pd == nullptr) {
     return;
   }
+  return;
 
   if(useRegexp) {
     // select all input columns whose name is matching the regexp
@@ -162,7 +163,9 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   size_t nbPoint = input->GetNumberOfRows();
   vtkNew<vtkPoints> outputPoints{};
   outputPoints->SetNumberOfPoints(nbPoint);
+  std::cout << "IL Y A " << nbPoint << " POINTS :D\n";
   outputPoints->GetData()->Fill(0.0);
+  //outputPoints->SetData(input->GetPointData);
 
   std::vector<std::array<float, 3>> compBaryCoords{};
 
@@ -171,6 +174,26 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     distMatrix[i].resize(nbPoint);
   int status;
 
+
+  /*auto *pts = input->GetRowData();
+  vtkDataArray* ScalarFields = pts->GetScalars();
+  size_t dim = ScalarFields.size();
+  vector<double> inputCoords(dim*nbPoint);
+  std::vector<vtkAbstractArray *> arrays{};
+  for(const auto &s : ScalarFields) {
+    arrays.push_back(input->GetColumnByName(s.data()));
+  }
+  */
+  char colNames[2][2] = {"x", "y"};
+  vtkDoubleArray *colX = vtkDoubleArray::SafeDownCast(input->GetColumnByName("x")),
+                   *colY = vtkDoubleArray::SafeDownCast(input->GetColumnByName("y"));
+      //inputMatrix[i*dim] = (arrays[j]->GetVariantValue(i).ToDouble());
+  std::vector<double> inputCoords(nbPoint*2);
+  for (size_t i = 0; i < nbPoint; i++)
+  {
+    inputCoords[2*i] = colX->GetValue(i);
+    inputCoords[2*i+1] = colY->GetValue(i);
+  }
   ttk::Mapper::Matrix inputDistMat{};
   ttk::Timer tm{};
   extractInputMatrix(//inputDistMat,
@@ -184,20 +207,21 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  this->execute(ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
+  //if (false)
+  this->execute(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
   std::string nameCoords[3] = {"x", "y", "z"};
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 2; i++)
   {
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(nbPoint);
     col->SetName(nameCoords[i].c_str());
     for (int j = 0; j < nbPoint; j++)
-      col->SetTuple1(j, ttkUtils::GetPointer<float>(outputPoints->GetData())[3*j+i]);
+    {
+      //std::cout << j  << " => " << outputPoints->GetData()[3*j+i];
+      col->SetTuple1(j, ttkUtils::GetPointer<float>(outputPoints->GetData())[2*j+i]);
+    }
 
     outputNodes->AddColumn(col);
-
-
-
   }
   //outputNodes->GetPointData()->SetNumberOfPoints(nbPoint);
   //outputNodes->SetPoints(outputPoints);

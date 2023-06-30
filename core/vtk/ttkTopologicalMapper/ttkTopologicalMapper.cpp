@@ -23,7 +23,7 @@
 vtkStandardNewMacro(ttkTopologicalMapper);
 
 
-static void extractInputMatrix(//ttk::Mapper::Matrix &inputMatrix,
+static void extractInputMatrix(ttk::Mapper::Matrix &inputMatrix,
                                std::vector<std::vector<float>> &distMatrix,
                                std::vector<std::string> &arrayNames,
                                vtkDataSetAttributes *const pd,
@@ -33,7 +33,6 @@ static void extractInputMatrix(//ttk::Mapper::Matrix &inputMatrix,
   if(pd == nullptr) {
     return;
   }
-  return;
 
   if(useRegexp) {
     // select all input columns whose name is matching the regexp
@@ -68,10 +67,10 @@ static void extractInputMatrix(//ttk::Mapper::Matrix &inputMatrix,
     arrays[i] = pd->GetArray(arrayNames[i].data());
   }
 
-  //inputMatrix.alloc(pd->GetNumberOfTuples(), arrayNames.size());
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(nThreads)
-#endif // TTK_ENABLE_OPENMP
+  inputMatrix.alloc(pd->GetNumberOfTuples(), arrayNames.size());
+//#ifdef TTK_ENABLE_OPENMP
+//#pragma omp parallel for num_threads(nThreads)
+//#endif // TTK_ENABLE_OPENMP
   //for(size_t i = 0; i < inputMatrix.nRows(); ++i) {
     //for(size_t j = 0; j < inputMatrix.nCols(); ++j) {
   for(size_t i = 0; i < distMatrix.size(); ++i) {
@@ -196,7 +195,7 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   }
   ttk::Mapper::Matrix inputDistMat{};
   ttk::Timer tm{};
-  extractInputMatrix(//inputDistMat,
+  extractInputMatrix(inputDistMat,
                      distMatrix, this->DistanceMatrix,
       input->GetRowData(), this->DistanceMatrixRegexp,
       this->threadNumber_, this->SelectMatrixWithRegexp);
@@ -206,7 +205,6 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Invalid input distance matrix");
     return 0;
   }
-
   //if (false)
   this->execute(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
   std::string nameCoords[3] = {"x", "y", "z"};

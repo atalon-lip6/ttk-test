@@ -64,14 +64,17 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     //TODO reverse order
 
 
+  std::vector<std::pair<float, std::pair<size_t, size_t>>> edgeHeapVect;
   for (int u1 = 0; u1 < n; u1++)
   {
     for (int u2 = u1+1; u2 < n; u2++)
     {
+      edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
       edgeHeap.push({distMatrix[u1][u2], {u1,u2}});
 
     }
   }
+  sort (edgeHeapVect.begin(), edgeHeapVect.end());
 
 
   std::map<UnionFind*, std::set<size_t>> ufToSets;
@@ -84,23 +87,32 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     ufToSets[ufPtrVector[i]].insert(i);
     //std::cerr << "item " << i << " ==> " << ufPtrVector[i] << std::endl;
   }
-
-  for (size_t i = 0; i < dim*n; i++)
-    outputCoords[i] = 0;
-
-
-  while (!edgeHeap.empty())
+  for (auto& x : ufToSets)
   {
-    const auto &elt = edgeHeap.top();
-    edgeHeap.pop();
+    for (auto &y : x.second)
+      cout << y;
+    cout << endl;
+  }
+  cout << " FINI LISTE \n";
+
+  //for (size_t i = 0; i < dim*n; i++)
+  //  outputCoords[i] = 0;
+
+
+
+  //while (!edgeHeap.empty())
+  for (const auto &elt : edgeHeapVect)
+  {
+
+    //const auto &elt = edgeHeap.top();
+    //edgeHeap.pop();
     float edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
 
+    std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << endl;
     UnionFind *reprU = ufPtrVector[u]->find();
     UnionFind *reprV = ufPtrVector[v]->find();
-    //ufPtrVector[u] = reprU;
-    //ufPtrVector[v] = reprV;
     //std::cerr << "u,reprU = " << u << "," <<reprU << " AND v,reprV = " << v << "," << reprV << std::endl;
     if (reprU == reprV) // Already in the same component
     {
@@ -115,6 +127,7 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     std::cout << "\nComponent2 = ";
     for (auto x : compV)
       std::cout << x << " ";
+    cout << "\n FIN DES COMPOSANTES\n";
 
     size_t idSmall = compU.size() < compV.size() ? u:v;
     size_t idBig = idSmall == u ? v:u;
@@ -142,15 +155,18 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
       {
         for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
         {
-          //curPointsSet[dim*cptCur+k] = outputCoords[dim*vertId+k];
-          curPointsSet[dim*cptCur+k] = inputPoints[dim*vertId+k];
+          curPointsSet[dim*cptCur+k] = outputCoords[dim*vertId+k];
+          //curPointsSet[dim*cptCur+k] = inputPoints[dim*vertId+k];
         }
-        cout << vertId << " = > " << inputPoints[dim*vertId] << "," << inputPoints[dim*vertId+1] << endl;
         idsInSetToGlobalIds[cptCur] = vertId;
         cptCur++;
       }
+      for (auto x : curPointsSet)
+        cout << x << " ";
+      cout << "\nFIN DES COORDS\n";
 
       getConvexHull(curPointsSet, dim, idsInHullSets[idSet]);
+      cout << endl;
       std::cout << "\n\nConvex hull : ";
       for (size_t &x : idsInHullSets[idSet])
       {
@@ -159,87 +175,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
       }
         std::cout << std::endl;
       continue;
-      char qHullFooStr[1] = "";
-      try
-      {
-        orgQhull::Qhull qhullCur;
-        qhullCur.runQhull(qHullFooStr, dim, nCur, curPointsSet.data(), qHullFooStr);
-
-        //for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
-        {
-          std::cout << "qhullBig.hullDimension(): " << qhullCur.hullDimension() << "\n";
-          std::cout << "qhullBig.volume(): " << qhullCur.volume() << "\n";
-          std::cout << "qhullBig.area(): " << qhullCur.area() << "\n";
-        }
-
-
-      }
-      catch (orgQhull::QhullError &e)
-      {
-        printErr("Error with qHull module: " + std::string(e.what()));
-        return -1;
-      }
-    }
-
-
-    //else // Each component has at least two points
-    /*
-    {
-      std::vector<double> pointsBig, pointsSmall;
-      pointsBig.resize(nBig*dim); //TODO reserve before looop... scope
-      pointsSmall.resize(nSmall*dim);
-      char qHullFooStr[3] = "QJ";
-
-      size_t cptBig = 0;
-      for (int vertId : compBig)
-      {
-        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
-          pointsBig[dim*cptBig+k] = outputCoords[dim*vertId+k];
-        cptBig++;
-
-      }
-      size_t cptSMall = 0;
-      for (int vertId : compSmall)
-      {
-        for (int k = 0; k < dim; k++) //TODO seulement la dimension ?
-          pointsSmall[dim*cptSMall+k] = outputCoords[dim*vertId+k];
-        cptSMall++;
-
-      }
-
-       TODO voir ça !!!!
-      for (size_t idBig : compBig)
-        for (float& coord : outputCoords[idBig])
-          pointsBig.reserve(coord);
-      for (size_t idSmall : compSmall)
-        for (float& coord : outputCoords[idSmall])
-          pointsSmall.reserve(coord);
-
-
-      try
-      {
-        orgQhull::Qhull qhullBig, qhullSmall;
-        std::cout << "nb ptsU, nbPtsV = " << nBig << "," << nSmall << endl;
-        qhullBig.runQhull(qHullFooStr, dim, nBig, pointsBig.data(), qHullFooStr);
-        qhullSmall.runQhull(qHullFooStr, dim, nSmall, pointsSmall.data(), qHullFooStr);
-
-        //for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
-        {
-          std::cout << "qhullBig.hullDimension(): " << qhullBig.hullDimension() << "\n";
-          std::cout << "qhullBig.volume(): " << qhullBig.volume() << "\n";
-          std::cout << "qhullBig.area(): " << qhullBig.area() << "\n";
-        }
-
-
-      }
-      catch (orgQhull::QhullError &e)
-      {
-        printErr("Error with qHull module: " + std::string(e.what()));
-        return -1;
-      }
-
-    }
-    */
 
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -254,6 +189,11 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     ufPtrVector[u] = unionRepr;
     ufPtrVector[v] = unionRepr;
 
+
+    cout << " Resulting component = ";
+    for (auto x : unionSet)
+      cout << x << " ";
+    cout << "=======================\n";
     // We change the coordinates
     float minXUnion = 1e50, maxXOther = -1e50;
     for (size_t id : unionSet)
@@ -272,6 +212,19 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
   }
 
   return 0;
+}
+
+void ttk::TopologicalMapper::computeBarycenter(const std::vector<double> &coords, size_t dim, std::vector<double> &baryCoords) const
+{
+  size_t nbPoint = coords.size()/dim;
+  baryCoords.resize(dim, 0);
+  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  {
+    for (size_t k = 0; k < dim; k++)
+      baryCoords[k]+=coords[iPt*dim+k];
+  }
+  for (size_t k = 0; k < dim; k++)
+    baryCoords[k] /= nbPoint;
 }
 
 void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t dim, float* centerCoords, const float angle) const
@@ -294,9 +247,10 @@ void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t di
 
 void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<size_t> &idsInHull) const
 {
-  for (auto x : coords)
+  /*for (auto x : coords)
     cout << x << endl;
   cout << "\n-------------\n";
+  */
   //Test if all points the same
   //Test if all points aligned
   //Test if all points coplanar
@@ -318,69 +272,70 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
 
   // Testing if all points are colinear
 
+  double dirVect[2] = {coords[2] - coords[0], coords[3] - coords[1]};
+  bool areColinear = true;
+
+  if (dirVect[0] < 1e-5)
+    dirVect[0] =  1;
+  if (dirVect[1] < 1e-5)
+    dirVect[1] =  1;
+
+  double idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
+  double idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
+
+  for (size_t iPt = 2; iPt < nbPoint; iPt++)
   {
-    double dirVect[2] = {coords[2] - coords[0], coords[3] - coords[1]};
-    bool areColinear = true;
-
-    if (dirVect[0] < 1e-5)
-      dirVect[0] =  1;
-    if (dirVect[1] < 1e-5)
-      dirVect[1] =  1;
-
-    double idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
-    double idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
-
-    for (size_t iPt = 2; iPt < nbPoint; iPt++)
+    double curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
+    double alpha0 = curVect[0]/dirVect[0], alpha1 = curVect[1]/dirVect[1];
+    if (abs(alpha0-alpha1) > 1e-5)
     {
-      double curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
-      double alpha0 = curVect[0]/dirVect[0], alpha1 = curVect[1]/dirVect[1];
-      if (abs(alpha0-alpha1) > 1e-5)
-      {
-        areColinear = false;
-        break;
-      }
-
-      if (coords[2*iPt] < coords[idMins[0]])
-        idMins[0] = iPt;
-      if (coords[2*iPt+1] < coords[idMins[1]])
-        idMins[1] = iPt;
-      if (coords[2*iPt] > coords[idMaxs[0]])
-        idMaxs[0] = iPt;
-      if (coords[2*iPt+1] > coords[idMaxs[1]])
-        idMaxs[1] = iPt;
-
+      areColinear = false;
+      break;
     }
 
-    if (areColinear)
-    {
-      std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
-      if (dirVect[0] > 1e-5)
-      {
-        idsInHull.push_back(idMins[0]);
-        idsInHull.push_back(idMaxs[0]);
-      }
-      else
-      {
-        idsInHull.push_back(idMins[1]);
-        idsInHull.push_back(idMaxs[1]);
-      }
-    }
-  return;
+    if (coords[2*iPt] < coords[idMins[0]])
+      idMins[0] = iPt;
+    if (coords[2*iPt+1] < coords[idMins[1]])
+      idMins[1] = iPt;
+    if (coords[2*iPt] > coords[idMaxs[0]])
+      idMaxs[0] = iPt;
+    if (coords[2*iPt+1] > coords[idMaxs[1]])
+      idMaxs[1] = iPt;
+
   }
+
+  if (areColinear)
+  {
+    std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
+    if (dirVect[0] > 1e-5)
+    {
+      idsInHull.push_back(idMins[0]);
+      idsInHull.push_back(idMaxs[0]);
+    }
+    else
+    {
+      idsInHull.push_back(idMins[1]);
+      idsInHull.push_back(idMaxs[1]);
+    }
+    return;
+  }
+
   char qHullFooStr[1] = "";
   try
   {
     orgQhull::Qhull qhullCur;
     qhullCur.runQhull(qHullFooStr, dim, nbPoint, coords.data(), qHullFooStr);
     for (auto u : qhullCur.vertexList())
-      idsInHull.push_back(u.id());
+      idsInHull.push_back(u.id()-1);
 
-    //for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
+    /*
+    for (orgQhull::Qhull &qhull : {qhullBig, qhullSmall})
     {
       std::cout << "qhullBig.hullDimension(): " << qhullCur.hullDimension() << "\n";
       std::cout << "qhullBig.volume(): " << qhullCur.volume() << "\n";
       std::cout << "qhullBig.area(): " << qhullCur.area() << "\n";
     }
+    */
 
 
   }

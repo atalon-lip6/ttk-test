@@ -174,7 +174,8 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
         std::cout << x << " ";
       }
         std::cout << std::endl;
-      continue;
+
+
 
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -194,6 +195,8 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     for (auto x : unionSet)
       cout << x << " ";
     cout << "=======================\n";
+    continue;
+
     // We change the coordinates
     float minXUnion = 1e50, maxXOther = -1e50;
     for (size_t id : unionSet)

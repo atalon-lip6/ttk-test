@@ -11,6 +11,33 @@
 
 using namespace std;
 
+inline float compute_dist2(const float ptA[], const float ptB[])
+{
+  float dx = ptB[0]-ptA[0], dy = ptB[1]-ptA[1];
+
+  return dx*dx + dy*dy;
+}
+
+inline void computeBarycenter(const std::vector<double> &coords, size_t dim, float baryCoords[])
+{
+  size_t nbPoint = coords.size()/dim;
+  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  {
+    for (size_t k = 0; k < dim; k++)
+      baryCoords[k]+=coords[iPt*dim+k];
+  }
+  for (size_t k = 0; k < dim; k++)
+    baryCoords[k] /= nbPoint;
+}
+
+inline void computeUnitVector(float* const coordOrig, float* const coordDest, float* const coordVect)
+{
+  float tmp[2] = {coordDest[0] - coordOrig[0], coordDest[1] - coordOrig[1]};
+  float dist = sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1]);
+  coordVect[0] = tmp[0]/dist;
+  coordVect[1] = tmp[1]/dist;
+}
+
 ttk::TopologicalMapper::TopologicalMapper() {
   // inherited from Debug: prefix will be printed at the beginning of every msg
   this->setDebugMsgPrefix("TopologicalMapper");
@@ -95,14 +122,15 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
   }
   cout << " FINI LISTE \n";
 
-  //for (size_t i = 0; i < dim*n; i++)
-  //  outputCoords[i] = 0;
+  for (size_t i = 0; i < dim*n; i++)
+    outputCoords[i] = 0;
 
 
 
   //while (!edgeHeap.empty())
   for (const auto &elt : edgeHeapVect)
   {
+    cout << endl << endl;
 
     //const auto &elt = edgeHeap.top();
     //edgeHeap.pop();
@@ -136,14 +164,16 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     size_t nBig = compBig.size();
     size_t nSmall = compSmall.size();
 
+    size_t idEdgeVert[2] = {idSmall == u ? u:v, idSmall == u ? v:u};
     std::vector<double> pointsSets[2];
-    std::vector<double> &pointsBig = pointsSets[1], &pointsSmall = pointsSets[0];
     std::vector<size_t> idsInHullSets[2];
-    std::vector<size_t> &idsInHullSmall = idsInHullSets[0], idsInHullBig = idsInHullSets[1];
+    size_t idChosenVerts[2];
 
     for (int idSet = 0; idSet < 2; idSet++)
     {
       std::vector<double> &curPointsSet = pointsSets[idSet];
+      std::vector<size_t> &curHullVerts = idsInHullSets[idSet];
+      size_t &idChosenVert = idChosenVerts[idSet];
       size_t idCur = idSet == 0 ? idSmall:idBig;
       std::set<size_t> &curComp = idCur == u ? compU:compV;
       size_t nCur = curComp.size();
@@ -165,7 +195,17 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
         cout << x << " ";
       cout << "\nFIN DES COORDS\n";
 
-      getConvexHull(curPointsSet, dim, idsInHullSets[idSet]);
+      getConvexHull(curPointsSet, dim, curHullVerts);
+      idChosenVert = curHullVerts[0];
+      float* coordEdgeVert = &outputCoords[idChosenVert];
+      for (size_t vert : curHullVerts)
+      {
+        float* coordVert = &outputCoords[dim*vert];
+        float dist2 = compute_dist2(coordVert, coordEdgeVert);
+        if (dist2 < compute_dist2(&outputCoords[idChosenVert], coordEdgeVert))
+          idChosenVert = vert;
+      }
+
       cout << endl;
       std::cout << "\n\nConvex hull : ";
       for (size_t &x : idsInHullSets[idSet])
@@ -173,9 +213,55 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
         x = idsInSetToGlobalIds[x];
         std::cout << x << " ";
       }
-        std::cout << std::endl;
+      std::cout << std::endl;
 
+    }
 
+    std::vector<size_t> &idsInHullSmall = idsInHullSets[0], idsInHullBig = idsInHullSets[1];
+    std::vector<double> &pointsBig = pointsSets[1], &pointsSmall = pointsSets[0];
+    size_t sizeBigHull = idsInHullSets[1].size();//idsInHullBig.size();;
+    std::vector<double> coordsBigHull(sizeBigHull*2);
+    for (size_t iHull = 0; iHull < sizeBigHull; iHull++)
+    {
+      size_t vert = idsInHullBig[iHull];
+      coordsBigHull[iHull*2] = outputCoords[vert*dim];
+      coordsBigHull[iHull*2+1] = outputCoords[vert*dim+1];
+    }
+    size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
+    float coordsCentreBig[2];
+    computeBarycenter(coordsBigHull, 2, coordsCentreBig);
+    float unitCentreBigVect[2] = {outputCoords[idChosenBig*dim] - outputCoords[dim*idChosenBig], outputCoords[idChosenBig*dim+1] - outputCoords[dim*idChosenBig+1]};
+
+    float goalCoordChosenSmall[2] = {outputCoords[idChosenBig*dim]+edgeCost*unitCentreBigVect[0], outputCoords[idChosenBig*dim+1]+edgeCost*unitCentreBigVect[1]};
+    cout << "sizeBig = " << sizeBigHull << " and " << compBig.size() << endl;
+    if (sizeBigHull == 1)
+    {
+      cout << "edge cost = " << edgeCost << endl;
+      goalCoordChosenSmall[0] = outputCoords[idChosenBig*dim]+edgeCost;
+      goalCoordChosenSmall[1] = outputCoords[idChosenBig*dim+1];
+    }
+    float smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall*dim], goalCoordChosenSmall[1] - outputCoords[idChosenSmall*dim+1]};
+
+    //float angle
+    for (size_t curIdSmall : compSmall)
+    {
+      std::cout << "pointSmall : " << outputCoords[curIdSmall*dim] << "," << outputCoords[curIdSmall*dim+1] << endl;
+      if (curIdSmall == idChosenSmall)
+        cout << "\t\t=> CHOSEN small" << endl;
+      outputCoords[curIdSmall*dim] -= smallCompMoveVect[0];
+      outputCoords[curIdSmall*dim+1] -= smallCompMoveVect[1];
+    }
+    std::cout << "Goal coordinates = " << goalCoordChosenSmall[0] << "," << goalCoordChosenSmall[1] << endl;
+    std::cout << "Moving vector coordinates = " << smallCompMoveVect[0] << "," << smallCompMoveVect[1] << endl;
+
+    for (size_t curIdBig : compBig)
+    {
+      std::cout << "pointBig : " << outputCoords[curIdBig*dim] << "," << outputCoords[curIdBig*dim+1] << endl;
+      if (curIdBig == idChosenBig)
+        cout << "\t\t=> CHOSEN big" << endl;
+    }
+
+    cout << "barycenter = " << coordsCentreBig[0] << "," << coordsCentreBig[1] << endl;
 
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -197,6 +283,14 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     cout << "=======================\n";
     continue;
 
+
+    float centreBig[2], vertBig[2], centreSmall[2], vertSmall[2];
+
+
+    float unitVectBig[2]; //Unit vector from the center of the polygon to the chosen vertex in the convex hull.
+    computeUnitVector(centreBig, vertBig, unitVectBig);
+
+
     // We change the coordinates
     float minXUnion = 1e50, maxXOther = -1e50;
     for (size_t id : unionSet)
@@ -217,19 +311,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
   return 0;
 }
 
-void ttk::TopologicalMapper::computeBarycenter(const std::vector<double> &coords, size_t dim, std::vector<double> &baryCoords) const
-{
-  size_t nbPoint = coords.size()/dim;
-  baryCoords.resize(dim, 0);
-  for (size_t iPt = 0; iPt < nbPoint; iPt++)
-  {
-    for (size_t k = 0; k < dim; k++)
-      baryCoords[k]+=coords[iPt*dim+k];
-  }
-  for (size_t k = 0; k < dim; k++)
-    baryCoords[k] /= nbPoint;
-}
-
 void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t dim, float* centerCoords, const float angle) const
 {
   //return;
@@ -247,6 +328,7 @@ void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t di
     y = yNew;
   }
 }
+
 
 void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<size_t> &idsInHull) const
 {
@@ -286,10 +368,12 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
   double idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
   double idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
 
+  cout << dirVect[0] << "   mmm   " << dirVect[1] << endl;
   for (size_t iPt = 2; iPt < nbPoint; iPt++)
   {
     double curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
     double alpha0 = curVect[0]/dirVect[0], alpha1 = curVect[1]/dirVect[1];
+    cout << alpha0 << " uuu " << alpha1 << endl;
     if (abs(alpha0-alpha1) > 1e-5)
     {
       areColinear = false;
@@ -349,3 +433,5 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
   }
 
 }
+
+

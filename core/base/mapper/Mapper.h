@@ -900,7 +900,8 @@ centroidId[el]);
   this->printMsg(". Re-embedded centroids", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::PERFORMANCE);
-  return 0;
+  //return 0; //To avoid computing segmentation for faster tests.
+  
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.

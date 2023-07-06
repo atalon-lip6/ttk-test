@@ -9,6 +9,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
@@ -178,6 +179,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputNodes = vtkUnstructuredGrid::GetData(outputVector, 0);
   auto outputArcs = vtkUnstructuredGrid::GetData(outputVector, 1);
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
+  const size_t nbPoint = input->GetNumberOfPoints();
 
   if (!needWholeUpdate_)
   {
@@ -194,7 +196,6 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     outputNodes->ShallowCopy(nodesPrev_);
     outputArcs->ShallowCopy(arcsPrev_);
 
-    const size_t nbPoint = input->GetNumberOfPoints();
     vtkNew<vtkPoints> outputPoints{};
     outputPoints->SetNumberOfPoints(input->GetNumberOfPoints());
     outputPoints->GetData()->Fill(0.0);
@@ -290,6 +291,32 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
                   ttkUtils::GetPointer<float>(outputPoints->GetData()),
                   inputDistMat, ttkUtils::GetPointer<VTK_TT>(inputScalarField),
                   *static_cast<TTK_TT *>(triangulation->getData())));
+
+  //Computing the averaged elevation for the centroids.
+  std::vector<double> sumCompSf(compArcs.size());
+  std::vector<size_t> sizeComp(compArcs.size());
+  vtkNew<vtkDoubleArray> avgCentroidSf{};
+  avgCentroidSf->SetName(inputScalarField->GetName());
+  avgCentroidSf->SetNumberOfComponents(1);
+  avgCentroidSf->SetNumberOfTuples(compArcs.size());
+
+  int *connCompTab = ttkUtils::GetPointer<int>(connComp);
+  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  {
+    size_t curComp = connCompTab[iPt];
+    double val;
+    inputScalarField->GetTuple(iPt, &val);
+    sumCompSf[curComp] += val;
+    sizeComp[curComp]++;
+  }
+  for (size_t iComp = 0; iComp < compArcs.size(); iComp++)
+  {
+    double curAvg = sumCompSf[iComp]/sizeComp[iComp];
+    avgCentroidSf->SetTuple(iComp, &curAvg);
+  }
+  outputNodes->GetPointData()->AddArray(avgCentroidSf);
+
+  //TODO back up et dilatation truc les moy d'elevation ?
 
   // Backing up some date for fast update of the dilatation coefficient.
   if (this->ReEmbedMapper)

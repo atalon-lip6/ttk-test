@@ -317,6 +317,8 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   outputNodes->GetPointData()->AddArray(avgCentroidSf);
 
   //TODO back up et dilatation truc les moy d'elevation ?
+  setNodes(outputNodes, compBaryCoords, compBucketId);
+  setArcs(outputArcs, compArcs, outputNodes->GetPoints());
 
   // Backing up some date for fast update of the dilatation coefficient.
   if (this->ReEmbedMapper)
@@ -324,8 +326,6 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     float* const outputCoordsPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
     for (size_t i = 0; i < pointsCoordsBackup_.size(); i++)
       pointsCoordsBackup_[i] = outputCoordsPtr[i];
-    setNodes(outputNodes, compBaryCoords, compBucketId);
-    setArcs(outputArcs, compArcs, outputNodes->GetPoints());
     connCompPrev_->DeepCopy(connComp); // shallow semblait marcher, maiis pas de raison pour.
     bucketPrev_->DeepCopy(bucket);
     nodesPrev_->DeepCopy(outputNodes);

@@ -239,7 +239,7 @@
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="ReembedMapper"
+                                   property="ReEmbedMapper"
                                    value="1" />
         </Hints>
         <Documentation>

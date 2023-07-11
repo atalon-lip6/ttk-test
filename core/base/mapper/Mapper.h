@@ -975,6 +975,7 @@ centroidId[el]);
 
   if (AlphaCoeff > 1e-6)
   {
+    std::cout << "projecting GLOBAL !" << std::endl;
     Matrix globalWeightedMatrix;
     this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
                                     centroidsDistMat,

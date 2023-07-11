@@ -329,7 +329,7 @@ void updateNonCentroidPointsAlpha(float *outputPointsCoords,
     REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
     double DilatationCoeff{0.4};
-    double AlphaCoeff{0.1};
+    double AlphaCoeff{0.0};
 
     // Variables used to update the coordinates when the dilatation
     // coefficient is changed.
@@ -383,6 +383,8 @@ void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
 {
   printErr("Updating alpha :-)");
   Matrix globalDistMat;
+  computeGlobalWeightedDistMatrix(globalDistMat, prevCentroidDistMat_, prevCentroidId_, connCompId, highDimDistMat, nbPoint, alpha);
+  /*
   globalDistMat.alloc(nbPoint, nbPoint, 0);
   for (size_t i1 = 0; i1 < nbPoint; i1++)
   {
@@ -395,6 +397,7 @@ void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
       globalDistMat.get(i2, i1) = (1-alpha)*(highDimDistMat.get(i1,centroid1)+prevCentroidDistMat_.get(comp1, comp2)+highDimDistMat.get(i2, centroid2))+alpha*highDimDistMat.get(i1, i2);
     }
   }
+  */
     size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
     std::vector<std::vector<double>> coordsAll;
     reduceMatrix(coordsAll, globalDistMat, true, this->ReductionAlgo);
@@ -970,7 +973,7 @@ centroidId[el]);
   
 
 
-  if (true) //TODO option
+  if (AlphaCoeff > 1e-6)
   {
     Matrix globalWeightedMatrix;
     this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
@@ -1018,7 +1021,8 @@ centroidId[el]);
     printErr("NOT RETURNING YEAH\n");
     //return 0;
   }
->>>>>>> dad4053f2 (WIP)
+  else
+{
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
@@ -1048,7 +1052,7 @@ centroidId[el]);
     std::vector<std::vector<double>> embedConnComp{};
     this->extractSubDistMat(distMatConnComp, connCompVertsStrict[i], distMat);
     this->reduceMatrix(
-      embedConnComp, distMatConnComp, true, this->ReductionAlgo);
+        embedConnComp, distMatConnComp, true, this->ReductionAlgo);
     // get max distance between points in sub-distance matrix
     double compDiag{};
     for(size_t j = 0; j < distMatConnComp.nCols() - 1; ++j) {
@@ -1091,16 +1095,16 @@ centroidId[el]);
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
       for(size_t k = 0; k < embedConnComp.size(); ++k) {
-        
+
         /*if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
-            = embedConnComp[k][j];
+          = embedConnComp[k][j];
 
-          // connCompVertsStrict[i][j] : global id of the jth point in the ith
-          // connected component
+        // connCompVertsStrict[i][j] : global id of the jth point in the ith
+        // connected component
         } else*/
         if (!std::isfinite(outputPointsCoords[3*connCompVertsStrict[i][j]+k])) { // in case the value is infinite, we take the centroid
-                 // coordinate
+                                                                                 // coordinate
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = compBaryCoords[i][k]; // = embedCentroids[k][i]
         }
@@ -1108,9 +1112,10 @@ centroidId[el]);
     }
 
     this->printMsg(".. Re-embedded component " + std::to_string(i), 1.0,
-                   tmcomp.getElapsedTime(), this->threadNumber_,
-                   debug::LineMode::NEW, debug::Priority::DETAIL);
+        tmcomp.getElapsedTime(), this->threadNumber_,
+        debug::LineMode::NEW, debug::Priority::DETAIL);
   }
+}
 
   std::cout << "lol" << std::endl;
   this->printMsg(

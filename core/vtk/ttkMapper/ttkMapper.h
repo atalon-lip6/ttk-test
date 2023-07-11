@@ -132,21 +132,22 @@ public:
   vtkGetMacro(AlphaCoeff, double);
   void SetAlphaCoeff(double coeff)
   {
-    this->AlphaCoeff = coeff;
     ModifiedAlpha();
+    this->AlphaCoeff = coeff;
   }
   
   void ModifiedAlpha() {
-    if (!firstTimeReembed_)
+    if (!firstTimeReembed_ && this->AlphaCoeff > 1e-6)
     {
-      std::cerr <<"Modifying, yeah :-)";
+      std::cerr <<"Modifying, yeah, from " << this->AlphaCoeff << " :-)";
       needPartialUpdate_ = ALPHA;
       ttkAlgorithm::Modified(); //Useless?
     }
-    else if (this->AlphaCoeff < 1e-6)
+    else
     {
+      std::cout << "Recomputing all :-)" << std::endl;
       needPartialUpdate_ = NOPE;
-      firstTimeReembed_ = true;
+      //firstTimeReembed_ = true;
     }
   }
 

@@ -1005,10 +1005,10 @@ centroidId[el]);
         float newCoord = delta;// + embedCentroids[iDim][idComp];
         //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
         //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
-        outputPointsCoords[3*iPt+iDim] = newCoord;
+        outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][idCentroid] + newCoord;
       }
     }
-    /* Pour faire coller les barycentres à la projection globale nouvellement calculée
+     //Pour faire coller les barycentres à la projection globale nouvellement calculée
     for (size_t iComp = 0; iComp < compBaryCoords.size(); iComp++)
     {
       size_t iVert = centroidId[iComp];
@@ -1018,7 +1018,7 @@ centroidId[el]);
         //compBaryCoords.at(iComp).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
         compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
       }
-    }*/
+    }
     printErr("NOT RETURNING YEAH\n");
     //return 0;
   }

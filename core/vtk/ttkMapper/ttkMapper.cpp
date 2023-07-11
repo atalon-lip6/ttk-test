@@ -181,7 +181,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
   const size_t nbPoint = input->GetNumberOfPoints();
 
-  if (needPartialUpdate_ != NOPE)
+  if (needPartialUpdate_ == NOPE)
   {
     auto vtu = vtkUnstructuredGrid::SafeDownCast(outputNodes);
     if (vtu == nullptr)

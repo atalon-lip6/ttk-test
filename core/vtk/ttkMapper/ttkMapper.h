@@ -123,7 +123,7 @@ public:
     if (!firstTimeReembed_)
     {
       std::cerr <<"Modifying, yeah :-)";
-      needWholeUpdate_ = DILATATION;
+      needPartialUpdate_ = DILATATION;
       ttkAlgorithm::Modified(); //Useless?
     }
   }
@@ -140,8 +140,13 @@ public:
     if (!firstTimeReembed_)
     {
       std::cerr <<"Modifying, yeah :-)";
-      needWholeUpdate_ = ALPHA;
+      needPartialUpdate_ = ALPHA;
       ttkAlgorithm::Modified(); //Useless?
+    }
+    else if (this->AlphaCoeff < 1e-6)
+    {
+      needPartialUpdate_ = NOPE;
+      firstTimeReembed_ = true;
     }
   }
 
@@ -164,7 +169,7 @@ private:
   bool SelectMatrixWithRegexp{false};
   std::string DistanceMatrixRegexp{".*"};
   std::vector<std::string> DistanceMatrix{};
-  int needWholeUpdate_{NOPE}; // To avoid to recompute everything when not necessary.
+  int needPartialUpdate_{NOPE}; // To avoid to recompute everything when not necessary.
   bool firstTimeReembed_{true}; // To avoid to recompute everything when not necessary. //Check sze f arrays...
   std::vector<float> pointsCoordsBackup_;
   vtkNew<vtkIntArray> connCompPrev_{}, bucketPrev_{};

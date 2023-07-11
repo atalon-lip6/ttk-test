@@ -181,7 +181,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
   const size_t nbPoint = input->GetNumberOfPoints();
 
-  if (needWholeUpdate_ != NOPE)
+  if (needPartialUpdate_ != NOPE)
   {
     auto vtu = vtkUnstructuredGrid::SafeDownCast(outputNodes);
     if (vtu == nullptr)
@@ -201,11 +201,11 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     outputPoints->GetData()->Fill(0.0);
     std::vector<int> compBucketId(input->GetNumberOfPoints());
 
-    if (needWholeUpdate_ == DILATATION)
+    if (needPartialUpdate_ == DILATATION)
     {
       this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
     }
-    else if (needWholeUpdate_ == ALPHA)
+    else if (needPartialUpdate_ == ALPHA)
     {
       Matrix inputDistMat{};
       if(this->ReEmbedMapper) {
@@ -243,7 +243,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
       for (size_t k = 0; k < 3; k++)
         pointsCoordsBackup_[3*i+k] = outputPtr[3*i+k];
     }
-    needWholeUpdate_ = NOPE;
+    needPartialUpdate_ = NOPE;
     return 1;
   }
   if (this->ReEmbedMapper)

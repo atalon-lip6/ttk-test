@@ -804,7 +804,7 @@ int ttk::Mapper::reEmbedMapper(
   size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
 
   compSpecialCoeffToSave_.clear();
-  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), AlphaCoeff);
+  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), 0.0);
   std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size());
 
   // 1. extract vertices in component edges. A vertex is considered in a bucket
@@ -1024,6 +1024,7 @@ centroidId[el]);
   }
   else
 {
+  std::cout << " COMPUTING PROJECTION NORMAL " << std::endl;
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
@@ -1083,8 +1084,10 @@ centroidId[el]);
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
       for (size_t iPtComp = 0; iPtComp < embedConnComp[j].size(); iPtComp++)
       {
-        auto &coords = outputPointsCoords[3*connCompVertsStrict[i][iPtComp]+j];//embedConnComp[j][iPtComp];
+        auto &coords = //outputPointsCoords[3*connCompVertsStrict[i][iPtComp]+j]
+                       embedConnComp[j][iPtComp];
         compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] = coords*maxDistNeigh/compDiag;
+        std::cout << "\t\tlà worth " << compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] << std::endl;
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }
@@ -1097,15 +1100,13 @@ centroidId[el]);
     for(size_t j = 0; j < connCompVertsStrict[i].size(); ++j) {
       for(size_t k = 0; k < embedConnComp.size(); ++k) {
 
-        /*if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
+        if(std::isfinite(embedConnComp[k][j])) { // to avoid nan problems
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
           = embedConnComp[k][j];
 
         // connCompVertsStrict[i][j] : global id of the jth point in the ith
         // connected component
-        } else*/
-        if (!std::isfinite(outputPointsCoords[3*connCompVertsStrict[i][j]+k])) { // in case the value is infinite, we take the centroid
-                                                                                 // coordinate
+        } else { // in case the value is infinite, we take the centroi coordinate
           outputPointsCoords[3 * connCompVertsStrict[i][j] + k]
             = compBaryCoords[i][k]; // = embedCentroids[k][i]
         }

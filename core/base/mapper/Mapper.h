@@ -983,7 +983,7 @@ centroidId[el]);
                                     outputConnComp,
                                     distMat,
                                     distMat.nRows(),
-                                    0.0);
+                                    AlphaCoeff);
 
     std::vector<std::vector<double>> coordsAll;
     reduceMatrix(coordsAll, globalWeightedMatrix, true, this->ReductionAlgo);
@@ -1002,10 +1002,10 @@ centroidId[el]);
             delta = 0;
         }
         //std::cout << delta << " + " << embedCentroids[iDim][idCentroid] << "    --->  " << idCentroid << "," << outputConnComp[iPt] << std::endl;
-        float newCoord = delta;// + embedCentroids[iDim][idComp];
+        float newCoord = delta + embedCentroids[iDim][idComp];
         //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
         //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
-        outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][idCentroid] + newCoord;
+        outputPointsCoords[3*iPt+iDim] = newCoord;
       }
     }
      //Pour faire coller les barycentres à la projection globale nouvellement calculée
@@ -1013,11 +1013,12 @@ centroidId[el]);
     {
       size_t iVert = centroidId[iComp];
       //printErr("ICentr = " + std::to_string(iComp) + " and iVert = " + std::to_string(iVert));
+      /*
       for (size_t iDim = 0; iDim < dim; iDim++)
       {
-        //compBaryCoords.at(iComp).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
-        compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
-      }
+        compBaryCoords.at(iComp).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
+        //compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
+      }*/
     }
     printErr("NOT RETURNING YEAH\n");
     //return 0;

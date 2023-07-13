@@ -45,6 +45,11 @@ namespace ttk {
     };
     using REDUCTION_ALGO = DimensionReduction::METHOD;
 
+    enum class PROJECTION_METHOD {
+      LOCAL,
+      GLOBAL,
+    };
+ 
     enum class REEMBED_METHOD {
       ARCS_GEODESIC,
       BUCKETS_GEODESIC,
@@ -326,10 +331,12 @@ void updateNonCentroidPointsAlpha(float *outputPointsCoords,
     int NumberOfBuckets{10};
     LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D};
     REDUCTION_ALGO ReductionAlgo{REDUCTION_ALGO::MDS};
+    PROJECTION_METHOD ProjectionMethod{PROJECTION_METHOD::LOCAL};
     REEMBED_METHOD ReembedMethod{REEMBED_METHOD::ARCS_GEODESIC};
     bool ReEmbedMapper{false};
     double DilatationCoeff{0.4};
     double AlphaCoeff{0.0};
+    
 
     // Variables used to update the coordinates when the dilatation
     // coefficient is changed.
@@ -1088,7 +1095,7 @@ centroidId[el]);
         auto &coords = //outputPointsCoords[3*connCompVertsStrict[i][iPtComp]+j]
                        embedConnComp[j][iPtComp];
         compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] = coords*maxDistNeigh/compDiag;
-        std::cout << "\t\tlà worth " << compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] << std::endl;
+        //std::cout << "\t\tlà worth " << compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] << std::endl;
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }

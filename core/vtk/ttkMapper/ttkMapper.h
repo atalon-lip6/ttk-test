@@ -112,6 +112,17 @@ public:
   }
   vtkGetEnumMacro(ReembedMethod, REEMBED_METHOD);
 
+  void SetProjectionMethod(int projectionMethod)//REEMBED_METHOD reembedMethod)
+  {
+    this->ProjectionMethod = (PROJECTION_METHOD)projectionMethod;
+    if (this->ProjectionMethod == PROJECTION_METHOD::LOCAL)
+      this->AlphaCoeff = 0;
+    this->firstTimeReembed_ = true;
+    this->Modified();
+  }
+  vtkGetEnumMacro(ProjectionMethod, PROJECTION_METHOD);
+
+
   vtkGetMacro(DilatationCoeff, double);
   void SetDilatationCoeff(double coeff)
   {

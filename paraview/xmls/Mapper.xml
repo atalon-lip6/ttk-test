@@ -63,6 +63,30 @@
         </IntVectorProperty>
 
 
+        <IntVectorProperty
+        name="ProjectionMethod"
+        label="Projection Method"
+        command="SetProjectionMethod"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Local (fast)"/>
+          <Entry value="1" text="Global (slow)"/>
+        </EnumerationDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ReEmbedMapper"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          When reembeding the mapper, we propose two approaches to compute the coordinates
+          of the points. If the local option is chosen, the computation is fast. For each component we compute the coordinates of the points which are not in the mapper TODO
+        </Documentation>
+      </IntVectorProperty>
+
+
+
         <DoubleVectorProperty
         name="DilatationCoeff"
         label="Dilatation coefficient for points around centroids"
@@ -73,8 +97,8 @@
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="ReEmbedMapper"
-                                   value="1" />
+                                   property="ProjectionMethod"
+                                   value="0" />
         </Hints>
 
         <Documentation>
@@ -87,12 +111,12 @@
         label="Coefficient to use more the input distance matrix."
         command="SetAlphaCoeff"
         number_of_elements="1"
-        default_values="1" >
+        default_values="0" >
         <DoubleRangeDomain name="range" min="0" max="1" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="ReEmbedMapper"
+                                   property="ProjectionMethod"
                                    value="1" />
         </Hints>
 
@@ -244,7 +268,10 @@
           points.
         </Documentation>
       </IntVectorProperty>
-      
+
+
+
+
       <IntVectorProperty
         name="ReembedMethod"
         label="Reembed Method"
@@ -277,13 +304,16 @@
         <Property name="ScalarFieldNew" />
         <Property name="NumberOfBuckets" />
         <Property name="ReEmbedMapper" />
+        <Property name="ProjectionMethod" />
         <Property name="DilatationCoeff" />
+        <Property name="AlphaCoeff" />
         <Property name="SelectMatrixWithRegexp" />
         <Property name="DistMat" />
         <Property name="DistanceMatrixRegexp" />
         <Property name="ReductionAlgo" />
         <Property name="LowerDimension" />
         <Property name="ReembedMethod" />
+
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}

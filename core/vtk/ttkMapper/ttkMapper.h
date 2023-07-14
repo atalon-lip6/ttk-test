@@ -115,8 +115,6 @@ public:
   void SetProjectionMethod(int projectionMethod)//REEMBED_METHOD reembedMethod)
   {
     this->ProjectionMethod = (PROJECTION_METHOD)projectionMethod;
-    if (this->ProjectionMethod == PROJECTION_METHOD::LOCAL)
-      this->AlphaCoeff = 0;
     this->firstTimeReembed_ = true;
     this->Modified();
   }

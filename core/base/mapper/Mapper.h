@@ -980,7 +980,7 @@ centroidId[el]);
   
 
 
-  if (AlphaCoeff > 1e-6)
+  if (this->ProjectionMethod == PROJECTION_METHOD::GLOBAL)
   {
     std::cout << "projecting GLOBAL !" << std::endl;
     Matrix globalWeightedMatrix;

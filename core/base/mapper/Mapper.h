@@ -124,7 +124,7 @@ namespace ttk {
       size_t nCols_{};
     };
 
-    void SetCoordinatesGlobal(const Matrix &centroidsDistMat, const std::vector<int> &centroidId, const int *const outputConnComp, const Matrix &distMat, const size_t dim, const std::vector<std::vector<double>> &embedCentroids, float* outputPointsCoords, std::vector<std::array<float, 3>> &compBaryCoords);
+    void SetCoordinatesGlobal(const Matrix &centroidsDistMat, const std::vector<int> &centroidId, const int *const outputConnComp, const Matrix &distMat, const std::vector<std::vector<double>> &embedCentroids, float* outputPointsCoords);
 
     inline void
       preconditionTriangulation(AbstractTriangulation *const triangulation) {
@@ -384,58 +384,46 @@ int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const
 }
 
 
-  void ttk::Mapper::SetCoordinatesGlobal(const Matrix &centroidsDistMat, const std::vector<int> &centroidId, const int *const outputConnComp, const Matrix &distMat, const size_t dim, const std::vector<std::vector<double>> &embedCentroids, float* outputPointsCoords, std::vector<std::array<float, 3>> &compBaryCoords)
+void ttk::Mapper::SetCoordinatesGlobal(const Matrix &centroidsDistMat, const std::vector<int> &centroidId, const int *const outputConnComp, const Matrix &distMat, const std::vector<std::vector<double>> &embedCentroids, float* outputPointsCoords)
 {
   std::cout << "projecting GLOBAL !" << std::endl;
-    Matrix globalWeightedMatrix;
-    this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
-                                    centroidsDistMat,
-                                    centroidId,
-                                    outputConnComp,
-                                    distMat,
-                                    distMat.nRows(),
-                                    AlphaCoeff);
+  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
+  Matrix globalWeightedMatrix;
+  this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
+      centroidsDistMat,
+      centroidId,
+      outputConnComp,
+      distMat,
+      distMat.nRows(),
+      AlphaCoeff);
 
-    std::vector<std::vector<double>> coordsAll;
-    reduceMatrix(coordsAll, globalWeightedMatrix, true, this->ReductionAlgo);
-    
-    for (size_t iPt = 0; iPt < distMat.nRows(); iPt++)
+  std::vector<std::vector<double>> coordsAll;
+  reduceMatrix(coordsAll, globalWeightedMatrix, true, this->ReductionAlgo);
+
+  for (size_t iPt = 0; iPt < distMat.nRows(); iPt++)
+  {
+    size_t idComp = outputConnComp[iPt];
+    size_t idCentroid = centroidId[idComp];
+
+    for (size_t iDim = 0; iDim < dim; iDim++)
     {
-      size_t idComp = outputConnComp[iPt];
-        size_t idCentroid = centroidId[idComp];
-      
-      for (size_t iDim = 0; iDim < dim; iDim++)
+      double delta = coordsAll[iDim][iPt]-coordsAll[iDim][idCentroid];
+      if (!std::isfinite(coordsAll[iDim][iPt]))
       {
-        double delta = coordsAll[iDim][iPt]-coordsAll[iDim][idCentroid];
-        if (!std::isfinite(coordsAll[iDim][iPt]))
-        {
-            std::cerr << "NO, INFINITE\n";
-            delta = 0;
-        }
-        //std::cout << delta << " + " << embedCentroids[iDim][idCentroid] << "    --->  " << idCentroid << "," << outputConnComp[iPt] << std::endl;
-        float newCoord = delta + embedCentroids[iDim][idComp];
-        //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
-        //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
-        outputPointsCoords[3*iPt+iDim] = newCoord;
+        std::cerr << "NO, INFINITE\n";
+        delta = 0;
       }
+      //std::cout << delta << " + " << embedCentroids[iDim][idCentroid] << "    --->  " << idCentroid << "," << outputConnComp[iPt] << std::endl;
+      float newCoord = delta + embedCentroids[iDim][idComp];
+      //outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
+      //std::cout << outputPointsCoords[3*iPt+iDim] << "\n";
+      outputPointsCoords[3*iPt+iDim] = newCoord;
     }
-     //Pour faire coller les barycentres à la projection globale nouvellement calculée
-    for (size_t iComp = 0; iComp < compBaryCoords.size(); iComp++)
-    {
-      size_t iVert = centroidId[iComp];
-      //printErr("ICentr = " + std::to_string(iComp) + " and iVert = " + std::to_string(iVert));
-      /*
-      for (size_t iDim = 0; iDim < dim; iDim++)
-      {
-        compBaryCoords.at(iComp).at(iDim) = coordsAll[iDim][iVert];//outputConnComp[3*iVert+iDim];
-        //compBaryCoords.at(iComp).at(iDim) = outputConnComp[3*iVert+iDim];
-      }*/
-    }
-    printErr("NOT RETURNING YEAH\n");
-    //return 0;
   }
+}
 
 
+//TODO globaux : outputConnComp : int->SimplexId dans setcoordinatesglobal
 
 void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
                                                //SimplexId* const centroidId,
@@ -1038,7 +1026,7 @@ centroidId[el]);
 
   if (this->ProjectionMethod == PROJECTION_METHOD::GLOBAL)
   {
-    SetCoordinatesGlobal(centroidsDistMat, centroidId, outputConnComp, distMat, dim, embedCentroids, outputPointsCoords, compBaryCoords);
+    SetCoordinatesGlobal(centroidsDistMat, centroidId, outputConnComp, distMat, embedCentroids, outputPointsCoords);
   }
   else
 {

@@ -359,9 +359,16 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     sumCompSf[curComp] += val;
     sizeComp[curComp]++;
   }
-  for (size_t iComp = 0; iComp < compArcs.size(); iComp++)
+  size_t nbComp = compArcs.size();
+  double minMaxSf[2];
+  inputScalarField->GetRange(minMaxSf);
+  for (size_t iComp = 0; iComp < nbComp; iComp++)
   {
-    double curAvg = sumCompSf[iComp]/sizeComp[iComp];
+    double curAvg;
+    if (sizeComp[iComp] == 0)
+      curAvg = minMaxSf[0] + (minMaxSf[1]-minMaxSf[0])/nbComp;
+    else
+      curAvg = sumCompSf[iComp]/sizeComp[iComp];
     avgCentroidSf->SetTuple(iComp, &curAvg);
   }
   outputNodes->GetPointData()->AddArray(avgCentroidSf);

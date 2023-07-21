@@ -153,6 +153,7 @@ namespace ttk {
 void updateNonCentroidPointsAlpha(float *outputPointsCoords,
                                                //SimplexId* const centroidId,
                                                SimplexId* const connCompId,
+                                               const std::vector<std::vector<double>> &centroidsCoords,
                                                const Matrix &highDimDistMat,
                                                const size_t nbPoint,
                                                const double alpha);
@@ -428,13 +429,35 @@ void ttk::Mapper::SetCoordinatesGlobal(const Matrix &centroidsDistMat, const std
 void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
                                                //SimplexId* const centroidId,
                                                SimplexId* const connCompId,
+                                               const std::vector<std::vector<double>> &centroidsCoords,
                                                const Matrix &highDimDistMat,
                                                const size_t nbPoint,
                                                const double alpha)
 {
   printErr("Updating alpha :-)");
+  /*
   Matrix globalDistMat;
-  computeGlobalWeightedDistMatrix(globalDistMat, prevCentroidDistMat_, prevCentroidId_, connCompId, highDimDistMat, nbPoint, alpha);
+  this->computeGlobalWeightedDistMatrix(globalWeightedMatrix,
+      centroidsDistMat,
+      centroidId,
+      outputConnComp,
+      distMat,
+      distMat.nRows(),
+      AlphaCoeff);
+  */
+/*
+  std::vector<std::vector<double>> embedCentroids(dim);
+  for (size_t iDim = 0; iDim < dim; iDim++)
+    embedCentroids[iDim].resize(centroidId.size());
+  for (size_t iComp = 0; iComp < centroidId.size(); iComp++)
+  {
+    size_t idCentroid = centroidId[iComp];
+    for (size_t iDim = 0; iDim < dim; iDim++)
+    {
+      embedCentroids[iDim][iComp] = pointsPrev
+*/
+  this->SetCoordinatesGlobal(prevCentroidDistMat_, prevCentroidId_, connCompId, highDimDistMat, centroidsCoords, outputPointsCoords);
+  //computeGlobalWeightedDistMatrix(globalDistMat, prevCentroidDistMat_, prevCentroidId_, connCompId, highDimDistMat, nbPoint, alpha);
   /*
   globalDistMat.alloc(nbPoint, nbPoint, 0);
   for (size_t i1 = 0; i1 < nbPoint; i1++)
@@ -449,6 +472,7 @@ void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
     }
   }
   */
+  /*
     size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
     std::vector<std::vector<double>> coordsAll;
     reduceMatrix(coordsAll, globalDistMat, true, this->ReductionAlgo);
@@ -459,7 +483,7 @@ void ttk::Mapper::updateNonCentroidPointsAlpha(float *outputPointsCoords,
         outputPointsCoords[3*iPt+iDim] = coordsAll[iDim][iPt];
       }
     }
-
+  */
   /*
     for (size_t iCentr = 0; iCentr < compBaryCoords.size(); iCentr++)
     {

@@ -207,6 +207,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     }
     else if (needPartialUpdate_ == ALPHA)
     {
+
       Matrix inputDistMat{};
       if(this->ReEmbedMapper) {
         ttk::Timer tm{};
@@ -219,18 +220,36 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
           return 0;
         }
 
+        std::vector<std::vector<double>> prevCentroidsCoords(3);
+        size_t nbComp = this->prevCentroidDistMat_.nRows();
+        vtkPoints* prevNodesPoints = nodesPrev_->GetPoints();
+
+        for (size_t iDim = 0; iDim < 3; iDim++)
+          prevCentroidsCoords[iDim].resize(nbComp);
+        for (size_t iPt = 0; iPt < nbComp; iPt++)
+        {
+          double tmpCoord[3];
+          prevNodesPoints->GetPoint(iPt, tmpCoord);
+          for (size_t iDim = 0; iDim < 3; iDim++)
+            prevCentroidsCoords[iDim][iPt] = tmpCoord[iDim];
+        }
         this->updateNonCentroidPointsAlpha(ttkUtils::GetPointer<float>(outputPoints->GetData()),
             //TODO
             /*TODO,*/
-            ttkUtils::GetPointer<ttk::SimplexId>(connCompPrev_), inputDistMat, inputDistMat.nRows(), AlphaCoeff);
+            ttkUtils::GetPointer<ttk::SimplexId>(connCompPrev_),
+            prevCentroidsCoords, inputDistMat, inputDistMat.nRows(), AlphaCoeff);
 
+        }
+        else
+        {
+          printErr("Errr updating alpha but reembed is disabled.");
+        }
       }
       else
       {
         printErr("Error updating dilatation or alpha or va te faire voir !");
         return 0;
       }
-    }
 
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
     if(outSegVTU != nullptr) {

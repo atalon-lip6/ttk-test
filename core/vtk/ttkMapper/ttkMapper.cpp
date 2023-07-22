@@ -366,7 +366,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   {
     double curAvg;
     if (sizeComp[iComp] == 0)
-      curAvg = minMaxSf[0] + (minMaxSf[1]-minMaxSf[0])/nbComp;
+      curAvg = minMaxSf[0] + (iComp+0.5)*(minMaxSf[1]-minMaxSf[0])/nbComp;
     else
       curAvg = sumCompSf[iComp]/sizeComp[iComp];
     avgCentroidSf->SetTuple(iComp, &curAvg);

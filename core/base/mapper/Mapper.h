@@ -554,13 +554,22 @@ int ttk::Mapper::execute(int *const outputBucket,
   }
 
   // offset component id
+  const size_t nTrueConnComps = nConnComps;
   const auto nVerts{triangulation.getNumberOfVertices()};
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < nVerts; ++i) {
-    outputConnComp[i] = connCompLidToGid[{outputBucket[i], outputConnComp[i]}];
+    auto itFind = connCompLidToGid.find({outputBucket[i], outputConnComp[i]});
+    if (itFind != connCompLidToGid.end())
+      outputConnComp[i] = connCompLidToGid[{outputBucket[i], outputConnComp[i]}];
+    else
+    {
+      outputConnComp[i] = nConnComps++;
+    }
   }
+  if (nTrueConnComps != nConnComps)
+    this->printMsg("Warning: "+std::to_string(nConnComps-nTrueConnComps)+ " vertices have no adjacent edges, hence will have NaN coordinates.", debug::Priority::WARNING);
 
   this->printMsg("Generated segmentation", 1.0, tmsec.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,

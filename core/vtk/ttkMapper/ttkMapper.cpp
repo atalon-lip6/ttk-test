@@ -344,11 +344,18 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
 
   //Computing the averaged elevation for the centroids.
   std::vector<double> sumCompSf(compArcs.size());
-  std::vector<size_t> sizeComp(compArcs.size());
+  std::vector<int> sizeComp(compArcs.size());
+  size_t nbComp = compArcs.size();
+
   vtkNew<vtkDoubleArray> avgCentroidSf{};
   avgCentroidSf->SetName(inputScalarField->GetName());
   avgCentroidSf->SetNumberOfComponents(1);
-  avgCentroidSf->SetNumberOfTuples(compArcs.size());
+  avgCentroidSf->SetNumberOfTuples(nbComp);
+
+  vtkNew<vtkIntArray> compSizeArray{};
+  compSizeArray->SetName("ComponentVertexNumber");
+  compSizeArray->SetNumberOfComponents(1);
+  compSizeArray->SetNumberOfTuples(nbComp);
 
   int *connCompTab = ttkUtils::GetPointer<int>(connComp);
   for (size_t iPt = 0; iPt < nbPoint; iPt++)
@@ -359,7 +366,6 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     sumCompSf[curComp] += val;
     sizeComp[curComp]++;
   }
-  size_t nbComp = compArcs.size();
   double minMaxSf[2];
   inputScalarField->GetRange(minMaxSf);
   for (size_t iComp = 0; iComp < nbComp; iComp++)
@@ -370,8 +376,11 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     else
       curAvg = sumCompSf[iComp]/sizeComp[iComp];
     avgCentroidSf->SetTuple(iComp, &curAvg);
+    double curSize = sizeComp[iComp];
+    compSizeArray->SetTuple(iComp, &curSize);
   }
   outputNodes->GetPointData()->AddArray(avgCentroidSf);
+  outputNodes->GetPointData()->AddArray(compSizeArray);
 
   //TODO back up et dilatation truc les moy d'elevation ?
   setNodes(outputNodes, compBaryCoords, compBucketId);

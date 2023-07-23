@@ -998,6 +998,41 @@ int ttk::Mapper::reEmbedMapper(
     }
   }
 
+  double maxDist = 0;
+  bool hasInfiniteVal = false;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) reduction(max: maxDist)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t u = 0; u < nComp; u++) {
+    for(size_t v = 0; v < nComp; v++) {
+      double curDist = centroidsDistMat.get(u,v);
+      if (curDist != DOUBLE_MAX)
+        maxDist = std::max(maxDist, curDist);
+      else
+        hasInfiniteVal = true;
+    }
+  }
+  if (maxDist < 1e-6) //TODO DBG MINIMUM
+  {
+    this-printErr("Warning, all points are disconnected (or all at the same place");
+  }
+  
+  if (hasInfiniteVal)
+  {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t u = 0; u < nComp; u++) {
+      for(size_t v = 0; v < nComp; v++) {
+        double curDist = centroidsDistMat.get(u,v);
+        if (curDist == DOUBLE_MAX)
+        {
+          centroidsDistMat.get(u,v) = maxDist+distMat.get(u,v);
+        }
+      }
+    }
+  }
+
   /*
   for(size_t i = 0; i < compArcs.size(); ++i) {
     for(const auto el : compArcs[i]) {

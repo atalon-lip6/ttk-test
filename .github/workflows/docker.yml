@@ -51,7 +51,7 @@ jobs:
         with:
           platforms: ${{ matrix.arch }}
           context: "{{defaultContext}}:scripts/docker"
-          target: ttk
+          target: ttk-test
           push: true
           tags: |
             ghcr.io/topology-tool-kit/ttk-dev:latest

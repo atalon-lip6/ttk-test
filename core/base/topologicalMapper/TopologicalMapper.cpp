@@ -11,6 +11,11 @@
 
 using namespace std;
 
+void printCoords(const char prefix[], float* coords)
+{
+  std::cout << prefix <<  coords[0] << "," << coords[1] << "\n";
+}
+
 inline float compute_dist2(const float ptA[], const float ptB[])
 {
   float dx = ptB[0]-ptA[0], dy = ptB[1]-ptA[1];
@@ -21,6 +26,9 @@ inline float compute_dist2(const float ptA[], const float ptB[])
 inline void computeBarycenter(const std::vector<double> &coords, size_t dim, float baryCoords[])
 {
   size_t nbPoint = coords.size()/dim;
+  std::cout << " Il y a " << nbPoint << " pour le calcul de barycentre\n";
+  for (size_t k = 0; k < dim; k++)
+    baryCoords[k] = 0;
   for (size_t iPt = 0; iPt < nbPoint; iPt++)
   {
     for (size_t k = 0; k < dim; k++)
@@ -34,8 +42,17 @@ inline void computeUnitVector(float* const coordOrig, float* const coordDest, fl
 {
   float tmp[2] = {coordDest[0] - coordOrig[0], coordDest[1] - coordOrig[1]};
   float dist = sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1]);
-  coordVect[0] = tmp[0]/dist;
-  coordVect[1] = tmp[1]/dist;
+  if (dist < 1e-10)
+  {
+    coordVect[0] = 1;
+    coordVect[1] = 0;
+  }
+  else
+  {
+    coordVect[0] = tmp[0]/dist;
+    coordVect[1] = tmp[1]/dist;
+  }
+  //TODO div by zero???
 }
 
 ttk::TopologicalMapper::TopologicalMapper() {
@@ -131,6 +148,18 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
   for (const auto &elt : edgeHeapVect)
   {
     cout << endl << endl;
+    for (size_t iPt = 0; iPt < n; iPt++)
+    {
+      std::cout << "Coords of " << iPt << ": ";
+      for (size_t k = 0; k < dim; k++)
+      {
+        std::cout << outputCoords[iPt*dim+k];
+        if ((int)k < (int)dim-1)
+          std::cout << ",";
+      }
+      std::cout << "\n";
+    }
+    std::cout << "....................................\n\n";
 
     //const auto &elt = edgeHeap.top();
     //edgeHeap.pop();
@@ -230,13 +259,19 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
     float coordsCentreBig[2];
     computeBarycenter(coordsBigHull, 2, coordsCentreBig);
-    float unitCentreBigVect[2] = {outputCoords[idChosenBig*dim] - outputCoords[dim*idChosenBig], outputCoords[idChosenBig*dim+1] - outputCoords[dim*idChosenBig+1]};
 
-    float goalCoordChosenSmall[2] = {outputCoords[idChosenBig*dim]+edgeCost*unitCentreBigVect[0], outputCoords[idChosenBig*dim+1]+edgeCost*unitCentreBigVect[1]};
+//inline void computeUnitVector(float* const coordOrig, float* const coordDest, float* const coordVect)
+    float unitCentreBigVect[2];
+    computeUnitVector(&outputCoords[idChosenBig*dim], coordsCentreBig, unitCentreBigVect);
+    printCoords("Destination for unit is: ", &outputCoords[idChosenBig*dim]);
+    printCoords("Barycentre for unit is: ", coordsCentreBig);
+        //{outputCoords[idChosenBig*dim] - coordsCentreBig[0], outputCoords[idChosenBig*dim+1] - coordsCentreBig[1]};
+
+    float goalCoordChosenSmall[2] = {outputCoords[idChosenBig*dim]-edgeCost*unitCentreBigVect[0], outputCoords[idChosenBig*dim+1]-edgeCost*unitCentreBigVect[1]};
     cout << "sizeBig = " << sizeBigHull << " and " << compBig.size() << endl;
     if (sizeBigHull == 1)
     {
-      cout << "edge cost = " << edgeCost << endl;
+      cout << "edge cost = " << edgeCost << endl;//TODO inutile now
       goalCoordChosenSmall[0] = outputCoords[idChosenBig*dim]+edgeCost;
       goalCoordChosenSmall[1] = outputCoords[idChosenBig*dim+1];
     }
@@ -248,9 +283,10 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
       std::cout << "pointSmall : " << outputCoords[curIdSmall*dim] << "," << outputCoords[curIdSmall*dim+1] << endl;
       if (curIdSmall == idChosenSmall)
         cout << "\t\t=> CHOSEN small" << endl;
-      outputCoords[curIdSmall*dim] -= smallCompMoveVect[0];
-      outputCoords[curIdSmall*dim+1] -= smallCompMoveVect[1];
+      outputCoords[curIdSmall*dim] += smallCompMoveVect[0];
+      outputCoords[curIdSmall*dim+1] += smallCompMoveVect[1];
     }
+    std::cout << "Unit vector bary point = " << unitCentreBigVect[0] << "," << unitCentreBigVect[1] << endl;
     std::cout << "Goal coordinates = " << goalCoordChosenSmall[0] << "," << goalCoordChosenSmall[1] << endl;
     std::cout << "Moving vector coordinates = " << smallCompMoveVect[0] << "," << smallCompMoveVect[1] << endl;
 
@@ -407,7 +443,7 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
     return;
   }
 
-  char qHullFooStr[1] = "";
+  char qHullFooStr[3] = "QJ";
   try
   {
     orgQhull::Qhull qhullCur;

@@ -89,7 +89,6 @@ inline void computeUnitVector(float* const coordOrig, float* const coordDest, fl
     coordVect[0] = tmp[0]/dist;
     coordVect[1] = tmp[1]/dist;
   }
-  //TODO div by zero???
 }
 
 ttk::TopologicalMapper::TopologicalMapper() {
@@ -127,25 +126,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
   std::cout << angleTest << " was test angle :D\n";
   size_t n = distMatrix.size();
   size_t dim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
-  /*
-  std::vector<float> outputVect(n*dim); //TODO outputvect sert à rien...
-  for (size_t i = 0; i < inputPoints.size(); i++)
-  {
-    outputVect[i] = inputPoints[i];
-    //outputCoords[i] = inputPoints[i];
-  }
-  //rotatePolygon(outputVect, dim, outputVect.data(), M_PI/2);
-  for (size_t i = 0; i < inputPoints.size(); i++)
-  {
-    outputCoords[i] = outputVect[i];
-  }
-  //return 0;
-
-  //outputCoords.resize(n);
-  //for (size_t i = 0; i < n; i++)
-  //  outputCoords[i].resize(dim, 0);
-  */
-  std::priority_queue<std::pair<float, std::pair<size_t, size_t>>> edgeHeap; // We store elements as (c_uv,(u,v))
     //TODO reverse order
 
 
@@ -155,7 +135,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     for (int u2 = u1+1; u2 < n; u2++)
     {
       edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
-      edgeHeap.push({distMatrix[u1][u2], {u1,u2}});
 
     }
   }
@@ -185,7 +164,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
 
 
 
-  //while (!edgeHeap.empty())
   for (const auto &elt : edgeHeapVect)
   {
     cout << endl << endl;
@@ -202,8 +180,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     }
     std::cout << "....................................\n\n";
 
-    //const auto &elt = edgeHeap.top();
-    //edgeHeap.pop();
     float edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
@@ -214,7 +190,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     //std::cerr << "u,reprU = " << u << "," <<reprU << " AND v,reprV = " << v << "," << reprV << std::endl;
     if (reprU == reprV) // Already in the same component
     {
-      //std::cerr << "same component\n";
       continue;
     }
     std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
@@ -324,7 +299,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     cout << "sizeBig = " << sizeBigHull << " and " << compBig.size() << endl;
     if (sizeBigHull == 1)
     {
-      cout << "edge cost = " << edgeCost << endl;//TODO inutile now
       goalCoordChosenSmall[0] = outputCoords[idChosenBig*dim]+edgeCost;
       goalCoordChosenSmall[1] = outputCoords[idChosenBig*dim+1];
     }
@@ -365,7 +339,7 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
         cout << "\t\t=> CHOSEN big" << endl;
     }
 
-    cout << "barycenter = " << coordsCentreBig[0] << "," << coordsCentreBig[1] << endl;
+    cout << "barycenterBig = " << coordsCentreBig[0] << "," << coordsCentreBig[1] << endl;
 
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -385,32 +359,10 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     for (auto x : unionSet)
       cout << x << " ";
     cout << "=======================\n";
-    continue;
+    //continue;
 
-
-
-
-    //TODO INUTILE ÇA
-    float centreBig[2], vertBig[2], centreSmall[2], vertSmall[2];
-
-
-    float unitVectBig[2]; //Unit vector from the center of the polygon to the chosen vertex in the convex hull.
-    computeUnitVector(centreBig, vertBig, unitVectBig);
-
-    // We change the coordinates
-    float minXUnion = 1e50, maxXOther = -1e50;
-    for (size_t id : unionSet)
-      minXUnion = std::min(minXUnion, outputCoords[dim*id]);
-
-    //auto it = otherSet.begin(;
-    for (size_t id : otherSet)
-      maxXOther = std::max(maxXOther, outputCoords[dim*id]);
-
-    float shift = maxXOther + edgeCost - minXUnion;
-    for (size_t id : unionSet)
-      outputCoords[dim*id] += shift;
     std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
-    ufToSets.erase(otherRepr); // TODO vérifier que ça clear le set;
+    ufToSets.erase(otherRepr);
     //ufToSets[otherRepr] = unionSet;
   }
 
@@ -419,7 +371,6 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
 
 void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t dim, float* centerCoords, const float angle) const
 {
-  //return;
   float xCenter = centerCoords[0], yCenter = centerCoords[1];
   size_t nbPoint = coords.size()/dim;
   std::cout << "center = " << xCenter << "," << yCenter << std::endl;
@@ -436,16 +387,10 @@ void ttk::TopologicalMapper::rotatePolygon(std::vector<float> &coords, size_t di
 }
 
 
+// Tests if all points have the same coordinates or are aligned. If so, the convex hull
+// is computed by this code. Otherwise, we call qHull if the points are fully 2D.
 void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<size_t> &idsInHull) const
 {
-  /*for (auto x : coords)
-    cout << x << endl;
-  cout << "\n-------------\n";
-  */
-  //Test if all points the same
-  //Test if all points aligned
-  //Test if all points coplanar
-
   size_t nbPoint = coords.size()/dim;
   if (nbPoint <= 2)
   {
@@ -453,7 +398,6 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
     if (nbPoint == 2)
     {
       double dist2 = (coords[0]-coords[2])*(coords[0]-coords[2]) + (coords[1]-coords[3])*(coords[1]-coords[3]);
-      std::cout << "TOTO " << dist2 << "\n";
 
       if (dist2 > 1e-7)
         idsInHull.push_back(1);
@@ -463,7 +407,7 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
 
   // Testing if all points are colinear
 
-  double dirVect[2] = {0,0};// = {coords[2] - coords[0], coords[3] - coords[1]};
+  double dirVect[2] = {0,0};
   bool areColinear = true;
 
   size_t idFirstDistinct = 1;
@@ -487,8 +431,6 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
     double curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
     if (abs(curVect[0]) < 1e-7 && abs(curVect[1]) < 1e-7)
       continue;
-    //double alpha0 = curVect[0]/dirVect[0], alpha1 = curVect[1]/dirVect[1];
-    //if (abs(alpha0-alpha1) > 1e-7)
     if (abs(curVect[0]*dirVect[1] - curVect[1]*dirVect[0]) > 1e-7)
     {
       areColinear = false;
@@ -546,7 +488,6 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
     printErr("Error with qHull module: " + std::string(e.what()));
     //return -1;
   }
-
 }
 
 

@@ -39,7 +39,7 @@ namespace ttk {
       LOWER_DIM_3D = 3,
     };
 
-    int execute(std::vector<double> &inputPoints, float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const;
+    int execute(std::vector<float> &inputPoints, float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const;
   protected:
     LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D}; //TODO enum de ttk...
     void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<size_t> &idsInHull) const;

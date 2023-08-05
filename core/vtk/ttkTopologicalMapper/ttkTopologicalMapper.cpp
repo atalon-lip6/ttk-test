@@ -187,7 +187,7 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   vtkDoubleArray *colX = vtkDoubleArray::SafeDownCast(input->GetColumnByName("x")),
                    *colY = vtkDoubleArray::SafeDownCast(input->GetColumnByName("y"));
       //inputMatrix[i*dim] = (arrays[j]->GetVariantValue(i).ToDouble());
-  std::vector<double> inputCoords(nbPoint*2);
+  std::vector<float> inputCoords(nbPoint*2);
   for (size_t i = 0; i < nbPoint; i++)
   {
     inputCoords[2*i] = colX->GetValue(i);

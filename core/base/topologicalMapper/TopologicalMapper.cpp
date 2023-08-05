@@ -112,7 +112,7 @@ ttk::TopologicalMapper::~TopologicalMapper() = default;
 
 
 //int ttk::TopologicalMapper::execute(const std::vector<std::vector<float>> &distMatrix, unsigned int dim, const triangulationType &triangulation, std::vector<std::vector<float>> &outputCoords) const
-int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const
+int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outputCoords, const std::vector<std::vector<float>> &distMatrix) const
 {
 #ifndef TTK_ENABLE_QHULL
   printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
@@ -246,14 +246,15 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
       for (size_t &v : curHullVerts)
         v = curCompVect[v];
       idChosenVert = curHullVerts[0];
-      float* coordEdgeVert = &outputCoords[idChosenVert];
+      float* coordEdgeVert = &inputPoints[idChosenVert];
       // We want to select, among all vertices in the convex hull, the one which is
       // closest to the vertex of the edge we work on.
       for (size_t vert : curHullVerts)
       {
-        float* coordVert = &outputCoords[dim*vert];
-        float dist2 = compute_dist2(coordVert, coordEdgeVert);
-        if (dist2 < compute_dist2(&outputCoords[idChosenVert], coordEdgeVert))
+        float* coordVert = &inputPoints[dim*vert];
+        float dist2 = distMatrix[vert][idEdgeVert[idSet]];//  compute_dist2(coordVert, coordEdgeVert);
+        std::cout << vert << " is " << dist2 << " close\n";
+        if (dist2 < distMatrix[idChosenVert] [idEdgeVert[idSet]])//compute_dist2(&outputCoords[idChosenVert], coordEdgeVert))
           idChosenVert = vert;
       }
 
@@ -289,8 +290,9 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     computeBarycenter(coordsBigHull, 2, coordsCentreBig);
     computeBarycenter(coordsSmallHull, 2, coordsCentreSmall);
 
-    float unitCentreBigVect[2];
+    float unitCentreBigVect[2], unitCentreSmallVect[2];
     computeUnitVector(&outputCoords[idChosenBig*dim], coordsCentreBig, unitCentreBigVect);
+    computeUnitVector(&outputCoords[idChosenSmall*dim], coordsCentreSmall, unitCentreSmallVect);
     printCoords("Destination for unit is: ", &outputCoords[idChosenBig*dim]);
     printCoords("Barycentre for unit is: ", coordsCentreBig);
         //{outputCoords[idChosenBig*dim] - coordsCentreBig[0], outputCoords[idChosenBig*dim+1] - coordsCentreBig[1]};
@@ -305,10 +307,9 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
     float smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall*dim], goalCoordChosenSmall[1] - outputCoords[idChosenSmall*dim+1]};
 
     float distBaryPointSmall = compute_dist(&outputCoords[idChosenSmall*dim], coordsCentreSmall);
-    float finalPosBarySmall[2] = {goalCoordChosenSmall[0]+unitCentreBigVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitCentreBigVect[1]*distBaryPointSmall};
+    float finalPosBarySmall[2] = {goalCoordChosenSmall[0]+unitCentreSmallVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitCentreSmallVect[1]*distBaryPointSmall};
 
-
-    float rotationAngle = computeAngle(goalCoordChosenSmall, finalPosBarySmall, coordsCentreSmall, dim==3);
+    float rotationAngle = computeAngle(goalCoordChosenSmall, coordsCentreBig, coordsCentreSmall, dim==3);
     std::cout << " We chose for big and small: " << idChosenBig << " and " << idChosenSmall << std::endl;
 
     if (std::isfinite(rotationAngle))
@@ -326,7 +327,7 @@ int ttk::TopologicalMapper::execute(std::vector<double> &inputPoints, float* out
       outputCoords[curIdSmall*dim] += smallCompMoveVect[0];
       outputCoords[curIdSmall*dim+1] += smallCompMoveVect[1];
       if (std::isfinite(rotationAngle))
-        rotate(&outputCoords[curIdSmall*dim], goalCoordChosenSmall/*finalPosBarySmall*/, rotationAngle);
+        rotate(&outputCoords[curIdSmall*dim], goalCoordChosenSmall/*finalPosBarySmall*/, M_PI-rotationAngle);
     }
     std::cout << "Unit vector bary point = " << unitCentreBigVect[0] << "," << unitCentreBigVect[1] << endl;
     std::cout << "Goal coordinates = " << goalCoordChosenSmall[0] << "," << goalCoordChosenSmall[1] << endl;

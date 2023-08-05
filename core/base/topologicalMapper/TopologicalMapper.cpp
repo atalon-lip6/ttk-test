@@ -309,7 +309,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     float distBaryPointSmall = compute_dist(&outputCoords[idChosenSmall*dim], coordsCentreSmall);
     float finalPosBarySmall[2] = {goalCoordChosenSmall[0]+unitCentreSmallVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitCentreSmallVect[1]*distBaryPointSmall};
 
-    float rotationAngle = computeAngle(goalCoordChosenSmall, coordsCentreBig, coordsCentreSmall, dim==3);
+    float rotationAngle = computeAngle(goalCoordChosenSmall, coordsCentreBig, finalPosBarySmall, dim==3);// coordsCentreSmall, dim==3);
     std::cout << " We chose for big and small: " << idChosenBig << " and " << idChosenSmall << std::endl;
 
     if (std::isfinite(rotationAngle))
@@ -327,7 +327,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
       outputCoords[curIdSmall*dim] += smallCompMoveVect[0];
       outputCoords[curIdSmall*dim+1] += smallCompMoveVect[1];
       if (std::isfinite(rotationAngle))
-        rotate(&outputCoords[curIdSmall*dim], goalCoordChosenSmall/*finalPosBarySmall*/, M_PI-rotationAngle);
+        rotate(&outputCoords[curIdSmall*dim], goalCoordChosenSmall/*finalPosBarySmall*/, rotationAngle);
     }
     std::cout << "Unit vector bary point = " << unitCentreBigVect[0] << "," << unitCentreBigVect[1] << endl;
     std::cout << "Goal coordinates = " << goalCoordChosenSmall[0] << "," << goalCoordChosenSmall[1] << endl;

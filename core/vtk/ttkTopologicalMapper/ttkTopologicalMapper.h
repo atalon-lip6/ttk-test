@@ -63,11 +63,11 @@ public:
   vtkGetMacro(DistanceMatrixRegexp, std::string);
 
   void SetDistMat(const std::string &s) {
-    this->DistanceMatrix.emplace_back(s);
+    this->DistanceMatrixNames.emplace_back(s);
     this->Modified();
   }
   void ClearDistMat() {
-    this->DistanceMatrix.clear();
+    this->DistanceMatrixNames.clear();
     this->Modified();
   }
 
@@ -94,5 +94,5 @@ private:
   // domain vertices coordinates in high dimension
   bool SelectMatrixWithRegexp{false};
   std::string DistanceMatrixRegexp{".*"};
-  std::vector<std::string> DistanceMatrix{};
+  std::vector<std::string> DistanceMatrixNames{};
 };

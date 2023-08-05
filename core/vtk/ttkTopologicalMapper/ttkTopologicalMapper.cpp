@@ -150,8 +150,8 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   Matrix inputDistMat{};
   if(this->ReEmbedMapper) {
     ttk::Timer tm{};
-    extractInputMatrix(inputDistMat, this->DistanceMatrix,
-                       input->GetPointData(), this->DistanceMatrixRegexp,
+    extractInputMatrix(inputDistMat, this->DistanceMatrixNames,
+                       input->GetPointData(), this->DistanceMatrixNamesRegexp,
                        this->threadNumber_, this->SelectMatrixWithRegexp);
     if(inputDistMat.nRows() != inputDistMat.nCols() || inputDistMat.nCols() == 0
        || inputDistMat.nRows() == 0) {
@@ -196,7 +196,7 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::Mapper::Matrix inputDistMat{};
   ttk::Timer tm{};
   extractInputMatrix(inputDistMat,
-                     distMatrix, this->DistanceMatrix,
+                     distMatrix, this->DistanceMatrixNames,
       input->GetRowData(), this->DistanceMatrixRegexp,
       this->threadNumber_, this->SelectMatrixWithRegexp);
   //if(inputDistMat.nRows() != inputDistMat.nCols() || inputDistMat.nCols() == 0

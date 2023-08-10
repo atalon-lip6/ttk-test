@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        arch: [linux/amd64, linux/arm64]
-    timeout-minutes: 3600
+        arch: [linux/arm64] #[linux/amd64, linux/arm64]
+    timeout-minutes: 720
     steps:
       -
         name: Set up QEMU

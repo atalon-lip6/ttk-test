@@ -12,6 +12,7 @@
 
 #include <cmath>
 
+bool triche = false;
 using namespace std;
 
 size_t bestAngleSampleFreq = 20;
@@ -289,8 +290,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 {
   float coordPt1[2] = {allCoords[2*iPt1], allCoords[2*iPt1+1]};
   float coordPt2[2] = {allCoords[2*iPt2], allCoords[2*iPt2+1]};
-  size_t n1 = hull1.size(), n2 = hull2.size();
-  cout << "Taille enveloppes : " << n1 << " et " << n2 << endl;
+  size_t hull1Size = hull1.size(), hull2Size = hull2.size();
+  size_t comp1Size = comp1.size(), comp2Size = comp2.size();
+  cout << "Taille enveloppes : " << hull1Size << " et " << hull2Size << endl;
 
   /*
   size_t iPtPrev1, iPtPrev2, iPtPost1, iPtPost2;
@@ -349,10 +351,10 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   //float coordBissect1[2] = {coordPrev1[0]+ coordPost1[0] - coordPt1[0], coordPrev1[1]+coordPost1[1]-coordPt1[1]};
   //float coordBissect2[2] = {coordPrev2[0]+ coordPost2[0]-coordPt2[0], coordPrev2[1]+coordPost2[1]-coordPt2[1]};
 
-  float semiAngle1A = (n1 == 1 || abs(angle1 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt1, coordPrev1, coordBissect1);
-  float semiAngle1B = (n1 == 1 || abs(angle1 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt1, coordBissect1, coordPost1);
-  float semiAngle2A = (n2 == 1 || abs(angle2 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt2, coordPrev2, coordBissect2);
-  float semiAngle2B = (n2 == 1 || abs(angle2 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt2, coordBissect2, coordPost2);
+  float semiAngle1A = (hull1Size == 1 || abs(angle1 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt1, coordPrev1, coordBissect1);
+  float semiAngle1B = (hull1Size == 1 || abs(angle1 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt1, coordBissect1, coordPost1);
+  float semiAngle2A = (hull2Size == 1 || abs(angle2 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt2, coordPrev2, coordBissect2);
+  float semiAngle2B = (hull2Size == 1 || abs(angle2 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt2, coordBissect2, coordPost2);
 
 
   cout << " semi 1 = " << deg(semiAngle1A) << " VS " << deg(semiAngle1B) << endl;
@@ -371,6 +373,12 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   float angleMax1 = M_PI/2-semiAngle1A, angleMin1 = -angleMax1; //TODO calculer autrement et comparer
   float angleMax2 = M_PI/2-semiAngle2A, angleMin2 = -angleMax2; //TODO calculer autrement et comparer
 
+  if (triche)
+  {
+    angleMax2 = -1.2205578117700335;
+    angleMin2 = -1.2231031410220277;
+  }
+
 
   float step1 = (angleMax1-angleMin1)/bestAngleSampleFreq, step2 = (angleMax2-angleMin2)/bestAngleSampleFreq;
   float bestAnglePair[2] = {0,0};
@@ -385,17 +393,17 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   for (int x : idsComps1And2)
     cout << x << " ";
   cout << endl;
-  std::vector<std::vector<double>> origDistMatrix(n1+n2), newDistMatrix(n1+n2);
-  for (size_t i = 0; i < n1+n2; i++)
+  std::vector<std::vector<double>> origDistMatrix(comp1Size+comp2Size), newDistMatrix(comp1Size+comp2Size);
+  for (size_t i = 0; i < comp1Size+comp2Size; i++)
   {
-    newDistMatrix[i].resize(n1+n2, 0);
-    origDistMatrix[i].resize(n1+n2);
-    for (size_t j = 0; j < n1+n2; j++)
+    newDistMatrix[i].resize(comp1Size+comp2Size, 0);
+    origDistMatrix[i].resize(comp1Size+comp2Size);
+    for (size_t j = 0; j < comp1Size+comp2Size; j++)
     {
       origDistMatrix[i][j] = distMatrix[idsComps1And2[i]][idsComps1And2[j]];
     }
   }
-  std::vector<float> coords1Test(2*comp1.size()), coords2Test(2*comp2.size()); //TODO populate
+  std::vector<float> coords1Test(2*comp1Size), coords2Test(2*comp2Size); //TODO populate
   std::set<size_t>::const_iterator it = comp1.cbegin();
   for (size_t i = 0; it != comp1.cend(); ++it, i++)
   {
@@ -413,19 +421,22 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   }
 
   if (std::isfinite(step2))
+  {
+    cout << "rotating first the 2 comp " << angleMin2 << endl;
+  }
     rotatePolygon(coords2Test, 2, coordPt2, angleMin2);
   cout << "Inital coords2 pivotées\n";
-  for (int u = 0; u < n2; u++)
+  for (int u = 0; u < comp2Size; u++)
     printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2Test[2*u]);
   printCoords("Coords du pivot : ", coordPt2);
   std::vector<float> coords2TestInitialState = coords2Test; //TODO populate
-  for (int u = 0; u < n2; u++)
+  cout << "Coords test 2 initial " << endl;
+  for (int u = 0; u < comp2Size; u++)
     printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2TestInitialState[2*u]);
 
 
   cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << endl;
   cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
-
   std::vector<double> foo;
   size_t nbIter1 = std::isfinite(step1) ? bestAngleSampleFreq+1 : 1;
   size_t nbIter2 = std::isfinite(step2) ? bestAngleSampleFreq+1 : 1;
@@ -434,9 +445,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
 
   cout << "Orig matrix : \n";
-  for (int ia = 0; ia < n1+n2; ia++)
+  for (int ia = 0; ia < comp1Size+comp2Size; ia++)
   {
-    for (int ib = 0; ib < n1+n2; ib++)
+    for (int ib = 0; ib < comp1Size+comp2Size; ib++)
     {
       cout << origDistMatrix[ia][ib] << "\t\t\t\t";
     }
@@ -445,12 +456,6 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   for (size_t i1 = 0; i1 < nbIter1; i1++, testAngle1+= step1)
   {
     cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
-    if (std::isfinite(step1))
-    {
-      rotatePolygon(coords1Test, 2, coordPt1, step1);
-      //for (int u = 0; u < n1; u++)
-      //  printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords1Test[2*u]);
-    }
 
     float testAngle2 = angleMin2;
 
@@ -460,19 +465,20 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
 
       //TODO dans fonction...
-      for (size_t i = 0; i < n1+n2; i++)
+      for (size_t i = 0; i < comp1Size+comp2Size; i++)
       {
-        float coordARotate[2] = {i < n1 ? coords1Test[2*i] : coords2Test[2*(i-n1)], i < n1 ? coords1Test[2*i+1] : coords2Test[2*(n1-i)+1]};
-        for (size_t j = 0; j < n1+n2; j++)
+        float coordARotate[2] = {i < comp1Size ? coords1Test[2*i] : coords2Test[2*(i-comp1Size)], i < comp1Size ? coords1Test[2*i+1] : coords2Test[2*(i-comp1Size)+1]};
+        for (size_t j = 0; j < comp1Size+comp2Size; j++)
         {
-          float coordBRotate[2] = {j < n1 ? coords1Test[2*j] : coords2Test[2*(j-n1)], j < n1 ? coords1Test[2*j+1] : coords2Test[2*(n1-j)+1]};
+          float coordBRotate[2] = {j < comp1Size ? coords1Test[2*j] : coords2Test[2*(j-comp1Size)], j < comp1Size ? coords1Test[2*j+1] : coords2Test[2*(j-comp1Size)+1]};
           newDistMatrix[i][j] = compute_dist(coordARotate, coordBRotate);
         }
       }
-     /*cout << "New matrix : \n";
-      for (int ia = 0; ia < n1+n2; ia++)
+      /*
+     cout << "New matrix : \n";
+      for (int ia = 0; ia < comp1Size+comp2Size; ia++)
       {
-        for (int ib = 0; ib < n1+n2; ib++)
+        for (int ib = 0; ib < comp1Size+comp2Size; ib++)
         {
           cout << newDistMatrix[ia][ib] << "\t\t\t\t";
         }
@@ -482,34 +488,49 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       //ttk::DistanceMatrixDistorsion ttkDistorsion;
       //ttkDistorsion.execute(origDistMatrix, newDistMatrix, curScore, foo);
       double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
+         for (int u = 0; u < comp2Size; u++)
+          printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2Test[2*u]);
       cout << "\t\tCurscore = " << curScore << endl;
+      if (comp2Size >= 2)
+      {
+        float totoAngle = computeAngle(&coords2Test[0], &coords2Test[2], &coords1Test[0]);
+        cout << "angle testé = " << deg(totoAngle) << endl;
+      }
       if (curScore < bestScore) // This pair of angle minimises the distorsion
       {
-        for (int u = 0; u < n2; u++)
+        for (int u = 0; u < comp2Size; u++)
           printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2Test[2*u]);
         bestScore = curScore;
         bestAnglePair[0] = std::isfinite(testAngle1) ? testAngle1 : 0;
         bestAnglePair[1] = std::isfinite(testAngle2) ? testAngle2 : 0;
-        for (int i = 0; i < n1+n2; i++)
+        for (int i = 0; i < comp1Size+comp2Size; i++)
         {
-          float coordRotated[2] = {i < n1 ? coords1Test[2*i] : coords2Test[2*(i-n1)], i < n1 ? coords1Test[2*i+1] : coords2Test[2*(n1-i)+1]};
+          float coordRotated[2] = {i < comp1Size ? coords1Test[2*i] : coords2Test[2*(i-comp1Size)], i < comp1Size ? coords1Test[2*i+1] : coords2Test[2*(i-comp1Size)+1]};
           allCoords[2*idsComps1And2[i]] = coordRotated[0];
           allCoords[2*idsComps1And2[i]+1] = coordRotated[1];
         }
       }
+      cout << endl;
 
       if (step2 < 1e-7) // Angle is null, no need to divide
         break;
       if (std::isfinite(step2))
       {
         rotatePolygon(coords2Test, 2, coordPt2, step2);
-        //for (int u = 0; u < n2; u++)
+        //for (int u = 0; u < comp2Size; u++)
         //  printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2Test[2*u]);
       }
 
     }
     if (step1 < 1e-7)
       break;
+    if (std::isfinite(step1))
+    {
+      rotatePolygon(coords1Test, 2, coordPt1, step1);
+      for (int u = 0; u < comp1Size; u++)
+        printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords1Test[2*u]);
+    }
+
   }
   cout << "best score is " << bestScore << endl;
 
@@ -547,9 +568,14 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
 #endif
 
   // Only small test
-  float aa[2] = {3,7}, bb[2] = {2,8}, cc[2] = {3,4};
+  float aa[2] = {24,27}, bb[2] = {20,30}, cc[2] = {21,25};
   float angleTest = computeAngle(aa, bb, cc, false);
-  std::cout << deg(angleTest) << " (" << angleTest << ") was test angle :D\n";
+  std::cout << "avant " << deg(angleTest) << " (" << angleTest << ") was test angle :D\n";
+
+  float aabis[2] = {3.6055,0}, bbbis[2] = {8.6055,0}, ccbis[2] = {2.3727,3.3882};
+  float angleTestbis = computeAngle(aabis, bbbis, ccbis, false);
+  std::cout << "après " << deg(angleTestbis) << " (" << angleTestbis << ") was test angle :D\n";
+
 
   size_t n = distMatrix.size();
   size_t dim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
@@ -583,6 +609,11 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     float edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
+    if (u == 4 && v == 6)
+    {
+      cout << " TRICHER\n";
+      triche = false;
+    }
 
     if (false && u == 0 && v == 2)
       break;
@@ -829,6 +860,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     ufPtrVector[u] = unionRepr;
     ufPtrVector[v] = unionRepr;
 
+    triche = false;
 
     cout << " Resulting component = ";
     for (auto x : unionSet)

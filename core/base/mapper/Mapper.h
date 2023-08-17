@@ -38,7 +38,8 @@ namespace ttk {
   class Mapper : virtual public Debug {
   public:
     Mapper();
-    ~Mapper() { printErr("Destroying :'(");}
+    ~Mapper() {
+    }
     enum class LOWER_DIMENSION {
       LOWER_DIM_2D = 2,
       LOWER_DIM_3D = 3,
@@ -141,8 +142,8 @@ namespace ttk {
      *
      * @return 0 in case of success.
      */
-    int updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<float> &pointsPrev);
-
+    int updateNonCentroidsCoords(float *const outputPointsCoords,
+                                 const std::vector<float> &pointsPrev);
 
     /**
      * @brief Compute mapper
@@ -323,35 +324,40 @@ namespace ttk {
 
 } // namespace ttk
 
-int ttk::Mapper::updateNonCentroidsCoords(float *const outputPointsCoords, const std::vector<float> &pointsPrev)
-{
-  const size_t nbPoint = compSpecialCoeffToSave_.size()/3;
-  if (pointsPrev.size() != 3*nbPoint)
-  {
-    printErr("Error in updating the dilatation coefficient only. We want to update the coordinates of "
-        + std::to_string(nbPoint) + " points but the data we saved to do so concerns "
-        + std::to_string(compSpecialCoeffToSave_.size()) + " points.");
+int ttk::Mapper::updateNonCentroidsCoords(
+  float *const outputPointsCoords, const std::vector<float> &pointsPrev) {
+  const size_t nbPoint = compSpecialCoeffToSave_.size() / 3;
+  if(pointsPrev.size() != 3 * nbPoint) {
+    printErr("Error in updating the dilatation coefficient only. We want to "
+             "update the coordinates of "
+             + std::to_string(nbPoint)
+             + " points but the data we saved to do so concerns "
+             + std::to_string(compSpecialCoeffToSave_.size()) + " points.");
     return 1;
   }
 
-  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2:3;
+  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3;
 
-  for (size_t i = 0; i < nbPoint; i++)
-  {
-    if (i < 5)
-    {
-      std::cerr << i << " pPrev => " << pointsPrev[3*i] << "," << pointsPrev[3*i+1] << "," << pointsPrev[3*i+2] << std::endl;
-      std::cerr << " oh la qui voilà = " << compSpecialCoeffToSave_[3*i+0] << " - " << compSpecialCoeffToSave_[3*i+1] << std::endl;
-   }
-    for (size_t iDim = 0; iDim < dim; iDim++)
-    {
-      outputPointsCoords[3*i+iDim] = pointsPrev[3*i+iDim] + (DilatationCoeff - prevDilatationCoeff_) * compSpecialCoeffToSave_[3*i+iDim];
+  for(size_t i = 0; i < nbPoint; i++) {
+    if(i < 5) {
+      std::cerr << i << " pPrev => " << pointsPrev[3 * i] << ","
+                << pointsPrev[3 * i + 1] << "," << pointsPrev[3 * i + 2]
+                << std::endl;
+      std::cerr << " oh la qui voilà = " << compSpecialCoeffToSave_[3 * i + 0]
+                << " - " << compSpecialCoeffToSave_[3 * i + 1] << std::endl;
     }
-    if (i < 5)
-      std::cerr << i << " => " << outputPointsCoords[3*i] << "," << outputPointsCoords[3*i+1] << "," << outputPointsCoords[3*i+2] << std::endl;
+    for(size_t iDim = 0; iDim < dim; iDim++) {
+      outputPointsCoords[3 * i + iDim]
+        = pointsPrev[3 * i + iDim]
+          + (DilatationCoeff - prevDilatationCoeff_)
+              * compSpecialCoeffToSave_[3 * i + iDim];
+    }
+    if(i < 5)
+      std::cerr << i << " => " << outputPointsCoords[3 * i] << ","
+                << outputPointsCoords[3 * i + 1] << ","
+                << outputPointsCoords[3 * i + 2] << std::endl;
   }
   prevDilatationCoeff_ = DilatationCoeff;
-
 
   return 0;
 }
@@ -512,7 +518,7 @@ int ttk::Mapper::execute(int *const outputBucket,
                         triangulation);
   }
 
-    return 0;
+  return 0;
 }
 
 template <typename dataType, typename triangulationType>
@@ -736,8 +742,10 @@ int ttk::Mapper::reEmbedMapper(
   Timer tm{};
 
   compSpecialCoeffToSave_.clear();
-  compSpecialCoeffToSave_.resize(3*triangulation.getNumberOfVertices(), 0.0);
-  std::cerr << "Resized the compSpecial to " + std::to_string(compSpecialCoeffToSave_.size())  << std::endl;
+  compSpecialCoeffToSave_.resize(3 * triangulation.getNumberOfVertices(), 0.0);
+  std::cerr << "Resized the compSpecial to "
+                 + std::to_string(compSpecialCoeffToSave_.size())
+            << std::endl;
 
   // 1. extract vertices in component edges. A vertex is considered in a bucket
   // if it lies insied or if it is the extremity of an edge which crosses that
@@ -869,7 +877,6 @@ centroidId[el]);
   std::vector<std::vector<double>> embedCentroids{};
   this->reduceMatrix(
     embedCentroids, centroidsDistMat, true, this->ReductionAlgo);
-  this->printErr(std::to_string(embedCentroids.size()) + " : dimension\n");
 
   // Conversion between storage layout x0,y0,z0,x1,y1,z1... and x0,
   // x1...,y0,y1...,z0,z1...
@@ -900,8 +907,8 @@ centroidId[el]);
   this->printMsg(". Re-embedded centroids", 1.0, tm.getElapsedTime(),
                  this->threadNumber_, debug::LineMode::NEW,
                  debug::Priority::PERFORMANCE);
-  //return 0; //To avoid computing segmentation for faster tests.
-  
+  // return 0; //To avoid computing segmentation for faster tests.
+
   // 7. get an embedding for all vertices of each connected component
   // Not in parallel because it calls some Python code. Parallelising the calls
   // to Python causes errors.
@@ -956,10 +963,10 @@ centroidId[el]);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < embedCentroids.size(); ++j) {
-      for (size_t iPtComp = 0; iPtComp < embedConnComp[j].size(); iPtComp++)
-      {
+      for(size_t iPtComp = 0; iPtComp < embedConnComp[j].size(); iPtComp++) {
         auto &coords = embedConnComp[j][iPtComp];
-        compSpecialCoeffToSave_[3*connCompVertsStrict[i][iPtComp]+j] = coords*maxDistNeigh/compDiag;
+        compSpecialCoeffToSave_[3 * connCompVertsStrict[i][iPtComp] + j]
+          = coords * maxDistNeigh / compDiag;
         coords *= DilatationCoeff * maxDistNeigh / compDiag;
         coords += embedCentroids[j][i];
       }

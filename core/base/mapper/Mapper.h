@@ -149,7 +149,7 @@ namespace ttk {
      * @brief Compute mapper
      *
      * @param[out] outputBucket associate its Bucket id to each vertex
-     * @param[out] outputConnComps Component id for each vertex (in
+     * @param[out] outputConnComp Component id for each vertex (in
      * the strict sense i.e. vertices belonging to the corresponding
      * bucket)
      * @param[out] compBaryCoords 3D barycenters coordinates

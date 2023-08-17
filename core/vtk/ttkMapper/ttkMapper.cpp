@@ -114,7 +114,7 @@ static void extractInputMatrix(ttk::Mapper::Matrix &inputMatrix,
                                std::vector<std::string> &arrayNames,
                                vtkPointData *const pd,
                                const std::string &regexp,
-                               const int nThreads,
+                               const int ttkNotUsed(nThreads),
                                const bool useRegexp) {
   if(pd == nullptr) {
     return;

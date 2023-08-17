@@ -46,7 +46,6 @@ static void setNodes(vtkUnstructuredGrid *const nodes,
                      const std::vector<std::array<float, 3>> &compBaryCoords,
                      const std::vector<int> &compBucketId) {
 
-  std::cerr << " IL Y A " << compBaryCoords.size() << " nodes\n";
   vtkNew<vtkIntArray> compId{};
   compId->SetName("ComponentId");
   compId->SetNumberOfComponents(1);
@@ -181,12 +180,11 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
   const size_t nbPoint = input->GetNumberOfPoints();
 
-  if (!needWholeUpdate_)
-  {
+  if(!needWholeUpdate_) {
     auto vtu = vtkUnstructuredGrid::SafeDownCast(outputNodes);
-    if (vtu == nullptr)
-    {
-      printErr("Error : updating only the dilatation coefficient but the reembedding mapper was not computed and stored yet.");
+    if(vtu == nullptr) {
+      printErr("Error : updating only the dilatation coefficient but the "
+               "reembedding mapper was not computed and stored yet.");
       return 0;
     }
 
@@ -201,24 +199,23 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
     outputPoints->GetData()->Fill(0.0);
     std::vector<int> compBucketId(input->GetNumberOfPoints());
 
-    this->updateNonCentroidsCoords(ttkUtils::GetPointer<float>(outputPoints->GetData()), pointsCoordsBackup_);
+    this->updateNonCentroidsCoords(
+      ttkUtils::GetPointer<float>(outputPoints->GetData()),
+      pointsCoordsBackup_);
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
     if(outSegVTU != nullptr) {
       outSegVTU->SetPoints(outputPoints);
     }
 
-    float* outputPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
-    for (size_t i = 0; i < nbPoint; i++)
-    {
-      for (size_t k = 0; k < 3; k++)
-        pointsCoordsBackup_[3*i+k] = outputPtr[3*i+k];
+    float *outputPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
+    for(size_t i = 0; i < nbPoint; i++) {
+      for(size_t k = 0; k < 3; k++)
+        pointsCoordsBackup_[3 * i + k] = outputPtr[3 * i + k];
     }
     needWholeUpdate_ = true;
     return 1;
   }
-  if (this->ReEmbedMapper)
-  {
-    printErr("Setting to false :D");
+  if(this->ReEmbedMapper) {
     firstTimeReembed_ = false;
   }
 
@@ -267,7 +264,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
       this->printErr("Invalid input distance matrix");
       return 0;
     }
-    pointsCoordsBackup_.resize(3*input->GetNumberOfPoints());
+    pointsCoordsBackup_.resize(3 * input->GetNumberOfPoints());
     outputPoints->SetNumberOfPoints(input->GetNumberOfPoints());
     outputPoints->GetData()->Fill(0.0);
     auto outSegVTU = vtkUnstructuredGrid::SafeDownCast(outputSegmentation);
@@ -292,7 +289,7 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
                   inputDistMat, ttkUtils::GetPointer<VTK_TT>(inputScalarField),
                   *static_cast<TTK_TT *>(triangulation->getData())));
 
-  //Computing the averaged elevation for the centroids.
+  // Computing the averaged elevation for the centroids.
   std::vector<double> sumCompSf(compArcs.size());
   std::vector<size_t> sizeComp(compArcs.size());
   vtkNew<vtkDoubleArray> avgCentroidSf{};
@@ -301,32 +298,31 @@ int ttkMapper::RequestData(vtkInformation *ttkNotUsed(request),
   avgCentroidSf->SetNumberOfTuples(compArcs.size());
 
   int *connCompTab = ttkUtils::GetPointer<int>(connComp);
-  for (size_t iPt = 0; iPt < nbPoint; iPt++)
-  {
+  for(size_t iPt = 0; iPt < nbPoint; iPt++) {
     size_t curComp = connCompTab[iPt];
     double val;
     inputScalarField->GetTuple(iPt, &val);
     sumCompSf[curComp] += val;
     sizeComp[curComp]++;
   }
-  for (size_t iComp = 0; iComp < compArcs.size(); iComp++)
-  {
-    double curAvg = sumCompSf[iComp]/sizeComp[iComp];
+  for(size_t iComp = 0; iComp < compArcs.size(); iComp++) {
+    double curAvg = sumCompSf[iComp] / sizeComp[iComp];
     avgCentroidSf->SetTuple(iComp, &curAvg);
   }
   outputNodes->GetPointData()->AddArray(avgCentroidSf);
 
-  //TODO back up et dilatation truc les moy d'elevation ?
+  // TODO back up et dilatation truc les moy d'elevation ?
   setNodes(outputNodes, compBaryCoords, compBucketId);
   setArcs(outputArcs, compArcs, outputNodes->GetPoints());
 
   // Backing up some date for fast update of the dilatation coefficient.
-  if (this->ReEmbedMapper)
-  {
-    float* const outputCoordsPtr = ttkUtils::GetPointer<float>(outputPoints->GetData());
-    for (size_t i = 0; i < pointsCoordsBackup_.size(); i++)
+  if(this->ReEmbedMapper) {
+    float *const outputCoordsPtr
+      = ttkUtils::GetPointer<float>(outputPoints->GetData());
+    for(size_t i = 0; i < pointsCoordsBackup_.size(); i++)
       pointsCoordsBackup_[i] = outputCoordsPtr[i];
-    connCompPrev_->DeepCopy(connComp); // shallow semblait marcher, maiis pas de raison pour.
+    connCompPrev_->DeepCopy(
+      connComp); // shallow semblait marcher, maiis pas de raison pour.
     bucketPrev_->DeepCopy(bucket);
     nodesPrev_->DeepCopy(outputNodes);
     arcsPrev_->DeepCopy(outputArcs);

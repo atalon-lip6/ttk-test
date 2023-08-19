@@ -140,7 +140,7 @@ namespace ttk {
      *
      * @return 0 in case of success.
      */
-    inline int updateNonCentroidsCoords(float *const outputPointsCoords,
+    int updateNonCentroidsCoords(float *const outputPointsCoords,
                                  const std::vector<float> &pointsPrev);
 
     /**

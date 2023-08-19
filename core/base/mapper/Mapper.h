@@ -325,8 +325,6 @@ namespace ttk {
 
 } // namespace ttk
 
-
-
 // template functions
 template <typename dataType, typename triangulationType>
 int ttk::Mapper::execute(int *const outputBucket,

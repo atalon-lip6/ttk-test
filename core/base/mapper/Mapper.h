@@ -153,7 +153,8 @@ namespace ttk {
      * the strict sense i.e. vertices belonging to the corresponding
      * bucket)
      * @param[out] compBaryCoords 3D barycenters coordinates
-     * @param[out] connCompBucket associate its Bucket to each connected component (i.e. each centroid/barycenter)
+     * @param[out] connCompBucket associate its Bucket to each connected
+     * component (i.e. each centroid/barycenter)
      * @param[out] compArcs Arcs between connected components
      * @param[out] outputPointsCoords coordinates for each point
      * @param[in] distMat High-dimension input distance matrix (for

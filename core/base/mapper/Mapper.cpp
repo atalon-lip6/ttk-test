@@ -4,6 +4,44 @@ ttk::Mapper::Mapper() {
   this->setDebugMsgPrefix("Mapper");
 }
 
+int ttk::Mapper::updateNonCentroidsCoords(
+  float *const outputPointsCoords, const std::vector<float> &pointsPrev) {
+  const size_t nbPoint = compSpecialCoeffToSave_.size() / 3;
+  if(pointsPrev.size() != 3 * nbPoint) {
+    printErr("Error in updating the dilatation coefficient only. We want to "
+             "update the coordinates of "
+             + std::to_string(nbPoint)
+             + " points but the data we saved to do so concerns "
+             + std::to_string(compSpecialCoeffToSave_.size()) + " points.");
+    return 1;
+  }
+
+  size_t dim = LowerDimension == LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3;
+
+  for(size_t i = 0; i < nbPoint; i++) {
+    if(i < 5) {
+      std::cerr << i << " pPrev => " << pointsPrev[3 * i] << ","
+                << pointsPrev[3 * i + 1] << "," << pointsPrev[3 * i + 2]
+                << std::endl;
+      std::cerr << " oh la qui voilà = " << compSpecialCoeffToSave_[3 * i + 0]
+                << " - " << compSpecialCoeffToSave_[3 * i + 1] << std::endl;
+    }
+    for(size_t iDim = 0; iDim < dim; iDim++) {
+      outputPointsCoords[3 * i + iDim]
+        = pointsPrev[3 * i + iDim]
+          + (DilatationCoeff - prevDilatationCoeff_)
+              * compSpecialCoeffToSave_[3 * i + iDim];
+    }
+    if(i < 5)
+      std::cerr << i << " => " << outputPointsCoords[3 * i] << ","
+                << outputPointsCoords[3 * i + 1] << ","
+                << outputPointsCoords[3 * i + 2] << std::endl;
+  }
+  prevDilatationCoeff_ = DilatationCoeff;
+
+  return 0;
+}
+
 int ttk::Mapper::reduceMatrix(
   std::vector<std::vector<double>> &outputCoords,
   const Matrix &mat,

@@ -590,7 +590,7 @@ int ttk::Mapper::processBucket(
     }
   }
 
-  size_t nLocConnComps{};
+  size_t nLocConnComps = 0;
   // find connected component ids
   for(size_t i = 0; i < uf.size(); ++i) {
     const auto root{uf[i].find()};
@@ -606,8 +606,8 @@ int ttk::Mapper::processBucket(
   // store component edges ids (useful to get arcs)
   connCompEdges.resize(nLocConnComps);
   for(auto &vec : connCompEdges) {
-    // random guess...
-    vec.reserve(bucketEdges.size() / nLocConnComps + 1);
+    // random guess..., max to avoid div by zero
+    vec.reserve(bucketEdges.size() / std::max<size_t>(1, nLocConnComps) + 1);
   }
 
   for(size_t i = 0; i < bucketEdges.size(); ++i) {

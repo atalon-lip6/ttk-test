@@ -66,29 +66,29 @@ COPY pkg/spectra.sh /tmp
 RUN  install-helper /tmp/spectra.sh
 
 # install ParaView
-ARG paraview=5.10.1
-ENV PARAVIEW_VERSION=${paraview}
+#ARG paraview=5.10.1
+#ENV PARAVIEW_VERSION=${paraview}
 
-COPY pkg/paraview.sh /tmp
-RUN  install-helper /tmp/paraview.sh
+#COPY pkg/paraview.sh /tmp
+#RUN  install-helper /tmp/paraview.sh
 
 # --------------------------------------------------------------------------
 
-FROM builder as builder-ttk
+#FROM builder as builder-ttk
 
 # install TTK
-ARG ttk=dev
-ENV TTK_VERSION=${ttk}
+#ARG ttk=dev
+#ENV TTK_VERSION=${ttk}
 
-ENV DEV=""
+#ENV DEV=""
 
-COPY pkg/ttk.sh /tmp
-RUN  install-helper /tmp/ttk.sh
+#COPY pkg/ttk.sh /tmp
+#RUN  install-helper /tmp/ttk.sh
 
 # --------------------------------------------------------------------------
 
 #FROM builder-ttk as ttk-dev
-FROM builder as ttk-dev
+#FROM builder as ttk-dev
 
 #COPY --from=builder-ttk /usr/local /usr/local
 
@@ -114,5 +114,5 @@ RUN apt-get update \
  && rm -rf /var/cache/apt/lists
 
 # run pvserver by default
-CMD /usr/local/bin/pvserver
-EXPOSE 11111
+#CMD /usr/local/bin/pvserver
+#EXPOSE 11111

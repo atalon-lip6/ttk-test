@@ -104,14 +104,14 @@ RUN  install-helper /tmp/ttk.sh
   
 # --------------------------------------------------------------------------
 
-FROM base as ttk
+#FROM base as ttk
 
-COPY --from=builder-ttk /usr/local /usr/local
+#COPY --from=builder-ttk /usr/local /usr/local
 
-RUN apt-get update \
- && apt-get -yqq --no-install-recommends install $(cat /usr/local/.pkgs) \
- && apt-get clean \
- && rm -rf /var/cache/apt/lists
+#RUN apt-get update \
+# && apt-get -yqq --no-install-recommends install $(cat /usr/local/.pkgs) \
+# && apt-get clean \
+# && rm -rf /var/cache/apt/lists
 
 # run pvserver by default
 #CMD /usr/local/bin/pvserver

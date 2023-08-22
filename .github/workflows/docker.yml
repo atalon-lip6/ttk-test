@@ -44,7 +44,7 @@ jobs:
           tags: |
             ghcr.io/topology-tool-kit/ttk:latest
           cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
-          cache-to:   type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache,mode=max
+            #cache-to:   type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache,mode=max
       -
         name: Build and push ttk-dev
         uses: docker/build-push-action@v4

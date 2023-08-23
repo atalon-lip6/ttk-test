@@ -39,20 +39,10 @@ jobs:
         with:
           platforms: ${{ matrix.arch }}
           context: "{{defaultContext}}:scripts/docker"
-          target: ttk
+          target: builder
           push: true
           tags: |
             ghcr.io/topology-tool-kit/ttk:latest
           cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
             #cache-to:   type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache,mode=max
-      -
-        name: Build and push ttk-dev
-        uses: docker/build-push-action@v4
-        with:
-          platforms: ${{ matrix.arch }}
-          context: "{{defaultContext}}:scripts/docker"
-          target: ttk-dev
-          push: true
-          tags: |
-            ghcr.io/topology-tool-kit/ttk-dev:latest
-          cache-from: type=gha,ref=ghcr.io/topology-tool-kit/ttk:buildcache
+      

@@ -1,0 +1,55 @@
+FROM build-base 
+LABEL maintainer="Christoph Garth <garth@cs.uni-kl.de>"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# --------------------------------------------------------------------------
+
+
+FROM build-base as builder
+
+COPY install-helper /usr/bin
+
+# install OSPRay + dependencies
+COPY pkg/ispc.sh /tmp
+RUN  install-helper /tmp/ispc.sh
+
+COPY pkg/tbb.sh /tmp
+RUN  install-helper /tmp/tbb.sh
+
+COPY pkg/embree.sh /tmp
+RUN  install-helper /tmp/embree.sh
+
+COPY pkg/rkcommon.sh /tmp
+RUN  install-helper /tmp/rkcommon.sh
+
+COPY pkg/openimagedenoise.sh /tmp
+RUN  install-helper /tmp/openimagedenoise.sh
+
+COPY pkg/openvkl.sh /tmp
+RUN  install-helper /tmp/openvkl.sh
+
+COPY pkg/ospray.sh /tmp
+RUN  install-helper /tmp/ospray.sh
+
+# install OSMesa
+COPY pkg/mesa.sh /tmp
+RUN  install-helper /tmp/mesa.sh
+
+# install ZFP
+COPY pkg/zfp.sh /tmp
+RUN  install-helper /tmp/zfp.sh
+
+# install Spectra
+COPY pkg/spectra.sh /tmp
+RUN  install-helper /tmp/spectra.sh
+
+# install ParaView
+#ARG paraview=5.10.1
+#ENV PARAVIEW_VERSION=${paraview}
+
+#COPY pkg/paraview.sh /tmp
+#RUN  install-helper /tmp/paraview.sh
+
+# --------------------------------------------------------------------------
+

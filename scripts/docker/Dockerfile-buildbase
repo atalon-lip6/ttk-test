@@ -1,0 +1,29 @@
+FROM ubuntu:focal as base
+LABEL maintainer="Christoph Garth <garth@cs.uni-kl.de>"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# --------------------------------------------------------------------------
+
+FROM base as build-base
+
+ENV CMAKE_BUILD_TYPE=MinSizeRel \
+    CMAKE_GENERATOR=Ninja
+
+# bring in additional apt sources
+RUN apt-get update \ 
+ && apt-get install --no-install-recommends -yqq ca-certificates \
+ && echo "deb [trusted=yes] https://apt.kitware.com/ubuntu/ focal main" > /etc/apt/sources.list.d/kitware.list \
+ && apt-get update
+
+# install base development env
+RUN apt-get install --no-install-recommends -yqq \
+    build-essential \
+    ninja-build \
+    cmake \
+    dlocate \
+    file \
+    curl
+
+# --------------------------------------------------------------------------
+

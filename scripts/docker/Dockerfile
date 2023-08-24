@@ -65,12 +65,12 @@ RUN  install-helper /tmp/zfp.sh
 COPY pkg/spectra.sh /tmp
 RUN  install-helper /tmp/spectra.sh
 
-# install ParaView
-#ARG paraview=5.10.1
-#ENV PARAVIEW_VERSION=${paraview}
+#install ParaView
+ARG paraview=5.10.1
+ENV PARAVIEW_VERSION=${paraview}
 
-#COPY pkg/paraview.sh /tmp
-#RUN  install-helper /tmp/paraview.sh
+COPY pkg/paraview.sh /tmp
+RUN  install-helper /tmp/paraview.sh
 
 # --------------------------------------------------------------------------
 

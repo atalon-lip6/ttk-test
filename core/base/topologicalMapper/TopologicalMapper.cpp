@@ -22,8 +22,8 @@ inline float computeSquaredDistBetweenMatrices(const std::vector<std::vector<dou
   float ret = 0;
   size_t n = mat1.size();
   for (size_t i = 0; i < n; i++)
-    for (size_t j = 0; j < n; j++)
-      ret += (mat1[i][j]-mat2[i][j])*(mat1[i][j]-mat2[i][j]);
+    for (size_t j = i+1; j < n; j++)
+      ret += abs(mat1[i][j]-mat2[i][j]);//*(mat1[i][j]-mat2[i][j]);
 
   return ret;
 }

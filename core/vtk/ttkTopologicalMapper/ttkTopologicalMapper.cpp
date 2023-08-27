@@ -164,6 +164,7 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   outputPoints->SetNumberOfPoints(nbPoint);
   std::cout << "IL Y A " << nbPoint << " POINTS :D\n";
   outputPoints->GetData()->Fill(0.0);
+  outputNodes->ShallowCopy(input);
   //outputPoints->SetData(input->GetPointData);
 
   std::vector<std::array<float, 3>> compBaryCoords{};
@@ -228,6 +229,11 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   //outputNodes->SetPoints(outputPoints);
   //setNodes(outputNodes, compBaryCoords, compBucketId);
   //setArcs(outputArcs, compArcs, outputNodes->GetPoints());
+
+
+  this->printMsg("Topomap : elapsed ", 1.0, tm.getElapsedTime(),
+                   this->threadNumber_, ttk::debug::LineMode::NEW,
+                   ttk::debug::Priority::ERROR);
 
   return 1;
 }

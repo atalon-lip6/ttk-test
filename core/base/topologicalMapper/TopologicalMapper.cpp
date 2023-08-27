@@ -20,10 +20,10 @@ size_t bestAngleSampleFreq = 20;
 inline float computeSquaredDistBetweenMatrices(const std::vector<std::vector<double>> &mat1, const std::vector<std::vector<double>> &mat2)
 {
   float ret = 0;
-  size_t n = mat1.size();
+  size_t n = mat1.size(), m = mat1[0].size();
   for (size_t i = 0; i < n; i++)
-    for (size_t j = i+1; j < n; j++)
-      ret += abs(mat1[i][j]-mat2[i][j]);//*(mat1[i][j]-mat2[i][j]);
+    for (size_t j = 0; j < m; j++)
+      ret += (mat1[i][j]-mat2[i][j])*(mat1[i][j]-mat2[i][j]);
 
   return ret;
 }
@@ -400,21 +400,21 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   float testAngle1 = angleMin1;
 
   size_t nComp12 = comp1.size()+comp2.size();
-  std::vector<size_t> idsComps1And2;
-  idsComps1And2.insert(idsComps1And2.begin(), comp1.cbegin(), comp1.cend());
-  idsComps1And2.insert(idsComps1And2.end(), comp2.cbegin(), comp2.cend());
+  std::vector<size_t> idsComp1, idsComp2;;
+  idsComp1.insert(idsComp1.begin(), comp1.cbegin(), comp1.cend());
+  idsComp2.insert(idsComp2.begin(), comp2.cbegin(), comp2.cend());
   /*cout << "The concatenation of the two comps is : ";
   for (int x : idsComps1And2)
     cout << x << " ";
   cout << endl;*/
-  std::vector<std::vector<double>> origDistMatrix(comp1Size+comp2Size), newDistMatrix(comp1Size+comp2Size);
-  for (size_t i = 0; i < comp1Size+comp2Size; i++)
+  std::vector<std::vector<double>> origDistMatrix(comp1Size), newDistMatrix(comp1Size);
+  for (size_t i = 0; i < comp1Size; i++)
   {
-    newDistMatrix[i].resize(comp1Size+comp2Size, 0);
-    origDistMatrix[i].resize(comp1Size+comp2Size);
-    for (size_t j = 0; j < comp1Size+comp2Size; j++)
+    newDistMatrix[i].resize(comp2Size, 0);
+    origDistMatrix[i].resize(comp2Size);
+    for (size_t j = 0; j < comp2Size; j++)
     {
-      origDistMatrix[i][j] = distMatrix[idsComps1And2[i]][idsComps1And2[j]];
+      origDistMatrix[i][j] = distMatrix[idsComp1[i]][idsComp2[j]];
     }
   }
   std::vector<float> coords1Test(2*comp1Size), coords2Test(2*comp2Size); //TODO populate
@@ -484,12 +484,12 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       rotatePolygon(coords2Test, 2, coordPt2, testAngle2);//isSwapped2 ? step2 : -step2);
 
       //TODO dans fonction...
-      for (size_t i = 0; i < comp1Size+comp2Size; i++)
+      for (size_t i = 0; i < comp1Size; i++)
       {
-        float coordARotate[2] = {i < comp1Size ? coords1Test[2*i] : coords2Test[2*(i-comp1Size)], i < comp1Size ? coords1Test[2*i+1] : coords2Test[2*(i-comp1Size)+1]};
-        for (size_t j = 0; j < comp1Size+comp2Size; j++)
+        float coordARotate[2] = {coords1Test[2*i],coords1Test[2*i+1]};
+        for (size_t j = 0; j < comp2Size; j++)
         {
-          float coordBRotate[2] = {j < comp1Size ? coords1Test[2*j] : coords2Test[2*(j-comp1Size)], j < comp1Size ? coords1Test[2*j+1] : coords2Test[2*(j-comp1Size)+1]};
+          float coordBRotate[2] = {coords2Test[2*j],coords2Test[2*j+1]};
           newDistMatrix[i][j] = compute_dist(coordARotate, coordBRotate);
         }
       }
@@ -549,12 +549,19 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         bestScore = curScore;
         bestAnglePair[0] = std::isfinite(testAngle1) ? testAngle1 : 0;
         bestAnglePair[1] = std::isfinite(testAngle2) ? testAngle2 : 0;
-        for (int i = 0; i < comp1Size+comp2Size; i++)
+        for (int i = 0; i < comp1Size; i++)
         {
-          float coordRotated[2] = {i < comp1Size ? coords1Test[2*i] : coords2Test[2*(i-comp1Size)], i < comp1Size ? coords1Test[2*i+1] : coords2Test[2*(i-comp1Size)+1]};
-          allCoords[2*idsComps1And2[i]] = coordRotated[0];
-          allCoords[2*idsComps1And2[i]+1] = coordRotated[1];
+          float coordRotated[2] = {coords1Test[2*i],coords1Test[2*i+1]};
+          allCoords[2*idsComp1[i]] = coordRotated[0];
+          allCoords[2*idsComp1[i]+1] = coordRotated[1];
         }
+        for (int i = 0; i < comp2Size; i++)
+        {
+          float coordRotated[2] = {coords2Test[2*i],coords2Test[2*i+1]};
+          allCoords[2*idsComp2[i]] = coordRotated[0];
+          allCoords[2*idsComp2[i]+1] = coordRotated[1];
+        }
+
       }
       //cout << endl;
 

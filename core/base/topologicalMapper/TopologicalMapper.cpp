@@ -70,6 +70,14 @@ float computeAngle(float const ptA[], float const ptB[], float const ptC[], bool
   return angle;
 }
 
+inline double compute_dist(const double ptA[], const double ptB[])
+{
+  double dx = ptB[0]-ptA[0], dy = ptB[1]-ptA[1];
+
+  return sqrt(dx*dx + dy*dy);
+}
+
+
 
 
 inline float compute_dist(const float ptA[], const float ptB[])
@@ -137,9 +145,9 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
     idsInHull.push_back(0);
     if (nbPoint == 2)
     {
-      double dist2 = (coords[0]-coords[2])*(coords[0]-coords[2]) + (coords[1]-coords[3])*(coords[1]-coords[3]);
+      double dist = compute_dist(&coords[0], &coords[2]);
 
-      if (dist2 > 1e-7)
+      if (dist > 1e-7) //TODO voir si distance trop grande ?
         idsInHull.push_back(1);
     }
     return;

@@ -596,7 +596,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       break;
     if (std::isfinite(step1))
     {
-      rotatePolygon(coords1Test, 2, coordPt1, isSwapped1 ? step1 : -step1);
+      rotatePolygon(coords1Test, 2, coordPt1, step1);
       for (int u = 0; u < comp1Size; u++)
         printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords1Test[2*u]);
     }

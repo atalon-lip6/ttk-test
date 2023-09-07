@@ -250,12 +250,15 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
   char qHullNone[1] = "";
   try
   {
+    double sumX = 0, sumY = 0;
     orgQhull::Qhull qhullCur;
     qhullCur.runQhull(qHullNone, dim, nbPoint, coords.data(), qHullFooStr);
     for (auto u : qhullCur.vertexList())
     {
       const orgQhull::QhullPoint &qhullPt = u.point();
       auto coordsCur = qhullPt.coordinates();
+      sumX += coordsCur[0];
+      sumY += coordsCur[1];
       for (int j = 0; j < coords.size()/2; j++)
       {
         if (abs(coords[2*j]-coordsCur[0])+abs(coords[2*j+1]-coordsCur[1]) < 1e-7)
@@ -264,6 +267,22 @@ void ttk::TopologicalMapper::getConvexHull(const std::vector<double>& coords, si
         }
       }
     }
+
+
+    double bary[2] = {sumX/idsInHull.size(), sumY/idsInHull.size()};
+    double baryRight[2] = {bary[0]+2, bary[1]};
+    vector<pair<double, size_t>> ptsToSort;
+    for (size_t u : idsInHull)
+    {
+      const double* curPt = &coords[2*u];
+      double curAngle = computeAngle(bary, baryRight, curPt);
+      ptsToSort.push_back({curAngle, u});
+    }
+
+    sort(ptsToSort.begin(), ptsToSort.end());
+    for (int i = 0; i < ptsToSort.size(); i++)
+      idsInHull[i] = ptsToSort[i].second;
+
 
     if (idsInHull.size() != qhullCur.vertexList().size())
       cout << " ERREUR DE QHULL DE ZUT !" << endl;

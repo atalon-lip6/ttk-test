@@ -76,11 +76,6 @@ float computeAngle(float const ptA[], float const ptB[], float const ptC[], bool
   printCoords("C : ", ptC);
 
   //if (abs(vect1[0]*vect2[1] - vect2[0]*vect1[1]) < 1e-7)
-  if (are_colinear(ptA, ptB, ptC))
-  {
-    cout << " Catched null ANGLE :-)\n";
-    return 0;
-  }
   angle = atan2(vect2[1], vect2[0]) - atan2(vect1[1], vect1[0]);
   if (angle < 0)
     angle += 2 * M_PI;

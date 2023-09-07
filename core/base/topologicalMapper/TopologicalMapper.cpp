@@ -16,7 +16,7 @@
 
 using namespace std;
 bool stop = false;
-size_t bestAngleSampleFreq = 10;
+size_t bestAngleSampleFreq = 20;
 
 inline float computeSquaredDistBetweenMatrices(const std::vector<std::vector<double>> &mat1, const std::vector<std::vector<double>> &mat2)
 {
@@ -84,10 +84,11 @@ double computeAngle(double const ptA[], double const ptB[], double const ptC[], 
   double vect2[2] = {ptC[0]-ptA[0], ptC[1]-ptA[1]};
   double dirVect[2] = {0,0};
 
+#if VERB > 4
   printCoords("A : ", ptA);
   printCoords("B : ", ptB);
   printCoords("C : ", ptC);
-
+#endif
   angle = atan2(vect2[1], vect2[0]) - atan2(vect1[1], vect1[0]);
   if (angle < 0)
     angle += 2 * M_PI;
@@ -472,7 +473,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   size_t nbIter2 = std::isfinite(step2) ? bestAngleSampleFreq+0*1 : 1;
   if (std::isfinite(step1))
   {
-#if VERB > 1
+#if VERB > 2
     cout << "rotating first the 1 comp " << deg(angleMin1) << endl;
 #endif
     rotatePolygon(coords1Test, 2, coordPt1, angleMin1);
@@ -673,6 +674,7 @@ ttk::TopologicalMapper::~TopologicalMapper() = default;
 
 int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outputCoordsFloat, const std::vector<std::vector<float>> &distMatrix) const
 {
+  cout << DBL_DIG << " trop cool\n";
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
 #ifndef TTK_ENABLE_QHULL
   printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
@@ -729,12 +731,18 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     size_t u = elt.second.first;
     size_t v = elt.second.second;
 
+    UnionFind *reprU = ufPtrVector[u]->find();
+    UnionFind *reprV = ufPtrVector[v]->find();
+    if (reprU == reprV) // Already in the same component
+    {
+      continue;
+    }
 #if VERB > 0
     cout << endl << endl;
     std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << endl;
 #endif
 
-#if VERB > 2
+#if VERB > 1
     for (size_t iPt = 0; iPt < n; iPt++)
     {
       if (abs(outputCoords[2*iPt])+abs(outputCoords[2*iPt+1]) < 1e-9)
@@ -751,12 +759,8 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     std::cout << "....................................\n\n";
 #endif
 
-    UnionFind *reprU = ufPtrVector[u]->find();
-    UnionFind *reprV = ufPtrVector[v]->find();
-    if (reprU == reprV) // Already in the same component
-    {
-      continue;
-    }
+
+
     edgesMSTBefore.push_back(edgeCost);
     std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
     size_t idSmall = compU.size() < compV.size() ? u:v;
@@ -1065,6 +1069,21 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
   for (int i = 0; i < edgesMSTBefore.size(); i++)
     if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= 1e-5)
       cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
+
+
+    for (size_t iPt = 0; iPt < n; iPt++)
+    {
+      if (abs(outputCoords[2*iPt])+abs(outputCoords[2*iPt+1]) < 1e-9)
+        continue;
+      std::cout << "Coords of " << iPt << ": ";
+      for (size_t k = 0; k < dim; k++)
+      {
+        std::cout << outputCoords[iPt*dim+k];
+        if ((int)k < (int)dim-1)
+          std::cout << ",";
+      }
+      std::cout << "\n";
+    }
 
 
   for (int i = 0; i < 2*n; i++)

@@ -17,7 +17,6 @@
 
 using namespace std;
 bool stop = false;
-size_t bestAngleSampleFreq = 20;
 
 //TODO double
 inline float computeSquaredDistBetweenMatrices(const std::vector<std::vector<double>> &mat1, const std::vector<std::vector<double>> &mat2)
@@ -346,7 +345,7 @@ void getPrevPostEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter,
 }
 
 
-void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<float>> &distMatrix, double* allCoords, size_t nThread)
+void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<float>> &distMatrix, double* allCoords, size_t angleSamplingFreq, size_t nThread)
 {
   TTK_FORCE_USE(nThread);
   double finalDistClosest = compute_dist(&allCoords[2*iPt1], &allCoords[2*iPt2]);
@@ -429,7 +428,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
   if (angleMax2 > 1e-5 && angleMax2 < angleMin2)
     cout << "bizarre, max < min: " << deg(angleMin2) << " and " << deg(angleMax2) << "\n";
-  double step1 = (angleMax1-angleMin1)/bestAngleSampleFreq, step2 = (angleMax2-angleMin2)/bestAngleSampleFreq;
+  double step1 = (angleMax1-angleMin1)/angleSamplingFreq, step2 = (angleMax2-angleMin2)/angleSamplingFreq;
   double bestAnglePair[2] = {0,0};
   double bestScore = 1e34; //TODO
 
@@ -469,8 +468,8 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
 #endif
   std::vector<double> foo;
-  size_t nbIter1 = std::isfinite(step1) ? bestAngleSampleFreq+1 : 1;
-  size_t nbIter2 = std::isfinite(step2) ? bestAngleSampleFreq+1 : 1;
+  size_t nbIter1 = std::isfinite(step1) ? angleSamplingFreq+1 : 1;
+  size_t nbIter2 = std::isfinite(step2) ? angleSamplingFreq+1 : 1;
 
 
 #if VERB > 7
@@ -977,7 +976,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     }
     if (nBig > 1)
     {
-      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords.data(), this->threadNumber_);
+      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords.data(), this->AngleSamplingFreq, this->threadNumber_);
 #if VERB > 4
       std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*dim]<<","<<outputCoords[idChosenBig*dim+1] << "\n";
 #endif

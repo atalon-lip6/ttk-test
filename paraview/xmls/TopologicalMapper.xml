@@ -90,6 +90,19 @@
 
 
       <IntVectorProperty
+        name="AngleSamplingFreq"
+        label="Angles sampling frequency"
+        command="SetAngleSamplingFreq"
+        number_of_elements="1"
+        default_values="20">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+        When projecting in 2D, we regularly need to merge two already projected subsets of the points. We put them apart the right distance, but we may rotate each by some angle between two bounds. We test several angles and keep the best one. This parameter defines how many tests we do for each rotation. Beware, this parameter appears squared in the algorithm complexity.
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
         name="LowerDimension"
         label="Lower Dimension"
         command="SetLowerDimension"
@@ -107,6 +120,7 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="LowerDimension" />
+        <Property name="AngleSamplingFreq" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}

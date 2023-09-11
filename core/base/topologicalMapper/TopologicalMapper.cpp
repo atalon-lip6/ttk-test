@@ -13,11 +13,13 @@
 #include <cmath>
 
 #define VERB 0
+#define CHECK 1
 
 using namespace std;
 bool stop = false;
 size_t bestAngleSampleFreq = 20;
 
+//TODO double
 inline float computeSquaredDistBetweenMatrices(const std::vector<std::vector<double>> &mat1, const std::vector<std::vector<double>> &mat2)
 {
   float ret = 0;
@@ -344,8 +346,9 @@ void getPrevPostEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter,
 }
 
 
-void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<float>> &distMatrix, double* allCoords)
+void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<float>> &distMatrix, double* allCoords, size_t nThread)
 {
+  TTK_FORCE_USE(nThread);
   double finalDistClosest = compute_dist(&allCoords[2*iPt1], &allCoords[2*iPt2]);
   double coordPt1[2] = {allCoords[2*iPt1], allCoords[2*iPt1+1]};
   double coordPt2[2] = {allCoords[2*iPt2], allCoords[2*iPt2+1]};
@@ -429,7 +432,6 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   double step1 = (angleMax1-angleMin1)/bestAngleSampleFreq, step2 = (angleMax2-angleMin2)/bestAngleSampleFreq;
   double bestAnglePair[2] = {0,0};
   double bestScore = 1e34; //TODO
-  double testAngle1 = angleMin1;
 
   std::vector<size_t> idsComp1, idsComp2;;
   idsComp1.insert(idsComp1.begin(), comp1.cbegin(), comp1.cend());
@@ -444,40 +446,32 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       origDistMatrix[i][j] = distMatrix[idsComp1[i]][idsComp2[j]];
     }
   }
-  std::vector<double> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
+  std::vector<double> initialCoords1(2*comp1Size), initialCoords2(2*comp2Size);
   std::set<size_t>::const_iterator it = comp1.cbegin();
   for (size_t i = 0; it != comp1.cend(); ++it, i++)
   {
     size_t iPt = *it;
-    coords1Test[2*i] = allCoords[2*iPt];
-    coords1Test[2*i+1] = allCoords[2*iPt+1];
+    initialCoords1[2*i] = allCoords[2*iPt];
+    initialCoords1[2*i+1] = allCoords[2*iPt+1];
   }
 
   it = comp2.cbegin();
   for (size_t i = 0; it != comp2.cend(); ++it, i++)
   {
     size_t iPt = *it;
-    coords2Test[2*i] = allCoords[2*iPt];
-    coords2Test[2*i+1] = allCoords[2*iPt+1];
+    initialCoords2[2*i] = allCoords[2*iPt];
+    initialCoords2[2*i+1] = allCoords[2*iPt+1];
   }
 
-  std::vector<double> coords2TestInitialState = coords2Test;
-  std::vector<double> coords1TestInitialState = coords1Test;
 
 #if VERB > 0
   cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << endl;
   cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
 #endif
   std::vector<double> foo;
-  size_t nbIter1 = std::isfinite(step1) ? bestAngleSampleFreq+0*1 : 1;
-  size_t nbIter2 = std::isfinite(step2) ? bestAngleSampleFreq+0*1 : 1;
-  if (std::isfinite(step1))
-  {
-#if VERB > 2
-    cout << "rotating first the 1 comp " << deg(angleMin1) << endl;
-#endif
-    rotatePolygon(coords1Test, 2, coordPt1, angleMin1);
-  }
+  size_t nbIter1 = std::isfinite(step1) ? bestAngleSampleFreq+1 : 1;
+  size_t nbIter2 = std::isfinite(step2) ? bestAngleSampleFreq+1 : 1;
+
 
 #if VERB > 7
   cout << "Orig matrix : \n";
@@ -490,11 +484,22 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     cout << endl;
   }
 #endif
-  for (size_t i1 = 0; i1 < nbIter1; i1++, testAngle1+= step1)
+if (step1 < 1e-6)
+  nbIter1 = 1;
+bool fini = false;
+#pragma omp parallel for num_threads(nThread) firstprivate(newDistMatrix), shared(allCoords)
+  for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
+    std::vector<double> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
+    coords1Test = initialCoords1;
+    double testAngle1 = angleMin1+step1*i1;
+    rotatePolygon(coords1Test, 2, coordPt1, testAngle1);
+#pragma omp critical
+{
 #if VERB > 2
     cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
 #endif
+#if CHECK
     if (comp1Size >= 2)
     {
       double *A1, *B1, *C1;
@@ -516,7 +521,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         --it1;
         cpt1--;
       }
-      B1 = &coords1TestInitialState[2*(cpt1)];
+      B1 = &initialCoords1[2*(cpt1)];
       C1 = &coords1Test[2*cpt1];
       double totoAngle = computeAngle(A1,B1,C1);
       if (totoAngle > M_PI)
@@ -524,17 +529,19 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       if (abs(deg(testAngle1) - deg(totoAngle)) > 0.5)
         cout << "ERROR1 : " << deg(testAngle1) << " VS " << deg(totoAngle) << "\n";
     }
+#endif
+}
     double testAngle2 = angleMin2;
 
-    //coords2Test = coords2TestInitialState;
+    //coords2Test = coords2TestMinimalState;
     for (size_t i2 = 0; i2 < nbIter2; i2++)
     {
-      coords2Test = coords2TestInitialState;
+      coords2Test = initialCoords2;
 #if VERB > 2
       cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
 #endif
+      testAngle2 = angleMin2+i2*step2;
       rotatePolygon(coords2Test, 2, coordPt2, testAngle2);
-      // ^ TODO step by step...
 
       //TODO dans fonction...
       for (size_t i = 0; i < comp1Size; i++)
@@ -567,6 +574,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       }
 #endif
       double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
+#pragma omp critical
+{
+#if CHECK
       if (comp2Size >= 2 && comp1Size >= 1)
       {
         double *A, *B, *C;
@@ -588,7 +598,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
           --it2;
           cpt2--;
         }
-        B = &coords2TestInitialState[2*(cpt2)];
+        B = &initialCoords2[2*(cpt2)];
         C = &coords2Test[2*cpt2];
         double totoAngle = computeAngle(A,B,C);
         if (totoAngle > M_PI)
@@ -596,10 +606,15 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         if (abs(deg(testAngle2) - deg(totoAngle)) > 0.5)
           cout << "ERROR2 : " << deg(testAngle2) << " VS " << deg(totoAngle) << "\n";
       }
+#endif
+}
+#pragma omp critical
+{
+  //TODO maybe juste update bestScore et bestAnglePair, calculer coords à la fin ?
       if (/*stop ||*/ curScore < bestScore) // This pair of angle minimises the distortion
       {
-#if VERB > 2
-        cout << "Found new best score with angles " << deg(testAngle1) << ", " << deg(testAngle2) << endl;
+#if VERB > 0
+        cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << endl;
 #endif
         bestScore = curScore;
         bestAnglePair[0] = std::isfinite(testAngle1) ? testAngle1 : 0;
@@ -618,31 +633,11 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         }
 
       }
-      //cout << endl;
-      //if (stop)
-      //  return;
+}
 
       if (step2 < 1e-7) // Angle is null, no need to divide
         break;
-      if (std::isfinite(step2))
-      {
-        //rotatePolygon(coords2Test, 2, coordPt2, step2);
-        //for (int u = 0; u < comp2Size; u++)
-        //  printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords2Test[2*u]);
-      }
-      testAngle2+=step2;
     }
-    if (step1 < 1e-7)
-      break;
-    if (std::isfinite(step1))
-    {
-      rotatePolygon(coords1Test, 2, coordPt1, step1);
-#if VERB > 4
-      for (int u = 0; u < comp1Size; u++)
-        printCoords(("Vert " + to_string(u) + " : ").c_str(), &coords1Test[2*u]);
-#endif
-    }
-
   }
 #if VERB > 1
   cout << "best score is " << bestScore << endl;
@@ -698,7 +693,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
   std::vector<double> outputCoords(n*2);
   for (int i = 0; i < n*2; i++)
     outputCoords[i] = outputCoordsFloat[2*i];
-  std::vector<std::pair<double, std::pair<size_t, size_t>>> edgeHeapVect;
+  std::vector<std::pair<double, std::pair<size_t, size_t>>> edgeHeapVect(n*(n+1)/2);//TODO identifiant i,j
   for (int u1 = 0; u1 < n; u1++)
   {
     for (int u2 = u1+1; u2 < n; u2++)
@@ -722,8 +717,11 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     outputCoords[i] = 0;
 
 
+  size_t nbEdgesMerged = 0;
   for (const auto &elt : edgeHeapVect)
   {
+    if (nbEdgesMerged == n-1)
+      break;
     //if (stop)
     //  break;
     //return 0;
@@ -737,6 +735,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     {
       continue;
     }
+    nbEdgesMerged++;
 #if VERB > 0
     cout << endl << endl;
     std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << endl;
@@ -756,6 +755,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
       }
       std::cout << "\n";
     }
+
     std::cout << "....................................\n\n";
 #endif
 
@@ -977,7 +977,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     }
     if (nBig > 1)
     {
-      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords.data());
+      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords.data(), this->threadNumber_);
 #if VERB > 4
       std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*dim]<<","<<outputCoords[idChosenBig*dim+1] << "\n";
 #endif
@@ -1012,6 +1012,7 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
     ufToSets.erase(otherRepr);
     //ufToSets[otherRepr] = unionSet;
   }
+  std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << endl;
 
 
 
@@ -1071,19 +1072,19 @@ int ttk::TopologicalMapper::execute(std::vector<float> &inputPoints, float* outp
       cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
 
 
-    for (size_t iPt = 0; iPt < n; iPt++)
+  for (size_t iPt = 0; iPt < n; iPt++)
+  {
+    if (abs(outputCoords[2*iPt])+abs(outputCoords[2*iPt+1]) < 1e-9)
+      continue;
+    std::cout << "Coords of " << iPt << ": ";
+    for (size_t k = 0; k < dim; k++)
     {
-      if (abs(outputCoords[2*iPt])+abs(outputCoords[2*iPt+1]) < 1e-9)
-        continue;
-      std::cout << "Coords of " << iPt << ": ";
-      for (size_t k = 0; k < dim; k++)
-      {
-        std::cout << outputCoords[iPt*dim+k];
-        if ((int)k < (int)dim-1)
-          std::cout << ",";
-      }
-      std::cout << "\n";
+      std::cout << outputCoords[iPt*dim+k];
+      if ((int)k < (int)dim-1)
+        std::cout << ",";
     }
+    std::cout << "\n";
+  }
 
 
   for (int i = 0; i < 2*n; i++)

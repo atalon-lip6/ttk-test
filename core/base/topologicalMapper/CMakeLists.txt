@@ -7,7 +7,6 @@ ttk_add_base_library(topologicalMapper
     triangulation
     dimensionReduction
     unionFind
-    distanceMatrixDistorsion
 )
 target_compile_options(topologicalMapper PUBLIC -ggdb -O0)
 if(TTK_ENABLE_QHULL)

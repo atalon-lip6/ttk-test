@@ -16,6 +16,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 #include <ttkMapper.h>
+#include <ttkTopologicalMapper.h>
 
 #include <regex>
 #include <string>

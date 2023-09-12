@@ -211,7 +211,9 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
   //if (false)
-  this->execute(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
+
+  int ret = this->execute<float>(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
+  //this->execute<float>(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
   std::string nameCoords[3] = {"x", "y", "z"};
   for (int i = 0; i < 2; i++)
   {

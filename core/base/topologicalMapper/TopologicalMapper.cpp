@@ -85,16 +85,16 @@ inline double deg(double angle)
 }
 
 
-void rotatePolygon(std::vector<double> &coords, size_t dim, double* centerCoords, const double angle)
+void rotatePolygon(std::vector<double> &coords, double* centerCoords, const double angle)
 {
   double xCenter = centerCoords[0], yCenter = centerCoords[1];
-  size_t nbPoint = coords.size()/dim;
+  size_t nbPoint = coords.size()/2;
 #if VERB > 3
   std::cout << "center = " << xCenter << "," << yCenter << std::endl;
 #endif
   for (size_t iPt = 0; iPt < nbPoint; iPt++)
   {
-    double &x = coords[iPt*dim], &y = coords[iPt*dim+1];
+    double &x = coords[iPt*2], &y = coords[iPt*2+1];
     double xNew, yNew;
     xNew = (x-xCenter)*cos(angle)-(y-yCenter)*sin(angle)+xCenter;
     yNew = (y-yCenter)*cos(angle)+(x-xCenter)*sin(angle)+yCenter;
@@ -290,7 +290,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     std::vector<double> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
     coords1Test = initialCoords1;
     double testAngle1 = angleMin1+step1*i1;
-    rotatePolygon(coords1Test, 2, coordPt1, testAngle1);
+    rotatePolygon(coords1Test, coordPt1, testAngle1);
 #pragma omp critical
 {
 #if VERB > 2
@@ -337,7 +337,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
 #endif
       testAngle2 = angleMin2+i2*step2;
-      rotatePolygon(coords2Test, 2, coordPt2, testAngle2);
+      rotatePolygon(coords2Test, coordPt2, testAngle2);
 
       //TODO dans fonction...
       for (size_t i = 0; i < comp1Size; i++)
@@ -531,7 +531,7 @@ void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<si
   {
     double sumX = 0, sumY = 0;
     orgQhull::Qhull qhullCur;
-    qhullCur.runQhull(qHullNone, dim, nbPoint, coords.data(), qHullFooStr);
+    qhullCur.runQhull(qHullNone, 2, nbPoint, coords.data(), qHullFooStr);
     for (auto u : qhullCur.vertexList())
     {
       const orgQhull::QhullPoint &qhullPt = u.point();

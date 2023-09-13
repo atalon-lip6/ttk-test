@@ -102,24 +102,9 @@
       </IntVectorProperty>
 
 
-      <IntVectorProperty
-        name="LowerDimension"
-        label="Lower Dimension"
-        command="SetLowerDimension"
-        number_of_elements="1"
-        default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="2" text="2D"/>
-          <Entry value="3" text="3D"/>
-        </EnumerationDomain>
-       <Documentation>
-          The dimension of the points once projected.
-       </Documentation>
-      </IntVectorProperty>
-      
+     
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="LowerDimension" />
         <Property name="AngleSamplingFreq" />
       </PropertyGroup>
 

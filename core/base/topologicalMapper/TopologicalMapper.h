@@ -58,7 +58,7 @@ void computeUnitVector(double* const coordOrig, double* const coordDest, double*
 
 double computeAngle(double const ptA[], double const ptB[], double const ptC[]);
 
-void rotatePolygon(std::vector<double> &coords, size_t dim, double* centerCoords, const double angle);
+void rotatePolygon(std::vector<double> &coords, double* centerCoords, const double angle);
 
 void rotate(double ptToRotate[], double const centre[], double angle);
 
@@ -79,20 +79,14 @@ namespace ttk {
   public:
     TopologicalMapper();
     ~TopologicalMapper();
-    enum class LOWER_DIMENSION {
-      LOWER_DIM_2D = 2,
-      LOWER_DIM_3D = 3,
-    };
 
 template<typename T>
-int execute(std::vector<T> &inputPoints, T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
+int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
 
   protected:
-    LOWER_DIMENSION LowerDimension{LOWER_DIMENSION::LOWER_DIM_2D}; //TODO enum de ttk...
     bool isQhullEnabled(void) const;
 
     size_t AngleSamplingFreq{20};
-    //void rotatePolygon(std::vector<float> &coords, size_t dim, float* centerCoords, const float angle) const;
   };
 
 
@@ -116,7 +110,7 @@ int execute(std::vector<T> &inputPoints, T* outputCoords, const std::vector<std:
 
 //TODO inputPoints remove
 template<typename T>
-int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
+int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
   cout << DBL_DIG << " trop cool\n";
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
@@ -138,7 +132,7 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
 
   size_t n = distMatrix.size();
   cout << "Il y a " << n << " points! :-)\n";
-  size_t dim = (LowerDimension == ttk::TopologicalMapper::LOWER_DIMENSION::LOWER_DIM_2D ? 2 : 3);
+  size_t dim = 2;
 
   std::vector<double> outputCoordsTmp;
   if (std::is_same<T, float>())
@@ -168,7 +162,7 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
     ufToSets[ufPtrVector[i]].insert(i);
   }
 
-  for (size_t i = 0; i < dim*n; i++)
+  for (size_t i = 0; i < 2*n; i++)
     outputCoordsPtr[i] = 0;
 
 
@@ -202,9 +196,9 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
       if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < 1e-9)
         continue;
       std::cout << "Coords of " << iPt << ": ";
-      for (size_t k = 0; k < dim; k++)
+      for (size_t k = 0; k < 2; k++)
       {
-        std::cout << outputCoordsPtr[iPt*dim+k];
+        std::cout << outputCoordsPtr[iPt*+k];
         if ((int)k < (int)dim-1)
           std::cout << ",";
       }
@@ -255,21 +249,21 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
       size_t idCur = idSet == 0 ? idSmall:idBig;
       std::set<size_t> &curComp = idCur == u ? compU:compV;
       size_t nCur = curComp.size();
-      curPointsSet.resize(nCur*dim);
+      curPointsSet.resize(nCur*2);
       std::vector<size_t> curCompVect(nCur);
 
       // We retrive the current coordinates of our component.
       size_t cptCur = 0;
       for (int vertId : curComp)
       {
-        for (int k = 0; k < dim; k++)
+        for (int k = 0; k < 2; k++)
         {
-          curPointsSet[dim*cptCur+k] = outputCoordsPtr[dim*vertId+k];
+          curPointsSet[2*cptCur+k] = outputCoordsPtr[2*vertId+k];
         }
         curCompVect[cptCur] = vertId;
         cptCur++;
       }
-      getConvexHull(curPointsSet, dim, curHullVerts);
+      getConvexHull(curPointsSet, 2, curHullVerts);
       // The ids in curHullVerts are the index of the vertices in the component list, not
       // the real ids of the vertices. The loop just below solves this.
       for (size_t &vert : curHullVerts)
@@ -288,7 +282,6 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
 
 
       idChosenVert = curHullVerts[0];
-      T* coordEdgeVert = &inputPoints[idChosenVert];
       // We want to select, among all vertices in the convex hull, the one which is
       // closest to the vertex of the edge we work on.
       for (size_t vert : curHullVerts)
@@ -306,8 +299,8 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
     for (size_t iHull = 0; iHull < sizeBigHull; iHull++)
     {
       size_t vert = idsInHullBig[iHull];
-      coordsBigHull[iHull*2] = outputCoordsPtr[vert*dim];
-      coordsBigHull[iHull*2+1] = outputCoordsPtr[vert*dim+1];
+      coordsBigHull[iHull*2] = outputCoordsPtr[vert*2];
+      coordsBigHull[iHull*2+1] = outputCoordsPtr[vert*2+1];
 #if VERB > 3
       printCoords(("Vertbig " + to_string(vert)).c_str(), &coordsBigHull[2*iHull]);
 #endif
@@ -315,8 +308,8 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
     for (size_t iHull = 0; iHull < sizeSmallHull; iHull++)
     {
       size_t vert = idsInHullSmall[iHull];
-      coordsSmallHull[iHull*2] = outputCoordsPtr[vert*dim];
-      coordsSmallHull[iHull*2+1] = outputCoordsPtr[vert*dim+1];
+      coordsSmallHull[iHull*2] = outputCoordsPtr[vert*2];
+      coordsSmallHull[iHull*2+1] = outputCoordsPtr[vert*2+1];
 #if VERB > 3
       printCoords(("Vertsmall " + to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
 #endif
@@ -359,28 +352,28 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
 #endif
 
     double unitCentreBigVect[2], unitCentreSmallVect[2];
-    computeUnitVector(&outputCoordsPtr[idChosenBig*dim], coordsCentreBig, unitCentreBigVect);
-    computeUnitVector(&outputCoordsPtr[idChosenSmall*dim], coordsCentreSmall, unitCentreSmallVect);
+    computeUnitVector(&outputCoordsPtr[idChosenBig*2], coordsCentreBig, unitCentreBigVect);
+    computeUnitVector(&outputCoordsPtr[idChosenSmall*2], coordsCentreSmall, unitCentreSmallVect);
 #if VERB > 3
-    printCoords("Le point choisit big : ", &outputCoordsPtr[idChosenBig*dim]);
+    printCoords("Le point choisit big : ", &outputCoordsPtr[idChosenBig*2]);
     printCoords("Centre for big comp is : ", coordsCentreBig);
     printCoords("Centre for small comp is : ", coordsCentreSmall);
 #endif
 
     //TODO create vector from two points?
-    double goalCoordChosenSmall[2] = {outputCoordsPtr[idChosenBig*dim]-edgeCost*unitCentreBigVect[0], outputCoordsPtr[idChosenBig*dim+1]-edgeCost*unitCentreBigVect[1]};
+    double goalCoordChosenSmall[2] = {outputCoordsPtr[idChosenBig*2]-edgeCost*unitCentreBigVect[0], outputCoordsPtr[idChosenBig*2+1]-edgeCost*unitCentreBigVect[1]};
     if (sizeBigHull == 1)
     {
-      goalCoordChosenSmall[0] = outputCoordsPtr[idChosenBig*dim]+edgeCost;
-      goalCoordChosenSmall[1] = outputCoordsPtr[idChosenBig*dim+1];
+      goalCoordChosenSmall[0] = outputCoordsPtr[idChosenBig*2]+edgeCost;
+      goalCoordChosenSmall[1] = outputCoordsPtr[idChosenBig*2+1];
       //continue;
     }
     //double smallCompMoveVect[2] = {coordsCentreSmall[0] + smallCompMoveVect[0], coordsCentreSmall[1] +smallCompMoveVect[1]};
-    double smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoordsPtr[idChosenSmall*dim], goalCoordChosenSmall[1] - outputCoordsPtr[idChosenSmall*dim+1]};
+    double smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoordsPtr[idChosenSmall*2], goalCoordChosenSmall[1] - outputCoordsPtr[idChosenSmall*2+1]};
 
-    double distBaryPointSmall = compute_dist(&outputCoordsPtr[idChosenSmall*dim], coordsCentreSmall);
+    double distBaryPointSmall = compute_dist(&outputCoordsPtr[idChosenSmall*2], coordsCentreSmall);
 #if VERB > 3
-    printCoords("Le point choisi small : ", &outputCoordsPtr[idChosenSmall*dim]);
+    printCoords("Le point choisi small : ", &outputCoordsPtr[idChosenSmall*2]);
     printCoords("Barycentre for small comp is : ", coordsCentreSmall);
 #endif
     double preFinalPosBarySmall[2] = {coordsCentreSmall[0]+smallCompMoveVect[0], coordsCentreSmall[1]+smallCompMoveVect[1]};
@@ -393,12 +386,12 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
     for (size_t curIdSmall : compSmall)
     {
 #if VERB > 3
-      std::cout << "pointSmall : " << outputCoordsPtr[curIdSmall*dim] << "," << outputCoordsPtr[curIdSmall*dim+1] << endl;
+      std::cout << "pointSmall : " << outputCoordsPtr[curIdSmall*2] << "," << outputCoordsPtr[curIdSmall*2+1] << endl;
 #endif
-      outputCoordsPtr[curIdSmall*dim] += smallCompMoveVect[0];
-      outputCoordsPtr[curIdSmall*dim+1] += smallCompMoveVect[1];
+      outputCoordsPtr[curIdSmall*2] += smallCompMoveVect[0];
+      outputCoordsPtr[curIdSmall*2+1] += smallCompMoveVect[1];
 #if VERB > 3
-      std::cout << "\tPre-new-coordinates for " << curIdSmall << " are: " << outputCoordsPtr[curIdSmall*dim]<<","<<outputCoordsPtr[curIdSmall*dim+1] << "\n";
+      std::cout << "\tPre-new-coordinates for " << curIdSmall << " are: " << outputCoordsPtr[curIdSmall*2]<<","<<outputCoordsPtr[curIdSmall*2+1] << "\n";
 #endif
 
       double rotationAngle = computeAngle(goalCoordChosenSmall, preFinalPosBarySmall, finalPosBarySmall);
@@ -418,9 +411,9 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
         printCoords("coordTo = ", finalPosBarySmall);
 #endif
 
-        rotate(&outputCoordsPtr[curIdSmall*dim], goalCoordChosenSmall, rotationAngle); //Ou - rotatinAngle ?
+        rotate(&outputCoordsPtr[curIdSmall*2], goalCoordChosenSmall, rotationAngle); //Ou - rotatinAngle ?
 #if VERB > 4
-        std::cout << "\t\tPost-new-coordinates for " << curIdSmall << " are: " << outputCoordsPtr[curIdSmall*dim]<<","<<outputCoordsPtr[curIdSmall*dim+1] << "\n";
+        std::cout << "\t\tPost-new-coordinates for " << curIdSmall << " are: " << outputCoordsPtr[curIdSmall*2]<<","<<outputCoordsPtr[curIdSmall*2+1] << "\n";
 #endif
       }
     }
@@ -434,7 +427,7 @@ int ttk::TopologicalMapper::execute(std::vector<T> &inputPoints, T* outputCoords
     {
       rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoordsPtr, this->AngleSamplingFreq, this->threadNumber_);
 #if VERB > 4
-      std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoordsPtr[idChosenBig*dim]<<","<<outputCoordsPtr[idChosenBig*dim+1] << "\n";
+      std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoordsPtr[idChosenBig*2]<<","<<outputCoordsPtr[idChosenBig*2+1] << "\n";
 #endif
     }
 

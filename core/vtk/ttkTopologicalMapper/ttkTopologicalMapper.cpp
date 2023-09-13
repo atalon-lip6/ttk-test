@@ -15,7 +15,6 @@
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
-#include <ttkMapper.h>
 #include <ttkTopologicalMapper.h>
 
 #include <regex>
@@ -24,8 +23,7 @@
 vtkStandardNewMacro(ttkTopologicalMapper);
 
 
-static void extractInputMatrix(ttk::Mapper::Matrix &inputMatrix,
-                               std::vector<std::vector<float>> &distMatrix,
+static void extractInputMatrix(std::vector<std::vector<float>> &distMatrix,
                                std::vector<std::string> &arrayNames,
                                vtkDataSetAttributes *const pd,
                                const std::string &regexp,
@@ -68,7 +66,6 @@ static void extractInputMatrix(ttk::Mapper::Matrix &inputMatrix,
     arrays[i] = pd->GetArray(arrayNames[i].data());
   }
 
-  inputMatrix.alloc(pd->GetNumberOfTuples(), arrayNames.size());
 //#ifdef TTK_ENABLE_OPENMP
 //#pragma omp parallel for num_threads(nThreads)
 //#endif // TTK_ENABLE_OPENMP
@@ -78,7 +75,6 @@ static void extractInputMatrix(ttk::Mapper::Matrix &inputMatrix,
     for(size_t j = 0; j < distMatrix.size(); ++j) {
       const auto array{arrays[j]};
       distMatrix[i][j] = array->GetVariantValue(i).ToDouble();
-      //inputMatrix.get(i, j) = array->GetVariantValue(i).ToDouble();
     }
   }
 }
@@ -176,32 +172,8 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   int status;
 
 
-  /*auto *pts = input->GetRowData();
-  vtkDataArray* ScalarFields = pts->GetScalars();
-  size_t dim = ScalarFields.size();
-  vector<double> inputCoords(dim*nbPoint);
-  std::vector<vtkAbstractArray *> arrays{};
-  for(const auto &s : ScalarFields) {
-    arrays.push_back(input->GetColumnByName(s.data()));
-  }
-  */
-  /*
-  char colNames[2][2] = {"x", "y"};
-  vtkDoubleArray *colX = vtkDoubleArray::SafeDownCast(input->GetColumnByName("x")),
-                   *colY = vtkDoubleArray::SafeDownCast(input->GetColumnByName("y"));
-      //inputMatrix[i*dim] = (arrays[j]->GetVariantValue(i).ToDouble());
-      //*/
-  std::vector<float> inputCoords(nbPoint*2);
-  /*
-  for (size_t i = 0; i < nbPoint; i++)
-  {
-    inputCoords[2*i] = colX->GetValue(i);
-    inputCoords[2*i+1] = colY->GetValue(i);
-  }*/
-  ttk::Mapper::Matrix inputDistMat{};
   ttk::Timer tm{};
-  extractInputMatrix(inputDistMat,
-                     distMatrix, this->DistanceMatrixNames,
+  extractInputMatrix(distMatrix, this->DistanceMatrixNames,
       input->GetRowData(), this->DistanceMatrixRegexp,
       this->threadNumber_, this->SelectMatrixWithRegexp);
   //if(inputDistMat.nRows() != inputDistMat.nCols() || inputDistMat.nCols() == 0
@@ -210,11 +182,9 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     this->printErr("Invalid input distance matrix");
     return 0;
   }
-  //if (false)
 
-  int ret = this->execute<float>(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
-  //this->execute<float>(inputCoords, ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
-  std::string nameCoords[3] = {"x", "y", "z"};
+  int ret = this->execute<float>(ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
+  std::string nameCoords[3] = {"x", "y"};
   for (int i = 0; i < 2; i++)
   {
     vtkNew<vtkDoubleArray> col{};
@@ -222,16 +192,11 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     col->SetName(nameCoords[i].c_str());
     for (int j = 0; j < nbPoint; j++)
     {
-      //std::cout << j  << " => " << outputPoints->GetData()[3*j+i];
       col->SetTuple1(j, ttkUtils::GetPointer<float>(outputPoints->GetData())[2*j+i]);
     }
 
     outputNodes->AddColumn(col);
   }
-  //outputNodes->GetPointData()->SetNumberOfPoints(nbPoint);
-  //outputNodes->SetPoints(outputPoints);
-  //setNodes(outputNodes, compBaryCoords, compBucketId);
-  //setArcs(outputArcs, compArcs, outputNodes->GetPoints());
 
 
   this->printMsg("Topomap : elapsed ", 1.0, tm.getElapsedTime(),

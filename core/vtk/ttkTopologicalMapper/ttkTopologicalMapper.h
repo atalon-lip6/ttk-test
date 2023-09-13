@@ -52,10 +52,6 @@ private:
 
 public:
 
-  ttkSetEnumMacro(LowerDimension, LOWER_DIMENSION);
-  vtkGetEnumMacro(LowerDimension, LOWER_DIMENSION);
-
-
   vtkSetMacro(SelectMatrixWithRegexp, bool);
   vtkGetMacro(SelectMatrixWithRegexp, bool);
 

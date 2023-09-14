@@ -76,7 +76,7 @@ double computeAngle(double const ptA[], double const ptB[], double const ptC[])
 //TODO double
 inline double computeSquaredDistBetweenMatrices(const std::vector<std::vector<double>> &mat1, const std::vector<std::vector<double>> &mat2)
 {
-  float ret = 0;
+  double ret = 0;
   size_t n = mat1.size(), m = mat1[0].size();
   for (size_t i = 0; i < n; i++)
     for (size_t j = 0; j < m; j++)

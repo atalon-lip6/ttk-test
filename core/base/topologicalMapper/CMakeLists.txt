@@ -4,7 +4,7 @@ ttk_add_base_library(topologicalMapper
   HEADERS
     TopologicalMapper.h
   DEPENDS
-    triangulation
+    geometry
     dimensionReduction
     unionFind
 )

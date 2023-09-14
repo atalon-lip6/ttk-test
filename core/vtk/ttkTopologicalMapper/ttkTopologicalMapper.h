@@ -67,9 +67,12 @@ public:
     this->Modified();
   }
 
-
   vtkSetMacro(AngleSamplingFreq, int);
   vtkGetMacro(AngleSamplingFreq, int);
+  
+  vtkSetMacro(CheckMST, bool);
+  vtkGetMacro(CheckMST, bool);
+
   static ttkTopologicalMapper *New();
   vtkTypeMacro(ttkTopologicalMapper, ttkAlgorithm);
 

@@ -31,7 +31,7 @@
 #include <map>
 #include <set>
 
-using namespace std;
+//using namespace std;
 
 
 
@@ -113,7 +113,7 @@ int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) cons
 template<typename T>
 int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
-  cout << DBL_DIG << " trop cool\n";
+  std::cout << DBL_DIG << " trop cool\n";
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
   if (!isQhullEnabled())
   {
@@ -133,7 +133,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
 
   size_t n = distMatrix.size();
-  cout << "Il y a " << n << " points! :-)\n";
+  std::cout << "Il y a " << n << " points! :-)\n";
   size_t dim = 2;
 
   std::vector<double> outputCoordsTmp;
@@ -337,12 +337,12 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
     if (angleSmall > M_PI)
     {
-      swap(coordPrevSmall, coordPostSmall);
+      std::swap(coordPrevSmall, coordPostSmall);
       angleSmall = 2*M_PI-angleSmall;
     }
     if (angleBig > M_PI)
     {
-      swap(coordPrevBig, coordPostBig);
+      std::swap(coordPrevBig, coordPostBig);
       angleBig = 2*M_PI-angleBig;
     }
     double coordsCentreBig[2] = {coordPrevBig[0], coordPrevBig[1]};
@@ -437,7 +437,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     double finalDist = compute_dist(&outputCoordsPtr[2*idChosenSmall], &outputCoordsPtr[2*idChosenBig]);
 
     if (abs(finalDist-edgeCost) > 1e-6)
-      cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << endl;
+      std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << endl;
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
     if (unionRepr != reprU && unionRepr != reprV)
@@ -496,8 +496,9 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
   // We check that the lengths of the edges selected to build a minimum spanning tree
   // are preserved by our algorithm.
-  if (CheckMST)
+  if (true || CheckMST)
   {
+    std::cout << " checking " << endl;
     for (const auto &elt : edgeHeapVectAfter)
     {
       double edgeCost = elt.first;
@@ -531,7 +532,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     for (int i = 0; i < edgesMSTBefore.size(); i++)
       if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= 1e-5)
-        cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
+        std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
 
 
   }

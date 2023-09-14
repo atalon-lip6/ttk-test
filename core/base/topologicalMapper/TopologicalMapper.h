@@ -87,6 +87,7 @@ int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) cons
     bool isQhullEnabled(void) const;
 
     size_t AngleSamplingFreq{20};
+    bool CheckMST{false};
   };
 
 
@@ -120,6 +121,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   return 1;
   }
 
+#if VERB > 0
   // Only small test
   double aa[2] = {24,27}, bb[2] = {21,25}, cc[2] = {20,30};
   double angleTest = computeAngle(aa, bb, cc);
@@ -128,7 +130,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   double aabis[2] = {-0.707,-2.121}, bbbis[2] = {2.414,1}, ccbis[2] = {3.414,-2};
   double angleTestbis = computeAngle(aabis, bbbis, ccbis);
   //std::cout << "après " << deg(angleTestbis) << " (" << angleTestbis << ") was test angle :D\n";
-
+#endif
 
   size_t n = distMatrix.size();
   cout << "Il y a " << n << " points! :-)\n";
@@ -142,7 +144,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       outputCoordsTmp[i] = outputCoords[i];
   }
   double* outputCoordsPtr = std::is_same<T, double>() ? (double*)outputCoords :  outputCoordsTmp.data();
-  std::vector<std::pair<double, std::pair<size_t, size_t>>> edgeHeapVect(n*(n+1)/2);//TODO identifiant i,j
+  std::vector<std::pair<double, std::pair<size_t, size_t>>> edgeHeapVect;
+  edgeHeapVect.reserve(n*(n-1)/2);
   for (int u1 = 0; u1 < n; u1++)
   {
     for (int u2 = u1+1; u2 < n; u2++)
@@ -484,42 +487,54 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
   }
 
-  for (const auto &elt : edgeHeapVectAfter)
+  // If we were provided a float array, we copy back the computed data.
+  if (std::is_same<T, float>())
   {
-    double edgeCost = elt.first;
-    size_t u = elt.second.first;
-    size_t v = elt.second.second;
-
-
-    UnionFind *reprU = ufPtrVectorAfter[u]->find();
-    UnionFind *reprV = ufPtrVectorAfter[v]->find();
-    if (reprU == reprV) // Already in the same component
-    {
-      continue;
-    }
-    UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
-    UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
-    if (unionRepr != reprU && unionRepr != reprV)
-      std::cerr << "NOOOOOOOOOOOOOOO\n";
-    std::set<size_t> &unionSet = ufToSetsAfter[unionRepr];
-    std::set<size_t> &otherSet = ufToSetsAfter[otherRepr];
-
-    unionSet.insert(otherSet.begin(), otherSet.end());
-    //TODO faire des trucs;
-
-    ufPtrVectorAfter[u] = unionRepr;
-    ufPtrVectorAfter[v] = unionRepr;
-
-    //std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
-    ufToSetsAfter.erase(otherRepr);
-    edgesMSTAfter.push_back(edgeCost);
+    for (int i = 0; i < 2*n; i++)
+      outputCoords[i] = outputCoordsPtr[i];
   }
 
-  for (int i = 0; i < edgesMSTBefore.size(); i++)
-    if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= 1e-5)
-      cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
+  // We check that the lengths of the edges selected to build a minimum spanning tree
+  // are preserved by our algorithm.
+  if (CheckMST)
+  {
+    for (const auto &elt : edgeHeapVectAfter)
+    {
+      double edgeCost = elt.first;
+      size_t u = elt.second.first;
+      size_t v = elt.second.second;
 
 
+      UnionFind *reprU = ufPtrVectorAfter[u]->find();
+      UnionFind *reprV = ufPtrVectorAfter[v]->find();
+      if (reprU == reprV) // Already in the same component
+      {
+        continue;
+      }
+      UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
+      UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
+      if (unionRepr != reprU && unionRepr != reprV)
+        std::cerr << "NOOOOOOOOOOOOOOO\n";
+      std::set<size_t> &unionSet = ufToSetsAfter[unionRepr];
+      std::set<size_t> &otherSet = ufToSetsAfter[otherRepr];
+
+      unionSet.insert(otherSet.begin(), otherSet.end());
+      //TODO faire des trucs;
+
+      ufPtrVectorAfter[u] = unionRepr;
+      ufPtrVectorAfter[v] = unionRepr;
+
+      //std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
+      ufToSetsAfter.erase(otherRepr);
+      edgesMSTAfter.push_back(edgeCost);
+    }
+
+    for (int i = 0; i < edgesMSTBefore.size(); i++)
+      if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= 1e-5)
+        cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
+
+
+  }
   for (size_t iPt = 0; iPt < n; iPt++)
   {
     if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < 1e-9)
@@ -534,11 +549,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     std::cout << "\n";
   }
 
-  if (std::is_same<T, float>())
-  {
-    for (int i = 0; i < 2*n; i++)
-      outputCoords[i] = outputCoordsPtr[i];
-  }
   return 0;
 }
 

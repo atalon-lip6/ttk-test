@@ -26,14 +26,14 @@
 // ttk common includes
 #include <Debug.h>
 #include <DimensionReduction.h>
+#include <Geometry.h>
 #include <UnionFind.h>
 #include "libqhullcpp/Qhull.h"
 #include <map>
 #include <set>
 
-//using namespace std;
-
-
+// cos and sin computations, so we are cautious on testing equalities between double.
+static const double EPS{ttk::Geometry::pow(10.0, -DBL_DIG+2)};
 
 inline double compute_dist2(const double ptA[], const double ptB[])
 {
@@ -51,7 +51,7 @@ inline double compute_dist(const double ptA[], const double ptB[])
 
 inline bool are_colinear(double const ptA[], double const ptB[], double const ptC[])
 {
-  return (abs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= 1e-14;
+  return (abs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= EPS;
 }
 
 void computeUnitVector(double* const coordOrig, double* const coordDest, double* const coordVect);
@@ -113,7 +113,6 @@ int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) cons
 template<typename T>
 int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
-  std::cout << DBL_DIG << " trop cool\n";
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
   if (!isQhullEnabled())
   {
@@ -174,9 +173,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   {
     if (nbEdgesMerged == n-1)
       break;
-    //if (stop)
-    //  break;
-    //return 0;
     double edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
@@ -196,7 +192,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #if VERB > 1
     for (size_t iPt = 0; iPt < n; iPt++)
     {
-      if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < 1e-9)
+      if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < EPS)
         continue;
       std::cout << "Coords of " << iPt << ": ";
       for (size_t k = 0; k < 2; k++)
@@ -211,9 +207,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     std::cout << "....................................\n\n";
 #endif
 
-
-
     edgesMSTBefore.push_back(edgeCost);
+    //TODO function
     std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
     size_t idSmall = compU.size() < compV.size() ? u:v;
     size_t idBig = idSmall == u ? v:u;
@@ -272,7 +267,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       for (size_t &vert : curHullVerts)
         vert = curCompVect[vert];
 
-
 #if VERB > 2
       cout << endl;
       std::cout << "\n\nConvex hull : ";
@@ -283,14 +277,13 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       std::cout << std::endl;
 #endif
 
-
       idChosenVert = curHullVerts[0];
       // We want to select, among all vertices in the convex hull, the one which is
       // closest to the vertex of the edge we work on.
       for (size_t vert : curHullVerts)
       {
-        double dist2 = distMatrix[vert][idEdgeVert[idSet]];
-        if (dist2 < distMatrix[idChosenVert][idEdgeVert[idSet]])
+        double dist = distMatrix[vert][idEdgeVert[idSet]];
+        if (dist < distMatrix[idChosenVert][idEdgeVert[idSet]])
           idChosenVert = vert;
       }
     }
@@ -335,6 +328,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #if VERB > 1
     cout << "UUU The angles are " << deg(angleSmall) << " " << deg(angleBig) << " UUU" << endl;
 #endif
+    //TODO put that in getprevpost?
     if (angleSmall > M_PI)
     {
       std::swap(coordPrevSmall, coordPostSmall);
@@ -420,12 +414,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
       }
     }
-    if (u == 311 && v == 362)
-    {
-      //cout << "returning here\n";
-      //return 1;
-      //break;
-    }
     if (nBig > 1)
     {
       rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoordsPtr, this->AngleSamplingFreq, this->threadNumber_);
@@ -436,7 +424,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     double finalDist = compute_dist(&outputCoordsPtr[2*idChosenSmall], &outputCoordsPtr[2*idChosenBig]);
 
-    if (abs(finalDist-edgeCost) > 1e-6)
+    if (abs(finalDist-edgeCost) > EPS)
       std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << endl;
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -459,7 +447,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     cout << "=======================\n";
 #endif
 
-    //std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
     ufToSets.erase(otherRepr);
     //ufToSets[otherRepr] = unionSet;
   }
@@ -496,7 +483,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
   // We check that the lengths of the edges selected to build a minimum spanning tree
   // are preserved by our algorithm.
-  if (true || CheckMST)
+  if (CHECK || CheckMST)
   {
     std::cout << " checking " << endl;
     for (const auto &elt : edgeHeapVectAfter)
@@ -525,20 +512,19 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       ufPtrVectorAfter[u] = unionRepr;
       ufPtrVectorAfter[v] = unionRepr;
 
-      //std::cerr << "\tDELETING " << otherRepr << "( and was " <<unionRepr << ")"<< std::endl;
       ufToSetsAfter.erase(otherRepr);
       edgesMSTAfter.push_back(edgeCost);
     }
 
     for (int i = 0; i < edgesMSTBefore.size(); i++)
-      if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= 1e-5)
+      if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= EPS)
         std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
 
 
   }
   for (size_t iPt = 0; iPt < n; iPt++)
   {
-    if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < 1e-9)
+    if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < EPS)
       continue;
     std::cout << "Coords of " << iPt << ": ";
     for (size_t k = 0; k < dim; k++)

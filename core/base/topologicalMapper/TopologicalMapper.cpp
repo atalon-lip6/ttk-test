@@ -7,8 +7,17 @@
 #include <algorithm>
 #include <Geometry.h>
 #include "libqhullcpp/Qhull.h"
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/adapted/boost_tuple.hpp>
+
 
 #include <cmath>
+
+namespace bg = boost::geometry;
+BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
+typedef boost::tuple<double, double> Point;
+typedef boost::geometry::model::polygon<Point> Polygon;
 
 bool ttk::TopologicalMapper::isQhullEnabled(void)const
 {
@@ -25,7 +34,7 @@ ttk::TopologicalMapper::TopologicalMapper() {
 }
 ttk::TopologicalMapper::~TopologicalMapper() = default;
 
-using namespace std;
+//using namespace std;
 bool stop = false;
 
 void computeUnitVector(double* const coordOrig, double* const coordDest, double* const coordVect)
@@ -160,37 +169,37 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
 
 #if VERB > 3
-  cout << "Comp 1 = ";
+  std::cout << "Comp 1 = ";
   for (int x : comp1)
-    cout << x << " ";
-  cout << endl;
-  cout << "Comp 2 = ";
+    std::cout << x << " ";
+  std::cout << endl;
+  std::cout << "Comp 2 = ";
   for (int x : comp2)
-    cout << x << " ";
-  cout << endl;
-  cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << endl;
+    std::cout << x << " ";
+  std::cout << endl;
+  std::cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << endl;
 #endif
 
   double angle1 = computeAngle(coordPt1, coordPrev1, coordPost1);
   double angle2 = computeAngle(coordPt2, coordPrev2, coordPost2);
 #if VERB > 2
-  cout << "The angles are " << deg(angle1) << " " << deg(angle2) << endl;
+  std::cout << "The angles are " << deg(angle1) << " " << deg(angle2) << endl;
 #endif
   bool isSwapped1 = false, isSwapped2 = false;
   if (angle1 > M_PI)
   {
-    swap(coordPrev1, coordPost1);
+    std::swap(coordPrev1, coordPost1);
     angle1 = 2*M_PI-angle1;
     isSwapped1 = true;
   }
   if (angle2 > M_PI)
   {
-    swap(coordPrev2, coordPost2);
+    std::swap(coordPrev2, coordPost2);
     angle2 = 2*M_PI-angle2;
     isSwapped2 = true;
   }
 #if VERB > 2
-  cout << "The angles REALLY are " << deg(angle1) << " " << deg(angle2) << endl;
+  std::cout << "The angles REALLY are " << deg(angle1) << " " << deg(angle2) << endl;
 #endif
 
   double coordBissect1[2] = {coordPrev1[0], coordPrev1[1]};
@@ -203,9 +212,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   double semiAngle2 = (hull2Size == 1 || abs(angle2 - M_PI) < 1e-7) ? M_PI/2 : computeAngle(coordPt2, coordPrev2, coordBissect2);
 
   if (angle1 > 1e-6 && abs(semiAngle1 - angle1/2) > 1e-5)
-    cout << "çavapas angle1 et semi1 : " << semiAngle1 <<  " VS " << angle1/2 << "\n";
+    std::cout << "çavapas angle1 et semi1 : " << semiAngle1 <<  " VS " << angle1/2 << "\n";
   if (angle2 > 1e-6 && abs(semiAngle2 - angle2/2) > 1e-5)
-    cout << "çavapas angle2 et semi2 : " << semiAngle2 <<  " VS " << angle2/2 << "\n";
+    std::cout << "çavapas angle2 et semi2 : " << semiAngle2 <<  " VS " << angle2/2 << "\n";
 
 #if VERB > 3
   printCoords("Pt1 : ", coordPt1);
@@ -222,10 +231,10 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   double angleMax2 = M_PI/2-semiAngle2, angleMin2 = -angleMax2; //TODO calculer autrement et comparer
 
   if (angleMax1 > 1e-5 && angleMax1 < angleMin1)
-    cout << "bizarre, max < min: " << deg(angleMin1) << " and " << deg(angleMax1) << "\n";
+    std::cout << "bizarre, max < min: " << deg(angleMin1) << " and " << deg(angleMax1) << "\n";
 
   if (angleMax2 > 1e-5 && angleMax2 < angleMin2)
-    cout << "bizarre, max < min: " << deg(angleMin2) << " and " << deg(angleMax2) << "\n";
+    std::cout << "bizarre, max < min: " << deg(angleMin2) << " and " << deg(angleMax2) << "\n";
   double step1 = (angleMax1-angleMin1)/angleSamplingFreq, step2 = (angleMax2-angleMin2)/angleSamplingFreq;
   double bestAnglePair[2] = {0,0};
   double bestScore = 1e34; //TODO
@@ -262,8 +271,8 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
 
 #if VERB > 0
-  cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << endl;
-  cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
+  std::cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << endl;
+  std::cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
 #endif
   std::vector<double> foo;
   size_t nbIter1 = std::isfinite(step1) ? angleSamplingFreq+1 : 1;
@@ -271,20 +280,20 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
 
 #if VERB > 7
-  cout << "Orig matrix : \n";
+  std::cout << "Orig matrix : \n";
   for (int ia = 0; ia < comp1Size+comp2Size; ia++)
   {
     for (int ib = 0; ib < comp1Size+comp2Size; ib++)
     {
-      cout << origDistMatrix[ia][ib] << "\t\t\t\t";
+      std::cout << origDistMatrix[ia][ib] << "\t\t\t\t";
     }
-    cout << endl;
+    std::cout << endl;
   }
 #endif
   if (step1 < 1e-6)
     nbIter1 = 1;
   bool fini = false;
-#pragma omp parallel for num_threads(nThread) firstprivate(newDistMatrix), shared(allCoords)
+//#pragma omp parallel for num_threads(nThread) firstprivate(newDistMatrix), shared(allCoords)
   for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
     std::vector<double> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
@@ -294,7 +303,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 #pragma omp critical
 {
 #if VERB > 2
-    cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
+    std::cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
 #endif
 #if CHECK
     if (comp1Size >= 2)
@@ -324,7 +333,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       if (totoAngle > M_PI)
         totoAngle -= 2*M_PI;
       if (abs(deg(testAngle1) - deg(totoAngle)) > 0.5)
-        cout << "ERROR1 : " << deg(testAngle1) << " VS " << deg(totoAngle) << "\n";
+        std::cout << "ERROR1 : " << deg(testAngle1) << " VS " << deg(totoAngle) << "\n";
     }
 #endif
 }
@@ -334,7 +343,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     {
       coords2Test = initialCoords2;
 #if VERB > 2
-      cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
+      std::cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
 #endif
       testAngle2 = angleMin2+i2*step2;
       rotatePolygon(coords2Test, coordPt2, testAngle2);
@@ -349,7 +358,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
           newDistMatrix[i][j] = compute_dist(coordARotate, coordBRotate);
           if (newDistMatrix[i][j]+1e-7 < finalDistClosest)
           {
-            cout << "problem " << newDistMatrix[i][j] << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << finalDistClosest << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << endl;
+            std::cout << "problem " << newDistMatrix[i][j] << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << finalDistClosest << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << endl;
             printCoords(" comp1 pt : ", coordARotate);
             printCoords(" comp2 pt : ", coordBRotate);
             stop = true;
@@ -359,14 +368,14 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         }
       }
 #if VERB > 7
-      cout << "New matrix : \n";
+      std::cout << "New matrix : \n";
       for (int ia = 0; ia < comp1Size+comp2Size; ia++)
       {
         for (int ib = 0; ib < comp1Size+comp2Size; ib++)
         {
-          cout << newDistMatrix[ia][ib] << "\t\t\t\t";
+          std::cout << newDistMatrix[ia][ib] << "\t\t\t\t";
         }
-        cout << endl;
+        std::cout << endl;
       }
 #endif
       double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
@@ -400,7 +409,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         if (totoAngle > M_PI)
           totoAngle -= 2*M_PI;
         if (abs(deg(testAngle2) - deg(totoAngle)) > 0.5)
-          cout << "ERROR2 : " << deg(testAngle2) << " VS " << deg(totoAngle) << "\n";
+          std::cout << "ERROR2 : " << deg(testAngle2) << " VS " << deg(totoAngle) << "\n";
       }
 #endif
 }
@@ -410,7 +419,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       if (/*stop ||*/ curScore < bestScore) // This pair of angle minimises the distortion
       {
 #if VERB > 0
-        cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << endl;
+        std::cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << endl;
 #endif
         bestScore = curScore;
         bestAnglePair[0] = std::isfinite(testAngle1) ? testAngle1 : 0;
@@ -436,9 +445,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     }
   }
 #if VERB > 1
-  cout << "best score is " << bestScore << endl;
+  std::cout << "best score is " << bestScore << endl;
 
-  cout << "The best angles are " << deg(bestAnglePair[0]) << " for 1 and " << deg(bestAnglePair[1]) << " for 2." << endl;
+  std::cout << "The best angles are " << deg(bestAnglePair[0]) << " for 1 and " << deg(bestAnglePair[1]) << " for 2." << endl;
 #endif
 }
 
@@ -460,97 +469,38 @@ void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<si
     return;
   }
 
-  // Testing if all points are colinear
-
-  double dirVect[2] = {0,0};
-  bool areColinear = true;
-
-  size_t idFirstDistinct = 0;
-  while (idFirstDistinct < nbPoint && abs(dirVect[0]) < 1e-7 && abs(dirVect[1]) < 1e-7)
+  typedef boost::geometry::model::multi_point<Point> Mpoints;
+  Mpoints multiPoints;
+  Polygon hull;
+  for (size_t i = 0; i < nbPoint; i++)
   {
-    idFirstDistinct++;
-    dirVect[0] = coords[2*idFirstDistinct]-coords[0];
-    dirVect[1] = coords[2*idFirstDistinct+1]-coords[1]; //TODO tester avec deux points mêmes coordonnées !
-    if (abs(dirVect[0]) < 1e-7)
-      dirVect[0] =  0;
-    if (abs(dirVect[1]) < 1e-7)
-      dirVect[1] =  0;
+    boost::geometry::append(multiPoints, Point(coords[2*i], coords[2*i+1]));
   }
-
-  double idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
-  double idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
-
-  const double* pt0 = &coords[0];
-  const double* ptDistinct = &coords[2*idFirstDistinct];
-
-  for (size_t iPt = idFirstDistinct+1; iPt < nbPoint; iPt++)
+  boost::geometry::convex_hull(multiPoints, hull);
+  double sumX = 0, sumY = 0;
+  for (auto boostPt : hull.outer())
   {
-    double curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
-    if (abs(curVect[0]) < 1e-7 && abs(curVect[1]) < 1e-7)
-      continue;
-    const double* ptCur = &coords[2*iPt];
-    if (!are_colinear(pt0, ptDistinct, ptCur))
+    double coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
+    sumX += coordsCur[0];
+    sumY += coordsCur[1];
+    for (int j = 0; j < coords.size()/2; j++)
     {
-      areColinear = false;
-      break;
-    }
-
-    if (coords[2*iPt] < coords[2*idMins[0]])
-      idMins[0] = iPt;
-    if (coords[2*iPt+1] < coords[2*idMins[1]])
-      idMins[1] = iPt;
-    if (coords[2*iPt] > coords[2*idMaxs[0]])
-      idMaxs[0] = iPt;
-    if (coords[2*iPt+1] > coords[2*idMaxs[1]])
-      idMaxs[1] = iPt;
-
-  }
-
-  if (areColinear)
-  {
-#if VERB > 5
-    std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
-#endif
-    if (abs(dirVect[0]) > 1e-7)
-    {
-      idsInHull.push_back(idMins[0]);
-      idsInHull.push_back(idMaxs[0]);
-    }
-    else
-    {
-      idsInHull.push_back(idMins[1]);
-      idsInHull.push_back(idMaxs[1]);
-    }
-    return;
-  }
-
-
-  char qHullFooStr[1] = ""; //"Q"
-  char qHullNone[1] = "";
-  try
-  {
-    double sumX = 0, sumY = 0;
-    orgQhull::Qhull qhullCur;
-    qhullCur.runQhull(qHullNone, 2, nbPoint, coords.data(), qHullFooStr);
-    for (auto u : qhullCur.vertexList())
-    {
-      const orgQhull::QhullPoint &qhullPt = u.point();
-      auto coordsCur = qhullPt.coordinates();
-      sumX += coordsCur[0];
-      sumY += coordsCur[1];
-      for (int j = 0; j < coords.size()/2; j++)
+      if (abs(coords[2*j]-coordsCur[0])+abs(coords[2*j+1]-coordsCur[1]) < 1e-7)
       {
-        if (abs(coords[2*j]-coordsCur[0])+abs(coords[2*j+1]-coordsCur[1]) < 1e-7)
-        {
-          idsInHull.push_back(j);
-        }
+        idsInHull.push_back(j);
       }
     }
-    //TODO angle 0 le point qu'on voulait !
+  }
+  // Boost closes the polygon, hence first and last vertex are the same.
+  idsInHull.pop_back();
+  sumX -= coords[2*idsInHull[0]];
+  sumY -= coords[2*idsInHull[0]+1];
+  //TODO angle 0 le point qu'on voulait !
 
-    double bary[2] = {sumX/idsInHull.size(), sumY/idsInHull.size()};
+
+  double bary[2] = {sumX/idsInHull.size(), sumY/idsInHull.size()};
     double baryRight[2] = {bary[0]+2, bary[1]};
-    vector<pair<double, size_t>> ptsToSort;
+    std::vector<std::pair<double, size_t>> ptsToSort;
     for (size_t u : idsInHull)
     {
       const double curPt[2] = {coords[2*u], coords[2*u+1]};
@@ -562,25 +512,15 @@ void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<si
     for (int i = 0; i < ptsToSort.size(); i++)
       idsInHull[i] = ptsToSort[i].second;
 
-
-    if (idsInHull.size() != qhullCur.vertexList().size())
-      cout << " ERREUR DE QHULL DE ZUT !" << endl;
-
-  }
-  catch (orgQhull::QhullError &e)
-  {
-    //printErr("Error with qHull module: " + std::string(e.what()));
-    cout << "Error with qHull module : " + std::string(e.what());
-    //return -1;
-  }
+  return;
 
 #if VERB > 4
-  cout << "retained ";
+  std::cout << "retained ";
   for (int i = 0; i < idsInHull.size(); i++)
   {
-    cout << idsInHull[i] << " ";
+    std::cout << idsInHull[i] << " ";
   }
-  cout << endl;
+  std::cout << endl;
 #endif
 }
 

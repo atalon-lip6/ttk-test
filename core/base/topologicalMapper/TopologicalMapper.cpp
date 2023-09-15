@@ -229,10 +229,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   std::vector<size_t> idsComp1, idsComp2;;
   idsComp1.insert(idsComp1.begin(), comp1.cbegin(), comp1.cend());
   idsComp2.insert(idsComp2.begin(), comp2.cbegin(), comp2.cend());
-  std::vector<std::vector<double>> origDistMatrix(comp1Size), newDistMatrix(comp1Size);
+  std::vector<std::vector<double>> origDistMatrix(comp1Size);
   for (size_t i = 0; i < comp1Size; i++)
   {
-    newDistMatrix[i].resize(comp2Size);
     origDistMatrix[i].resize(comp2Size);
     for (size_t j = 0; j < comp2Size; j++)
     {
@@ -268,15 +267,13 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     nbIter1 = 1;
   if (step2*nbIter2 < 0.001) // No need to split such a small angle
     nbIter2 = 1;
-//#pragma omp parallel for num_threads(nThread) firstprivate(newDistMatrix), shared(allCoords)
+#pragma omp parallel for num_threads(nThread) shared(allCoords)
   for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
     std::vector<double> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
     coords1Test = initialCoords1;
     double testAngle1 = angleMin1+step1*i1;
     rotatePolygon(coords1Test, coordPt1, testAngle1);
-#pragma omp critical
-{
 #if VERB > 2
     std::cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
 #endif
@@ -311,7 +308,6 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         std::cout << "ERROR1 : " << deg(testAngle1) << " VS " << deg(totoAngle) << "\n";
     }
 #endif
-}
 
     for (size_t i2 = 0; i2 < nbIter2; i2++)
     {
@@ -322,6 +318,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       double testAngle2 = angleMin2+i2*step2;
       rotatePolygon(coords2Test, coordPt2, testAngle2);
 
+      double curScore = 0;
       //TODO dans fonction...
       for (size_t i = 0; i < comp1Size; i++)
       {
@@ -329,10 +326,11 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         for (size_t j = 0; j < comp2Size; j++)
         {
           double coordBRotate[2] = {coords2Test[2*j],coords2Test[2*j+1]};
-          newDistMatrix[i][j] = compute_dist(coordARotate, coordBRotate);
-          if (newDistMatrix[i][j]+EPS < shortestDistPossible)
+          double newDist = compute_dist(coordARotate, coordBRotate);
+          curScore += abs(newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
+          if (newDist+EPS < shortestDistPossible)
           {
-            std::cout << "problem " << newDistMatrix[i][j] << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << endl;
+            std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << endl;
             printCoords(" comp1 pt : ", coordARotate);
             printCoords(" comp2 pt : ", coordBRotate);
 
@@ -350,9 +348,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         std::cout << endl;
       }
 #endif
-      double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
-#pragma omp critical
-{
+      //double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
 #if CHECK
       if (comp2Size >= 2 && comp1Size >= 1)
       {
@@ -384,7 +380,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
           std::cout << "ERROR2 : " << deg(testAngle2) << " VS " << deg(totoAngle) << "\n";
       }
 #endif
-}
+
 #pragma omp critical
 {
   //TODO maybe juste update bestScore et bestAnglePair, calculer coords à la fin ?
@@ -397,23 +393,17 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         bestScore = curScore;
         bestAnglePair[0] = std::isfinite(testAngle1) ? testAngle1 : 0;
         bestAnglePair[1] = std::isfinite(testAngle2) ? testAngle2 : 0;
-        for (int i = 0; i < comp1Size; i++)
-        {
-          double coordRotated[2] = {coords1Test[2*i],coords1Test[2*i+1]};
-          allCoords[2*idsComp1[i]] = coordRotated[0];
-          allCoords[2*idsComp1[i]+1] = coordRotated[1];
-        }
-        for (int i = 0; i < comp2Size; i++)
-        {
-          double coordRotated[2] = {coords2Test[2*i],coords2Test[2*i+1]};
-          allCoords[2*idsComp2[i]] = coordRotated[0];
-          allCoords[2*idsComp2[i]+1] = coordRotated[1];
-        }
-
       }
 }
-}
+    }
   }
+
+  for (size_t i1 : idsComp1)
+    rotate(&allCoords[2*i1], coordPt1, bestAnglePair[0]);
+
+  for (size_t i2 : idsComp2)
+    rotate(&allCoords[2*i2], coordPt2, bestAnglePair[1]);
+
 #if VERB > 1
   std::cout << "best score is " << bestScore << endl;
 
@@ -458,6 +448,6 @@ void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<si
       }
     }
   }
-  // Boost closes the polygon, hence first and last vertex are the same.
+  // Boost closes the polygon, hence the first and the last vertices are the identical.
   idsInHull.pop_back();
 }

@@ -6,7 +6,6 @@
 #include <utility>
 #include <algorithm>
 #include <Geometry.h>
-#include "libqhullcpp/Qhull.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
@@ -25,14 +24,6 @@ ttk::TopologicalMapper::TopologicalMapper() {
   this->setDebugMsgPrefix("TopologicalMapper");
 }
 ttk::TopologicalMapper::~TopologicalMapper() = default;
-
-bool ttk::TopologicalMapper::isQhullEnabled(void)const
-{
-#ifndef TTK_ENABLE_QHULL
-  return false
-#endif
-  return true;
-}
 
 // Normalize a given vector.
 void computeUnitVector(double* const coordOrig, double* const coordDest, double* const coordVect)
@@ -163,18 +154,18 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   std::cout << "Comp 1 = ";
   for (int x : comp1)
     std::cout << x << " ";
-  std::cout << endl;
+  std::cout << std::endl;
   std::cout << "Comp 2 = ";
   for (int x : comp2)
     std::cout << x << " ";
-  std::cout << endl;
-  std::cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << endl;
+  std::cout << std::endl;
+  std::cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << std::endl;
 #endif
 
   double angle1 = computeAngle(coordPt1, coordPrev1, coordPost1);
   double angle2 = computeAngle(coordPt2, coordPrev2, coordPost2);
 #if VERB > 2
-  std::cout << "The angles are " << deg(angle1) << " " << deg(angle2) << endl;
+  std::cout << "The angles are " << deg(angle1) << " " << deg(angle2) << std::endl;
 #endif
   if (angle1 > M_PI)
   {
@@ -187,7 +178,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     angle2 = 2*M_PI-angle2;
   }
 #if VERB > 2
-  std::cout << "The angles REALLY are " << deg(angle1) << " " << deg(angle2) << endl;
+  std::cout << "The angles REALLY are " << deg(angle1) << " " << deg(angle2) << std::endl;
 #endif
 
   double coordBissect1[2] = {coordPrev1[0], coordPrev1[1]};
@@ -257,8 +248,8 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
 
 #if VERB > 0
-  std::cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << endl;
-  std::cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << endl;
+  std::cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << std::endl;
+  std::cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << std::endl;
 #endif
   size_t nbIter1 = std::isfinite(step1) ? angleSamplingFreq+1 : 1;
   size_t nbIter2 = std::isfinite(step2) ? angleSamplingFreq+1 : 1;
@@ -275,7 +266,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     double testAngle1 = angleMin1+step1*i1;
     rotatePolygon(coords1Test, coordPt1, testAngle1);
 #if VERB > 2
-    std::cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << endl;
+    std::cout << "\t\t\t\tTesting angle1 " << deg(testAngle1) << std::endl;
 #endif
 #if CHECK
     if (comp1Size >= 2)
@@ -313,7 +304,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     {
       coords2Test = initialCoords2;
 #if VERB > 2
-      std::cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << endl;
+      std::cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << std::endl;
 #endif
       double testAngle2 = angleMin2+i2*step2;
       rotatePolygon(coords2Test, coordPt2, testAngle2);
@@ -330,7 +321,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
           curScore += abs(newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
           if (newDist+EPS < shortestDistPossible)
           {
-            std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << endl;
+            std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << std::endl;
             printCoords(" comp1 pt : ", coordARotate);
             printCoords(" comp2 pt : ", coordBRotate);
 
@@ -345,7 +336,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         {
           std::cout << newDistMatrix[ia][ib] << "\t\t\t\t";
         }
-        std::cout << endl;
+        std::cout << std::endl;
       }
 #endif
       //double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
@@ -387,7 +378,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       if (curScore < bestScore) // This pair of angle minimises the distortion
       {
 #if VERB > 0
-        std::cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << endl;
+        std::cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << std::endl;
 #endif
         //TODO réduire et refaire à la fin
         bestScore = curScore;
@@ -405,14 +396,12 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
     rotate(&allCoords[2*i2], coordPt2, bestAnglePair[1]);
 
 #if VERB > 1
-  std::cout << "best score is " << bestScore << endl;
+  std::cout << "best score is " << bestScore << std::endl;
 
-  std::cout << "The best angles are " << deg(bestAnglePair[0]) << " for 1 and " << deg(bestAnglePair[1]) << " for 2." << endl;
+  std::cout << "The best angles are " << deg(bestAnglePair[0]) << " for 1 and " << deg(bestAnglePair[1]) << " for 2." << std::endl;
 #endif
 }
 
-// Tests if all points have the same coordinates or are aligned. If so, the convex hull
-// is computed by this code. Otherwise, we call qHull if the points are fully 2D.
 void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<size_t> &idsInHull)
 {
   //TODO copier coords puis sort

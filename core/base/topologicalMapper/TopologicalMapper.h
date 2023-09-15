@@ -28,7 +28,6 @@
 #include <DimensionReduction.h>
 #include <Geometry.h>
 #include <UnionFind.h>
-#include "libqhullcpp/Qhull.h"
 #include <map>
 #include <set>
 
@@ -84,7 +83,6 @@ template<typename T>
 int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
 
   protected:
-    bool isQhullEnabled(void) const;
 
     size_t AngleSamplingFreq{20};
     bool CheckMST{false};
@@ -114,11 +112,6 @@ template<typename T>
 int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
-  if (!isQhullEnabled())
-  {
-    printErr("Error, qhull is not enabled. Please see the cmake configuration and enable it, and check that the package is installed on your system.");
-  return 1;
-  }
 
 #if VERB > 0
   // Only small test
@@ -185,8 +178,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     }
     nbEdgesMerged++;
 #if VERB > 0
-    cout << endl << endl;
-    std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << endl;
+    std::cout << std::endl << std::endl;
+    std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << std::endl;
 #endif
 
 #if VERB > 1
@@ -231,7 +224,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     std::cout << "\nComponent Big = ";
     for (auto x : compBig)
       std::cout << x << " ";
-    cout << "\n FIN DES COMPOSANTES\n";
+    std::cout << "\n FIN DES COMPOSANTES\n";
 #endif
 
     //TODO mettre en fonction ?
@@ -268,7 +261,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
         vert = curCompVect[vert];
 
 #if VERB > 2
-      cout << endl;
+      std::cout << std::endl;
       std::cout << "\n\nConvex hull : ";
       for (size_t &x : curHullVerts)
       {
@@ -326,7 +319,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     double angleSmall = computeAngle(coordPtSmall, coordPrevSmall, coordPostSmall);
     double angleBig = computeAngle(coordPtBig, coordPrevBig, coordPostBig);
 #if VERB > 1
-    cout << "UUU The angles are " << deg(angleSmall) << " " << deg(angleBig) << " UUU" << endl;
+    std::cout << "UUU The angles are " << deg(angleSmall) << " " << deg(angleBig) << " UUU" << std::endl;
 #endif
     //TODO put that in getprevpost?
     if (angleSmall > M_PI)
@@ -345,7 +338,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     rotate(coordsCentreBig, coordPtBig, angleBig/2);
 
 #if VERB > 1
-    cout << "The angles REALLY are " << deg(angleSmall) << " " << deg(angleBig) << endl;
+    std::cout << "The angles REALLY are " << deg(angleSmall) << " " << deg(angleBig) << std::endl;
 #endif
 
     double unitCentreBigVect[2], unitCentreSmallVect[2];
@@ -383,7 +376,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     for (size_t curIdSmall : compSmall)
     {
 #if VERB > 3
-      std::cout << "pointSmall : " << outputCoordsPtr[curIdSmall*2] << "," << outputCoordsPtr[curIdSmall*2+1] << endl;
+      std::cout << "pointSmall : " << outputCoordsPtr[curIdSmall*2] << "," << outputCoordsPtr[curIdSmall*2+1] << std::endl;
 #endif
       outputCoordsPtr[curIdSmall*2] += smallCompMoveVect[0];
       outputCoordsPtr[curIdSmall*2+1] += smallCompMoveVect[1];
@@ -399,7 +392,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       {
 #if VERB > 2
         std::cout << "angle is " << rotationAngle << std::endl;
-        cout << "cos,sin: " << cos(rotationAngle) << "," << sin(rotationAngle) << endl;
+        std::cout << "cos,sin: " << cos(rotationAngle) << "," << sin(rotationAngle) << std::endl;
 #endif
 #if VERB > 4
         printCoords("coordCenter = ", goalCoordChosenSmall);
@@ -425,7 +418,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     double finalDist = compute_dist(&outputCoordsPtr[2*idChosenSmall], &outputCoordsPtr[2*idChosenBig]);
 
     if (abs(finalDist-edgeCost) > EPS)
-      std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << endl;
+      std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << std::endl;
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
     if (unionRepr != reprU && unionRepr != reprV)
@@ -441,16 +434,16 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
 
 #if VERB > 3
-    cout << " Resulting component = ";
+    std::cout << " Resulting component = ";
     for (auto x : unionSet)
-      cout << x << " ";
-    cout << "=======================\n";
+      std::cout << x << " ";
+    std::cout << "=======================\n";
 #endif
 
     ufToSets.erase(otherRepr);
     //ufToSets[otherRepr] = unionSet;
   }
-  std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << endl;
+  std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
 
 
 
@@ -483,9 +476,9 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
   // We check that the lengths of the edges selected to build a minimum spanning tree
   // are preserved by our algorithm.
-  if (CHECK || CheckMST)
+  if (CheckMST)
   {
-    std::cout << " checking " << endl;
+    std::cout << " checking " << std::endl;
     for (const auto &elt : edgeHeapVectAfter)
     {
       double edgeCost = elt.first;
@@ -518,7 +511,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     for (int i = 0; i < edgesMSTBefore.size(); i++)
       if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= EPS)
-        std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << endl;
+        std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << std::endl;
 
 
   }

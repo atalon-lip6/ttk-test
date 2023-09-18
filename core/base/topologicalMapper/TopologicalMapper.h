@@ -34,6 +34,11 @@
 // cos and sin computations, so we are cautious on testing equalities between double.
 static const double EPS{ttk::Geometry::pow(10.0, -DBL_DIG+2)};
 
+inline double deg(double angle)
+{
+  return (angle*180)/M_PI;
+}
+
 inline double compute_dist2(const double ptA[], const double ptB[])
 {
   double dx = ptB[0]-ptA[0], dy = ptB[1]-ptA[1];
@@ -50,7 +55,7 @@ inline double compute_dist(const double ptA[], const double ptB[])
 
 inline bool are_colinear(double const ptA[], double const ptB[], double const ptC[])
 {
-  return (abs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= EPS;
+  return (fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= EPS;
 }
 
 void computeUnitVector(double* const coordOrig, double* const coordDest, double* const coordVect);
@@ -185,7 +190,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #if VERB > 1
     for (size_t iPt = 0; iPt < n; iPt++)
     {
-      if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < EPS)
+      if (fabs(outputCoordsPtr[2*iPt])+fabs(outputCoordsPtr[2*iPt+1]) < EPS)
         continue;
       std::cout << "Coords of " << iPt << ": ";
       for (size_t k = 0; k < 2; k++)
@@ -417,7 +422,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     double finalDist = compute_dist(&outputCoordsPtr[2*idChosenSmall], &outputCoordsPtr[2*idChosenBig]);
 
-    if (abs(finalDist-edgeCost) > EPS)
+    if (fabs(finalDist-edgeCost) > EPS)
       std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << std::endl;
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
@@ -510,14 +515,14 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     }
 
     for (int i = 0; i < edgesMSTBefore.size(); i++)
-      if (abs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= EPS)
+      if (fabs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= EPS)
         std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << std::endl;
 
 
   }
   for (size_t iPt = 0; iPt < n; iPt++)
   {
-    if (abs(outputCoordsPtr[2*iPt])+abs(outputCoordsPtr[2*iPt+1]) < EPS)
+    if (fabs(outputCoordsPtr[2*iPt])+fabs(outputCoordsPtr[2*iPt+1]) < EPS)
       continue;
     std::cout << "Coords of " << iPt << ": ";
     for (size_t k = 0; k < dim; k++)

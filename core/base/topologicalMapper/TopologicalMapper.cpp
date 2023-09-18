@@ -318,7 +318,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         {
           double coordBRotate[2] = {coords2Test[2*j],coords2Test[2*j+1]};
           double newDist = compute_dist(coordARotate, coordBRotate);
-          curScore += abs(newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
+          curScore += (newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
           if (newDist+EPS < shortestDistPossible)
           {
             std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << std::endl;

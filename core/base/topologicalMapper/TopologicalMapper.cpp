@@ -72,11 +72,6 @@ inline double computeSquaredDistBetweenMatrices(const std::vector<std::vector<do
 }
 
 
-inline double deg(double angle)
-{
-  return (angle*180)/M_PI;
-}
-
 // Rotate the set of coords by the given angle, considering the given center as center of the rotation.
 void rotatePolygon(std::vector<double> &coords, double* centerCoords, const double angle)
 {
@@ -189,9 +184,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   double semiAngle1 = computeAngle(coordPt1, coordPrev1, coordBissect1);
   double semiAngle2 = computeAngle(coordPt2, coordPrev2, coordBissect2);
 
-  if (abs(semiAngle1 - angle1/2) > EPS)
+  if (fabs(semiAngle1 - angle1/2) > EPS)
     std::cout << "çavapas angle1 et semi1 : " << semiAngle1 <<  " VS " << angle1/2 << "\n";
-  if (abs(semiAngle2 - angle2/2) > EPS)
+  if (fabs(semiAngle2 - angle2/2) > EPS)
     std::cout << "çavapas angle2 et semi2 : " << semiAngle2 <<  " VS " << angle2/2 << "\n";
 
 #if VERB > 3
@@ -295,7 +290,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
       double totoAngle = computeAngle(A1,B1,C1);
       if (totoAngle > M_PI)
         totoAngle -= 2*M_PI;
-      if (abs(deg(testAngle1) - deg(totoAngle)) > 0.5)
+      if (fabs(deg(testAngle1) - deg(totoAngle)) > 0.5)
         std::cout << "ERROR1 : " << deg(testAngle1) << " VS " << deg(totoAngle) << "\n";
     }
 #endif
@@ -367,7 +362,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         double totoAngle = computeAngle(A,B,C);
         if (totoAngle > M_PI)
           totoAngle -= 2*M_PI;
-        if (abs(deg(testAngle2) - deg(totoAngle)) > 0.5)
+        if (fabs(deg(testAngle2) - deg(totoAngle)) > 0.5)
           std::cout << "ERROR2 : " << deg(testAngle2) << " VS " << deg(totoAngle) << "\n";
       }
 #endif
@@ -375,7 +370,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 #pragma omp critical
 {
   //TODO maybe juste update bestScore et bestAnglePair, calculer coords à la fin ?
-      if (curScore < bestScore) // This pair of angle minimises the distortion
+      if (curScore < bestScore || (curScore == bestScore && (testAngle1 < bestAnglePair[0] || (testAngle1 == bestAnglePair[0] && testAngle2 < bestAnglePair[1])))) // This pair of angle minimises the distortion and the choice is deterministic with threads
       {
 #if VERB > 0
         std::cout << "Found new best score = " << curScore << " with angles " << deg(testAngle1) << ", " << deg(testAngle2) << std::endl;
@@ -431,7 +426,7 @@ void getConvexHull(const std::vector<double>& coords, size_t dim, std::vector<si
     double coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
     for (int j = 0; j < coords.size()/2; j++)
     {
-      if (abs(coords[2*j]-coordsCur[0])+abs(coords[2*j+1]-coordsCur[1]) < EPS)
+      if (fabs(coords[2*j]-coordsCur[0])+fabs(coords[2*j+1]-coordsCur[1]) < EPS)
       {
         idsInHull.push_back(j);
       }

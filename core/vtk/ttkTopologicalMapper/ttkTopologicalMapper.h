@@ -42,7 +42,7 @@
   //vtkTypeMacro(ttkTopologicalMapper, ttkAlgorithm);
 
 class TTKTOPOLOGICALMAPPER_EXPORT ttkTopologicalMapper
-  : public ttkAlgorithm ,  protected ttk::TopologicalMapper {
+  : public ttkAlgorithm , protected ttk::TopologicalMapper {
 private:
   /**
    * TODO 5: Add all filter parameters only as private member variables and

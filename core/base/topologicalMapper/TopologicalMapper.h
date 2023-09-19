@@ -71,7 +71,7 @@ void printCoords(const char prefix[], const T *coords)
 
 
 // cos and sin computations, so we are cautious on testing equalities between double.
-static double EPS{ttk::Geometry::pow(10.0, -DBL_DIG+2)};
+static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG+2)};
 
 
 template<typename T>
@@ -93,97 +93,486 @@ static inline T compute_dist(const T* ptA, const T* ptB)
 template<typename T>
 inline bool are_colinear(const T* ptA, const T* ptB, const T* ptC)
 {
-  return (fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= EPS;
+  return (fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= Epsilon;
 }
 
-// Normalize a given vector.
+// Normalizes a given vector.
 template<typename T>
-void computeUnitVector(const T* coordOrig, const T* coordDest, T* coordVect)
-{
-  T tmp[2] = {coordDest[0] - coordOrig[0], coordDest[1] - coordOrig[1]};
-  T dist = sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1]);
-  if (dist < EPS)
-  {
-    coordVect[0] = 1;
-    coordVect[1] = 0;
-  }
-  else
-  {
-    coordVect[0] = tmp[0]/dist;
-    coordVect[1] = tmp[1]/dist;
-  }
-}
+static void computeUnitVector(const T* coordOrig, const T* coordDest, T* coordVect);
 
+// Computes the oriented angle BAC
 template<typename T>
-double computeAngle(const T* ptA, const T* ptB, const T* ptC)
-{
-  double angle;
-  double vect1[2] = {ptB[0]-ptA[0], ptB[1]-ptA[1]};
-  double vect2[2] = {ptC[0]-ptA[0], ptC[1]-ptA[1]};
-  double dirVect[2] = {0,0};
+static double computeAngle(const T* ptA, const T* ptB, const T* ptC);
 
-#if VERB > 4
-  printCoords("A : ", ptA);
-  printCoords("B : ", ptB);
-  printCoords("C : ", ptC);
-#endif
-  angle = atan2(vect2[1], vect2[0]) - atan2(vect1[1], vect1[0]);
-  if (angle < 0)
-    angle += 2 * M_PI;
-  return angle;
-}
 
+// Rotates the first argument by angle around center.
 template<typename T>
-inline T computeSquaredDistBetweenMatrices(const std::vector<std::vector<T>> &mat1, const std::vector<std::vector<T>> &mat2)
-{
-  T ret = 0;
-  size_t n = mat1.size(), m = mat1[0].size();
-  for (size_t i = 0; i < n; i++)
-    for (size_t j = 0; j < m; j++)
-      ret += (mat1[i][j]-mat2[i][j])*(mat1[i][j]-mat2[i][j]);
-
-  return ret;
-}
-
-
-template<typename T>
-void rotate(T* ptToRotate, const T* centre, double angle)
-{
-  const double &xCtr = centre[0], &yCtr = centre[1];
-  T &xPt = ptToRotate[0], &yPt = ptToRotate[1];
-  const double dx = xPt-xCtr, dy = yPt-yCtr;
-  xPt = dx*cos(angle)-dy*sin(angle)+xCtr;
-  yPt = dx*sin(angle)+dy*cos(angle)+yCtr;
-}
+static void rotate(T* ptToRotate, const T* center, double angle);
 
 // Rotate the set of coords by the given angle, considering the given center as center of the rotation.
 template<typename T>
-void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double angle)
+static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double angle);
+
+
+template<typename T>
+void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t> &idsInHull);
+
+
+
+namespace ttk {
+
+  /**
+   * The TopologicalMapper class TODO
+   */
+  class TopologicalMapper : virtual public Debug, public DimensionReduction {
+
+  public:
+    TopologicalMapper();
+    ~TopologicalMapper();
+
+    /**
+     * @brief Computes the topological mapper
+     *
+     * @param[out] outputCoords the final coordinates of the points, computed by the topological mapper
+     *
+     * @param[in] distMatrix the high-dimension input distance matrix
+     * 
+     * @return 0 in case of success.
+     */
+    template<typename T>
+    int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
+  protected:
+    size_t AngleSamplingFreq{20};
+    bool CheckMST{false};
+  
+  private:
+    // Fills its last two arguments with the position of the end of the previous (resp. next) edge so that idCenter is the point at the angle at the intersection of the previous and next edges.
+    template<typename T>
+    void getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const;
+
+    // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
+template<typename T>
+void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
+
+  };
+
+//1. Sort the edges
+//2. For each edge uv with cost c_uv
+
+// Get connected components comp(u), comp(v)
+
+// Compute convex hull of comp(u) and of (comp(v))
+
+
+// Find shortest edge (between two points) e_u of comp(u), same for e_v
+
+// Rotate the two connected components so that they are parallel to the x axis
+
+// Put c_uv distance between the two components
+
+
+
+
+//TODO inputPoints remove
+template<typename T>
+int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
-  double xCenter = centerCoords[0], yCenter = centerCoords[1];
-  size_t nbPoint = coords.size()/2;
-#if VERB > 3
-  std::cout << "center = " << xCenter << "," << yCenter << std::endl;
-#endif
-  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  std::vector<double> edgesMSTBefore, edgesMSTAfter;
+
+  // We first set the minimum value we consider as null. We multiply by 100 the smallest significative value because we use sqrt/cos/sin so we take precautionary measures.
+  if (std::is_same<T, double>::value)
+    Epsilon = ttk::Geometry::pow(10.0, -DBL_DIG+2);  
+  else if (std::is_same<T, float>::value)
+    Epsilon = ttk::Geometry::pow(10.0, -FLT_DIG+2);
+  else
   {
-    T &x = coords[iPt*2], &y = coords[iPt*2+1];
-    double xNew, yNew;
-    xNew = (x-xCenter)*cos(angle)-(y-yCenter)*sin(angle)+xCenter;
-    yNew = (y-yCenter)*cos(angle)+(x-xCenter)*sin(angle)+yCenter;
-#if VERB > 3
-    std::cout << "point = " << x << "," << y << " ===> (" << xNew << ", " << yNew << ")" <<  std::endl;
-#endif
-    x = xNew;
-    y = yNew;
+    printErr("Error, template type must be either double or float.\n");
+    return 1;
   }
+
+  size_t n = distMatrix.size();
+#if VERB > 0
+  std::cout << "Il y a " << n << " points! :-)\n";
+#endif
+
+  std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
+  edgeHeapVect.reserve(n*(n-1)/2);
+  for (int u1 = 0; u1 < n; u1++)
+  {
+    for (int u2 = u1+1; u2 < n; u2++)
+    {
+      edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
+    }
+  }
+  sort(edgeHeapVect.begin(), edgeHeapVect.end());
+
+
+  std::map<UnionFind*, std::set<size_t>> ufToSets;
+  std::vector<UnionFind> ufVector(n);
+  std::vector<UnionFind*> ufPtrVector(n);
+  for (int i = 0; i < n; i++)
+  {
+    ufPtrVector[i] = &ufVector[i];
+    ufToSets[ufPtrVector[i]].insert(i);
+  }
+
+  for (size_t i = 0; i < 2*n; i++)
+    outputCoords[i] = 0;
+
+
+  size_t nbEdgesMerged = 0;
+  for (const auto &elt : edgeHeapVect)
+  {
+    if (nbEdgesMerged == n-1)
+      break;
+    T edgeCost = elt.first;
+    size_t u = elt.second.first;
+    size_t v = elt.second.second;
+
+    UnionFind *reprU = ufPtrVector[u]->find();
+    UnionFind *reprV = ufPtrVector[v]->find();
+    if (reprU == reprV) // Already in the same component
+    {
+      continue;
+    }
+    nbEdgesMerged++;
+#if VERB > 0
+    std::cout << std::endl << std::endl;
+    std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << std::endl;
+#endif
+
+#if VERB > 1
+    for (size_t iPt = 0; iPt < n; iPt++)
+    {
+      if (fabs(outputCoords[2*iPt])+fabs(outputCoords[2*iPt+1]) < Epsilon)
+        continue;
+      std::cout << "Coords of " << iPt << ": ";
+      std::cout << outputCoords[iPt*2] << "," << outputCoords[iPt*2+1] << "\n";
+    }
+    std::cout << "....................................\n\n";
+#endif
+
+    edgesMSTBefore.push_back(edgeCost);
+    //TODO function
+    std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
+    size_t idSmall = compU.size() < compV.size() ? u:v;
+    size_t idBig = idSmall == u ? v:u;
+    std::set<size_t> &compSmall = idSmall == u ? compU:compV;
+    std::set<size_t> &compBig = idSmall == u ? compV:compU;
+    size_t nBig = compBig.size();
+    size_t nSmall = compSmall.size();
+
+    size_t idEdgeVert[2] = {idSmall == u ? u:v, idSmall == u ? v:u};
+    std::vector<T> pointsSets[2];
+    std::vector<size_t> idsInHullSets[2];
+    size_t idChosenVerts[2];
+
+
+#if VERB > 2
+    std::cout << "Component Small = ";
+    for (auto x : compSmall)
+      std::cout << x << " ";
+
+    std::cout << "\nComponent Big = ";
+    for (auto x : compBig)
+      std::cout << x << " ";
+    std::cout << "\n FIN DES COMPOSANTES\n";
+#endif
+
+    //TODO mettre en fonction ?
+    //
+    // Retour de la fonction : vertexHull, coordonnéesPointsComp, chosenVert,
+    // Input : distance matrix, composante (set), vertexHull, coordonnéesPointsComp, chosenVert?
+    for (int idSet = 0; idSet < 2; idSet++)
+    {
+      std::vector<T> &curPointsSet = pointsSets[idSet];// stores coordinates
+      std::vector<size_t> &curHullVerts = idsInHullSets[idSet];
+      size_t &idChosenVert = idChosenVerts[idSet];
+      size_t idCur = idSet == 0 ? idSmall:idBig;
+      std::set<size_t> &curComp = idCur == u ? compU:compV;
+      size_t nCur = curComp.size();
+      curPointsSet.resize(nCur*2);
+      std::vector<size_t> curCompVect(nCur);
+
+      // We retrieve the current coordinates of our component.
+      size_t cptCur = 0;
+      for (int vertId : curComp)
+      {
+        for (int k = 0; k < 2; k++)
+        {
+          curPointsSet[2*cptCur+k] = outputCoords[2*vertId+k];
+        }
+        curCompVect[cptCur] = vertId;
+        cptCur++;
+      }
+      computeConvexHull(curPointsSet, 2, curHullVerts);
+      // The ids in curHullVerts are the index of the vertices in the component list, not
+      // the real ids of the vertices. The loop just below solves this.
+      for (size_t &vert : curHullVerts)
+        vert = curCompVect[vert];
+
+#if VERB > 2
+      std::cout << std::endl;
+      std::cout << "\n\nConvex hull : ";
+      for (size_t &x : curHullVerts)
+      {
+        std::cout << x << " ";
+      }
+      std::cout << std::endl;
+#endif
+
+      idChosenVert = curHullVerts[0];
+      // We want to select, among all vertices in the convex hull, the one which is
+      // closest to the vertex of the edge we work on.
+      for (size_t vert : curHullVerts)
+      {
+        T dist = distMatrix[vert][idEdgeVert[idSet]];
+        if (dist < distMatrix[idChosenVert][idEdgeVert[idSet]])
+          idChosenVert = vert;
+      }
+    }
+
+    std::vector<size_t> &idsInHullSmall = idsInHullSets[0], idsInHullBig = idsInHullSets[1];
+    std::vector<T> &pointsBig = pointsSets[1], &pointsSmall = pointsSets[0];
+    size_t sizeBigHull = idsInHullSets[1].size(), sizeSmallHull = idsInHullSets[0].size();
+    std::vector<T> coordsBigHull(sizeBigHull*2), coordsSmallHull(sizeSmallHull*2);
+    for (size_t iHull = 0; iHull < sizeBigHull; iHull++)
+    {
+      size_t vert = idsInHullBig[iHull];
+      coordsBigHull[iHull*2] = outputCoords[vert*2];
+      coordsBigHull[iHull*2+1] = outputCoords[vert*2+1];
+#if VERB > 3
+      printCoords(("Vertbig " + to_string(vert)).c_str(), &coordsBigHull[2*iHull]);
+#endif
+    }
+    for (size_t iHull = 0; iHull < sizeSmallHull; iHull++)
+    {
+      size_t vert = idsInHullSmall[iHull];
+      coordsSmallHull[iHull*2] = outputCoords[vert*2];
+      coordsSmallHull[iHull*2+1] = outputCoords[vert*2+1];
+#if VERB > 3
+      printCoords(("Vertsmall " + to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
+#endif
+    }
+
+    size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
+    T coordPrevBig[2], coordPostBig[2];
+    T coordPrevSmall[2], coordPostSmall[2];
+    getPrevNextEdges(idsInHullSmall, idChosenSmall, outputCoords, coordPrevSmall, coordPostSmall);
+    getPrevNextEdges(idsInHullBig, idChosenBig, outputCoords, coordPrevBig, coordPostBig);
+#if VERB > 3
+    printCoords("prevSmall : ", coordPrevSmall);
+    printCoords("postSmall : ", coordPostSmall);
+#endif
+    T coordPtSmall[2] = {outputCoords[2*idChosenSmall], outputCoords[2*idChosenSmall+1]};
+    T coordPtBig[2] = {outputCoords[2*idChosenBig], outputCoords[2*idChosenBig+1]};
+
+    double angleSmall = computeAngle(coordPtSmall, coordPrevSmall, coordPostSmall);
+    double angleBig = computeAngle(coordPtBig, coordPrevBig, coordPostBig);
+#if VERB > 1
+    std::cout << "UUU The angles are " << deg(angleSmall) << " " << deg(angleBig) << " UUU" << std::endl;
+#endif
+    //TODO put that in getprevpost?
+    if (angleSmall > M_PI)
+    {
+      std::swap(coordPrevSmall, coordPostSmall);
+      angleSmall = 2*M_PI-angleSmall;
+    }
+    if (angleBig > M_PI)
+    {
+      std::swap(coordPrevBig, coordPostBig);
+      angleBig = 2*M_PI-angleBig;
+    }
+    T coordscenterBig[2] = {coordPrevBig[0], coordPrevBig[1]};
+    T coordscenterSmall[2] = {coordPrevSmall[0], coordPrevSmall[1]};
+    rotate(coordscenterSmall, coordPtSmall, angleSmall/2);
+    rotate(coordscenterBig, coordPtBig, angleBig/2);
+
+#if VERB > 1
+    std::cout << "The angles REALLY are " << deg(angleSmall) << " " << deg(angleBig) << std::endl;
+#endif
+
+    T unitcenterBigVect[2], unitcenterSmallVect[2];
+    computeUnitVector(&outputCoords[idChosenBig*2], coordscenterBig, unitcenterBigVect);
+    computeUnitVector(&outputCoords[idChosenSmall*2], coordscenterSmall, unitcenterSmallVect);
+#if VERB > 3
+    printCoords("Le point choisit big : ", &outputCoords[idChosenBig*2]);
+    printCoords("center for big comp is : ", coordscenterBig);
+    printCoords("center for small comp is : ", coordscenterSmall);
+#endif
+
+    //TODO create vector from two points?
+    T goalCoordChosenSmall[2] = {outputCoords[idChosenBig*2]-edgeCost*unitcenterBigVect[0], outputCoords[idChosenBig*2+1]-edgeCost*unitcenterBigVect[1]};
+    if (sizeBigHull == 1)
+    {
+      goalCoordChosenSmall[0] = outputCoords[idChosenBig*2]+edgeCost;
+      goalCoordChosenSmall[1] = outputCoords[idChosenBig*2+1];
+      //continue;
+    }
+    //double smallCompMoveVect[2] = {coordscenterSmall[0] + smallCompMoveVect[0], coordscenterSmall[1] +smallCompMoveVect[1]};
+    T smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall*2], goalCoordChosenSmall[1] - outputCoords[idChosenSmall*2+1]};
+
+    T distBaryPointSmall = compute_dist(&outputCoords[idChosenSmall*2], coordscenterSmall);
+#if VERB > 3
+    printCoords("Le point choisi small : ", &outputCoords[idChosenSmall*2]);
+    printCoords("Barycenter for small comp is : ", coordscenterSmall);
+#endif
+    T preFinalPosBarySmall[2] = {coordscenterSmall[0]+smallCompMoveVect[0], coordscenterSmall[1]+smallCompMoveVect[1]};
+    T prefinalPosBarySmall2[2] = {goalCoordChosenSmall[0]+unitcenterSmallVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitcenterSmallVect[1]*distBaryPointSmall};
+    //TODO check identiques
+    T finalPosBarySmall[2] = {goalCoordChosenSmall[0]-unitcenterBigVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]-unitcenterBigVect[1]*distBaryPointSmall};
+
+    //TODO : actuellement pour aligner les barycenters, normalement on voudrait aligner les bissectrices je pense
+    //
+    for (size_t curIdSmall : compSmall)
+    {
+#if VERB > 3
+      std::cout << "pointSmall : " << outputCoords[curIdSmall*2] << "," << outputCoords[curIdSmall*2+1] << std::endl;
+#endif
+      outputCoords[curIdSmall*2] += smallCompMoveVect[0];
+      outputCoords[curIdSmall*2+1] += smallCompMoveVect[1];
+#if VERB > 3
+      std::cout << "\tPre-new-coordinates for " << curIdSmall << " are: " << outputCoords[curIdSmall*2]<<","<<outputCoords[curIdSmall*2+1] << "\n";
+#endif
+
+      double rotationAngle = computeAngle(goalCoordChosenSmall, preFinalPosBarySmall, finalPosBarySmall);
+#if VERB > 1
+      std::cout << " We chose for big and small: " << idChosenBig << " and " << idChosenSmall << std::endl;
+#endif
+      if (nSmall > 1 && std::isfinite(rotationAngle))
+      {
+#if VERB > 2
+        std::cout << "angle is " << rotationAngle << std::endl;
+        std::cout << "cos,sin: " << cos(rotationAngle) << "," << sin(rotationAngle) << std::endl;
+#endif
+#if VERB > 4
+        printCoords("coordCenter = ", goalCoordChosenSmall);
+        printCoords("coordFrom = ", preFinalPosBarySmall);
+        printCoords("coordFrom2 = ", prefinalPosBarySmall2);
+        printCoords("coordTo = ", finalPosBarySmall);
+#endif
+
+        rotate(&outputCoords[curIdSmall*2], goalCoordChosenSmall, rotationAngle); //Ou - rotatinAngle ?
+#if VERB > 4
+        std::cout << "\t\tPost-new-coordinates for " << curIdSmall << " are: " << outputCoords[curIdSmall*2]<<","<<outputCoords[curIdSmall*2+1] << "\n";
+#endif
+      }
+    }
+    if (nBig > 1)
+    {
+      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
+#if VERB > 4
+      std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*2]<<","<<outputCoords[idChosenBig*2+1] << "\n";
+#endif
+    }
+
+    T finalDist = compute_dist(&outputCoords[2*idChosenSmall], &outputCoords[2*idChosenBig]);
+
+    if (fabs(finalDist-edgeCost) > Epsilon)
+      std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << std::endl;
+    UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
+    UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
+    if (unionRepr != reprU && unionRepr != reprV)
+      std::cerr << "NOOOOOOOOOOOOOOO\n";
+    std::set<size_t> &unionSet = ufToSets[unionRepr];
+    std::set<size_t> &otherSet = ufToSets[otherRepr];
+
+    unionSet.insert(otherSet.begin(), otherSet.end());
+    //TODO faire des trucs;
+
+    ufPtrVector[u] = unionRepr;
+    ufPtrVector[v] = unionRepr;
+
+
+#if VERB > 3
+    std::cout << " Resulting component = ";
+    for (auto x : unionSet)
+      std::cout << x << " ";
+    std::cout << "=======================\n";
+#endif
+
+    ufToSets.erase(otherRepr);
+    //ufToSets[otherRepr] = unionSet;
+  }
+  std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
+
+
+
+  std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
+  for (int u1 = 0; u1 < n; u1++)
+  {
+    for (int u2 = u1+1; u2 < n; u2++)
+    {
+      edgeHeapVectAfter.push_back({compute_dist(&outputCoords[2*u1], &outputCoords[2*u2]), {u1, u2}});
+    }
+  }
+  sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
+
+
+  std::map<UnionFind*, std::set<size_t>> ufToSetsAfter;
+  std::vector<UnionFind> ufVectorAfter(n);
+  std::vector<UnionFind*> ufPtrVectorAfter(n);
+  for (int i = 0; i < n; i++)
+  {
+    ufPtrVectorAfter[i] = &ufVectorAfter[i];
+    ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
+  }
+
+  // We check that the lengths of the edges selected to build a minimum spanning tree
+  // are preserved by our algorithm.
+  if (CheckMST)
+  {
+    std::cout << " checking " << std::endl;
+    for (const auto &elt : edgeHeapVectAfter)
+    {
+      T edgeCost = elt.first;
+      size_t u = elt.second.first;
+      size_t v = elt.second.second;
+
+
+      UnionFind *reprU = ufPtrVectorAfter[u]->find();
+      UnionFind *reprV = ufPtrVectorAfter[v]->find();
+      if (reprU == reprV) // Already in the same component
+      {
+        continue;
+      }
+      UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
+      UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
+      if (unionRepr != reprU && unionRepr != reprV)
+        std::cerr << "NOOOOOOOOOOOOOOO\n";
+      std::set<size_t> &unionSet = ufToSetsAfter[unionRepr];
+      std::set<size_t> &otherSet = ufToSetsAfter[otherRepr];
+
+      unionSet.insert(otherSet.begin(), otherSet.end());
+      //TODO faire des trucs;
+
+      ufPtrVectorAfter[u] = unionRepr;
+      ufPtrVectorAfter[v] = unionRepr;
+
+      ufToSetsAfter.erase(otherRepr);
+      edgesMSTAfter.push_back(edgeCost);
+    }
+
+    for (int i = 0; i < edgesMSTBefore.size(); i++)
+      if (fabs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= Epsilon)
+        std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << std::endl;
+
+
+  }
+  for (size_t iPt = 0; iPt < n; iPt++)
+  {
+    if (fabs(outputCoords[2*iPt])+fabs(outputCoords[2*iPt+1]) < Epsilon)
+      continue;
+    std::cout << "Coords of " << iPt << ": ";
+    std::cout << outputCoords[iPt*2] << "," << outputCoords[iPt*2+1] << "\n";
+  }
+
+  return 0;
 }
 
 
-
-// Fills its last two arguments with the position of the end of the previous (resp. next) edge so that idCenter is the point at the angle at the intersection of the previous and next edges.
 template<typename T>
-void getPrevPostEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost)
+void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
 {
   size_t n = idsPtsPolygon.size();
   size_t iPtPrev, iPtPost;
@@ -210,7 +599,7 @@ void getPrevPostEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter,
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread)
+void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.
@@ -222,8 +611,8 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
   T coordPrev1[2], coordPost1[2];
   T coordPrev2[2], coordPost2[2];
-  getPrevPostEdges(hull1, iPt1, allCoords, coordPrev1, coordPost1);
-  getPrevPostEdges(hull2, iPt2, allCoords, coordPrev2, coordPost2);
+  getPrevNextEdges(hull1, iPt1, allCoords, coordPrev1, coordPost1);
+  getPrevNextEdges(hull2, iPt2, allCoords, coordPrev2, coordPost2);
 
 #if VERB > 3
   std::cout << "Comp 1 = ";
@@ -264,9 +653,9 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
   double semiAngle1 = computeAngle(coordPt1, coordPrev1, coordBissect1);
   double semiAngle2 = computeAngle(coordPt2, coordPrev2, coordBissect2);
 
-  if (fabs(semiAngle1 - angle1/2) > EPS)
+  if (fabs(semiAngle1 - angle1/2) > Epsilon)
     std::cout << "çavapas angle1 et semi1 : " << semiAngle1 <<  " VS " << angle1/2 << "\n";
-  if (fabs(semiAngle2 - angle2/2) > EPS)
+  if (fabs(semiAngle2 - angle2/2) > Epsilon)
     std::cout << "çavapas angle2 et semi2 : " << semiAngle2 <<  " VS " << angle2/2 << "\n";
 
 #if VERB > 3
@@ -394,7 +783,7 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
           T coordBRotate[2] = {coords2Test[2*j],coords2Test[2*j+1]};
           T newDist = compute_dist(coordARotate, coordBRotate);
           curScore += (newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
-          if (newDist+EPS < shortestDistPossible)
+          if (newDist+Epsilon < shortestDistPossible)
           {
             std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << std::endl;
             printCoords(" comp1 pt : ", coordARotate);
@@ -414,7 +803,6 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
         std::cout << std::endl;
       }
 #endif
-      //double curScore = computeSquaredDistBetweenMatrices(origDistMatrix, newDistMatrix);
 #if CHECK
       if (comp2Size >= 2 && comp1Size >= 1)
       {
@@ -477,8 +865,78 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 #endif
 }
 
+} // namespace ttk
+
 template<typename T>
-void getConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t> &idsInHull)
+static void computeUnitVector(const T* coordOrig, const T* coordDest, T* coordVect)
+{
+  T tmp[2] = {coordDest[0] - coordOrig[0], coordDest[1] - coordOrig[1]};
+  T dist = sqrt(tmp[0]*tmp[0] + tmp[1]*tmp[1]);
+  if (dist < Epsilon)
+  {
+    coordVect[0] = 1;
+    coordVect[1] = 0;
+  }
+  else
+  {
+    coordVect[0] = tmp[0]/dist;
+    coordVect[1] = tmp[1]/dist;
+  }
+}
+
+template<typename T>
+static double computeAngle(const T* ptA, const T* ptB, const T* ptC)
+{
+  double angle;
+  double vect1[2] = {ptB[0]-ptA[0], ptB[1]-ptA[1]};
+  double vect2[2] = {ptC[0]-ptA[0], ptC[1]-ptA[1]};
+  double dirVect[2] = {0,0};
+
+#if VERB > 4
+  printCoords("A : ", ptA);
+  printCoords("B : ", ptB);
+  printCoords("C : ", ptC);
+#endif
+  angle = atan2(vect2[1], vect2[0]) - atan2(vect1[1], vect1[0]);
+  if (angle < 0)
+    angle += 2 * M_PI;
+  return angle;
+}
+
+template<typename T>
+static void rotate(T* ptToRotate, const T* center, double angle)
+{
+  const double &xCtr = center[0], &yCtr = center[1];
+  T &xPt = ptToRotate[0], &yPt = ptToRotate[1];
+  const double dx = xPt-xCtr, dy = yPt-yCtr;
+  xPt = dx*cos(angle)-dy*sin(angle)+xCtr;
+  yPt = dx*sin(angle)+dy*cos(angle)+yCtr;
+}
+
+template<typename T>
+static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double angle)
+{
+  double xCenter = centerCoords[0], yCenter = centerCoords[1];
+  size_t nbPoint = coords.size()/2;
+#if VERB > 3
+  std::cout << "center = " << xCenter << "," << yCenter << std::endl;
+#endif
+  for (size_t iPt = 0; iPt < nbPoint; iPt++)
+  {
+    T &x = coords[iPt*2], &y = coords[iPt*2+1];
+    double xNew, yNew;
+    xNew = (x-xCenter)*cos(angle)-(y-yCenter)*sin(angle)+xCenter;
+    yNew = (y-yCenter)*cos(angle)+(x-xCenter)*sin(angle)+yCenter;
+#if VERB > 3
+    std::cout << "point = " << x << "," << y << " ===> (" << xNew << ", " << yNew << ")" <<  std::endl;
+#endif
+    x = xNew;
+    y = yNew;
+  }
+}
+
+template<typename T>
+void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t> &idsInHull)
 {
   //TODO copier coords puis sort
   size_t nbPoint = coords.size()/dim;
@@ -489,7 +947,7 @@ void getConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t>
     {
       T dist = compute_dist(&coords[0], &coords[2]);
 
-      if (dist > EPS) //TODO voir si distance trop grande ?
+      if (dist > Epsilon) //TODO voir si distance trop grande ?
         idsInHull.push_back(1);
     }
     return;
@@ -507,7 +965,7 @@ void getConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t>
     T coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
     for (int j = 0; j < coords.size()/2; j++)
     {
-      if (fabs(coords[2*j]-coordsCur[0])+fabs(coords[2*j+1]-coordsCur[1]) < EPS)
+      if (fabs(coords[2*j]-coordsCur[0])+fabs(coords[2*j+1]-coordsCur[1]) < Epsilon)
       {
         idsInHull.push_back(j);
       }
@@ -516,467 +974,4 @@ void getConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t>
   // Boost closes the polygon, hence the first and the last vertices are the identical.
   idsInHull.pop_back();
 }
-
-
-namespace ttk {
-
-  /**
-   * The TopologicalMapper class TODO
-   */
-  class TopologicalMapper : virtual public Debug, public DimensionReduction {
-
-  public:
-    TopologicalMapper();
-    ~TopologicalMapper();
-
-template<typename T>
-int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
-
-  protected:
-
-    size_t AngleSamplingFreq{20};
-    bool CheckMST{false};
-  };
-
-
-
-//1. Sort the edges
-//2. For each edge uv with cost c_uv
-
-// Get connected components comp(u), comp(v)
-
-// Compute convex hull of comp(u) and of (comp(v))
-
-
-// Find shortest edge (between two points) e_u of comp(u), same for e_v
-
-// Rotate the two connected components so that they are parallel to the x axis
-
-// Put c_uv distance between the two components
-
-
-
-
-//TODO inputPoints remove
-template<typename T>
-int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
-{
-  std::vector<double> edgesMSTBefore, edgesMSTAfter;
-
-  if (std::is_same<T, double>::value)
-    EPS = ttk::Geometry::pow(10.0, -DBL_DIG+2);  
-  else if (std::is_same<T, float>::value)
-    EPS = ttk::Geometry::pow(10.0, -FLT_DIG+2);
-  else
-  {
-    printErr("Error, template type must be either double or float.\n");
-    return 0;
-  }
-#if VERB > 0
-  // Only small test
-  double aa[2] = {24,27}, bb[2] = {21,25}, cc[2] = {20,30};
-  double angleTest = computeAngle(aa, bb, cc);
-  //std::cout << "avant " << deg(angleTest) << " (" << angleTest << ") was test angle :D\n";
-
-  double aabis[2] = {-0.707,-2.121}, bbbis[2] = {2.414,1}, ccbis[2] = {3.414,-2};
-  double angleTestbis = computeAngle(aabis, bbbis, ccbis);
-  //std::cout << "après " << deg(angleTestbis) << " (" << angleTestbis << ") was test angle :D\n";
-#endif
-
-  size_t n = distMatrix.size();
-  std::cout << "Il y a " << n << " points! :-)\n";
-  size_t dim = 2;
-
-  std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
-  edgeHeapVect.reserve(n*(n-1)/2);
-  for (int u1 = 0; u1 < n; u1++)
-  {
-    for (int u2 = u1+1; u2 < n; u2++)
-    {
-      edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
-    }
-  }
-  sort(edgeHeapVect.begin(), edgeHeapVect.end());
-
-
-  std::map<UnionFind*, std::set<size_t>> ufToSets;
-  std::vector<UnionFind> ufVector(n);
-  std::vector<UnionFind*> ufPtrVector(n);
-  for (int i = 0; i < n; i++)
-  {
-    ufPtrVector[i] = &ufVector[i];
-    ufToSets[ufPtrVector[i]].insert(i);
-  }
-
-  for (size_t i = 0; i < 2*n; i++)
-    outputCoords[i] = 0;
-
-
-  size_t nbEdgesMerged = 0;
-  for (const auto &elt : edgeHeapVect)
-  {
-    if (nbEdgesMerged == n-1)
-      break;
-    T edgeCost = elt.first;
-    size_t u = elt.second.first;
-    size_t v = elt.second.second;
-
-    UnionFind *reprU = ufPtrVector[u]->find();
-    UnionFind *reprV = ufPtrVector[v]->find();
-    if (reprU == reprV) // Already in the same component
-    {
-      continue;
-    }
-    nbEdgesMerged++;
-#if VERB > 0
-    std::cout << std::endl << std::endl;
-    std::cout << "considering edge " << u << "-" << v << " : " << edgeCost << std::endl;
-#endif
-
-#if VERB > 1
-    for (size_t iPt = 0; iPt < n; iPt++)
-    {
-      if (fabs(outputCoords[2*iPt])+fabs(outputCoords[2*iPt+1]) < EPS)
-        continue;
-      std::cout << "Coords of " << iPt << ": ";
-      for (size_t k = 0; k < 2; k++)
-      {
-        std::cout << outputCoords[iPt*+k];
-        if ((int)k < (int)dim-1)
-          std::cout << ",";
-      }
-      std::cout << "\n";
-    }
-
-    std::cout << "....................................\n\n";
-#endif
-
-    edgesMSTBefore.push_back(edgeCost);
-    //TODO function
-    std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
-    size_t idSmall = compU.size() < compV.size() ? u:v;
-    size_t idBig = idSmall == u ? v:u;
-    std::set<size_t> &compSmall = idSmall == u ? compU:compV;
-    std::set<size_t> &compBig = idSmall == u ? compV:compU;
-    size_t nBig = compBig.size();
-    size_t nSmall = compSmall.size();
-
-    size_t idEdgeVert[2] = {idSmall == u ? u:v, idSmall == u ? v:u};
-    std::vector<T> pointsSets[2];
-    std::vector<size_t> idsInHullSets[2];
-    size_t idChosenVerts[2];
-
-
-#if VERB > 2
-    std::cout << "Component Small = ";
-    for (auto x : compSmall)
-      std::cout << x << " ";
-
-    std::cout << "\nComponent Big = ";
-    for (auto x : compBig)
-      std::cout << x << " ";
-    std::cout << "\n FIN DES COMPOSANTES\n";
-#endif
-
-    //TODO mettre en fonction ?
-    //
-    // Retour de la fonction : vertexHull, coordonnéesPointsComp, chosenVert,
-    // Input : distance matrix, composante (set), vertexHull, coordonnéesPointsComp, chosenVert?
-    for (int idSet = 0; idSet < 2; idSet++)
-    {
-      //cout << (idSet == 0 ? "Comp small detailed:" : "Comp big detailed:") << "\n";
-      std::vector<T> &curPointsSet = pointsSets[idSet];// stores coordinates
-      std::vector<size_t> &curHullVerts = idsInHullSets[idSet];
-      size_t &idChosenVert = idChosenVerts[idSet];
-      size_t idCur = idSet == 0 ? idSmall:idBig;
-      std::set<size_t> &curComp = idCur == u ? compU:compV;
-      size_t nCur = curComp.size();
-      curPointsSet.resize(nCur*2);
-      std::vector<size_t> curCompVect(nCur);
-
-      // We retrive the current coordinates of our component.
-      size_t cptCur = 0;
-      for (int vertId : curComp)
-      {
-        for (int k = 0; k < 2; k++)
-        {
-          curPointsSet[2*cptCur+k] = outputCoords[2*vertId+k];
-        }
-        curCompVect[cptCur] = vertId;
-        cptCur++;
-      }
-      getConvexHull(curPointsSet, 2, curHullVerts);
-      // The ids in curHullVerts are the index of the vertices in the component list, not
-      // the real ids of the vertices. The loop just below solves this.
-      for (size_t &vert : curHullVerts)
-        vert = curCompVect[vert];
-
-#if VERB > 2
-      std::cout << std::endl;
-      std::cout << "\n\nConvex hull : ";
-      for (size_t &x : curHullVerts)
-      {
-        std::cout << x << " ";
-      }
-      std::cout << std::endl;
-#endif
-
-      idChosenVert = curHullVerts[0];
-      // We want to select, among all vertices in the convex hull, the one which is
-      // closest to the vertex of the edge we work on.
-      for (size_t vert : curHullVerts)
-      {
-        T dist = distMatrix[vert][idEdgeVert[idSet]];
-        if (dist < distMatrix[idChosenVert][idEdgeVert[idSet]])
-          idChosenVert = vert;
-      }
-    }
-
-    std::vector<size_t> &idsInHullSmall = idsInHullSets[0], idsInHullBig = idsInHullSets[1];
-    std::vector<T> &pointsBig = pointsSets[1], &pointsSmall = pointsSets[0];
-    size_t sizeBigHull = idsInHullSets[1].size(), sizeSmallHull = idsInHullSets[0].size();
-    std::vector<T> coordsBigHull(sizeBigHull*2), coordsSmallHull(sizeSmallHull*2);
-    for (size_t iHull = 0; iHull < sizeBigHull; iHull++)
-    {
-      size_t vert = idsInHullBig[iHull];
-      coordsBigHull[iHull*2] = outputCoords[vert*2];
-      coordsBigHull[iHull*2+1] = outputCoords[vert*2+1];
-#if VERB > 3
-      printCoords(("Vertbig " + to_string(vert)).c_str(), &coordsBigHull[2*iHull]);
-#endif
-    }
-    for (size_t iHull = 0; iHull < sizeSmallHull; iHull++)
-    {
-      size_t vert = idsInHullSmall[iHull];
-      coordsSmallHull[iHull*2] = outputCoords[vert*2];
-      coordsSmallHull[iHull*2+1] = outputCoords[vert*2+1];
-#if VERB > 3
-      printCoords(("Vertsmall " + to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
-#endif
-    }
-
-    size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
-    T coordPrevBig[2], coordPostBig[2];
-    T coordPrevSmall[2], coordPostSmall[2];
-    getPrevPostEdges(idsInHullSmall, idChosenSmall, outputCoords, coordPrevSmall, coordPostSmall);
-    getPrevPostEdges(idsInHullBig, idChosenBig, outputCoords, coordPrevBig, coordPostBig);
-#if VERB > 3
-    printCoords("prevSmall : ", coordPrevSmall);
-    printCoords("postSmall : ", coordPostSmall);
-#endif
-    T coordPtSmall[2] = {outputCoords[2*idChosenSmall], outputCoords[2*idChosenSmall+1]};
-    T coordPtBig[2] = {outputCoords[2*idChosenBig], outputCoords[2*idChosenBig+1]};
-
-    double angleSmall = computeAngle(coordPtSmall, coordPrevSmall, coordPostSmall);
-    double angleBig = computeAngle(coordPtBig, coordPrevBig, coordPostBig);
-#if VERB > 1
-    std::cout << "UUU The angles are " << deg(angleSmall) << " " << deg(angleBig) << " UUU" << std::endl;
-#endif
-    //TODO put that in getprevpost?
-    if (angleSmall > M_PI)
-    {
-      std::swap(coordPrevSmall, coordPostSmall);
-      angleSmall = 2*M_PI-angleSmall;
-    }
-    if (angleBig > M_PI)
-    {
-      std::swap(coordPrevBig, coordPostBig);
-      angleBig = 2*M_PI-angleBig;
-    }
-    T coordsCentreBig[2] = {coordPrevBig[0], coordPrevBig[1]};
-    T coordsCentreSmall[2] = {coordPrevSmall[0], coordPrevSmall[1]};
-    rotate(coordsCentreSmall, coordPtSmall, angleSmall/2);
-    rotate(coordsCentreBig, coordPtBig, angleBig/2);
-
-#if VERB > 1
-    std::cout << "The angles REALLY are " << deg(angleSmall) << " " << deg(angleBig) << std::endl;
-#endif
-
-    T unitCentreBigVect[2], unitCentreSmallVect[2];
-    computeUnitVector(&outputCoords[idChosenBig*2], coordsCentreBig, unitCentreBigVect);
-    computeUnitVector(&outputCoords[idChosenSmall*2], coordsCentreSmall, unitCentreSmallVect);
-#if VERB > 3
-    printCoords("Le point choisit big : ", &outputCoords[idChosenBig*2]);
-    printCoords("Centre for big comp is : ", coordsCentreBig);
-    printCoords("Centre for small comp is : ", coordsCentreSmall);
-#endif
-
-    //TODO create vector from two points?
-    T goalCoordChosenSmall[2] = {outputCoords[idChosenBig*2]-edgeCost*unitCentreBigVect[0], outputCoords[idChosenBig*2+1]-edgeCost*unitCentreBigVect[1]};
-    if (sizeBigHull == 1)
-    {
-      goalCoordChosenSmall[0] = outputCoords[idChosenBig*2]+edgeCost;
-      goalCoordChosenSmall[1] = outputCoords[idChosenBig*2+1];
-      //continue;
-    }
-    //double smallCompMoveVect[2] = {coordsCentreSmall[0] + smallCompMoveVect[0], coordsCentreSmall[1] +smallCompMoveVect[1]};
-    T smallCompMoveVect[2] = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall*2], goalCoordChosenSmall[1] - outputCoords[idChosenSmall*2+1]};
-
-    T distBaryPointSmall = compute_dist(&outputCoords[idChosenSmall*2], coordsCentreSmall);
-#if VERB > 3
-    printCoords("Le point choisi small : ", &outputCoords[idChosenSmall*2]);
-    printCoords("Barycentre for small comp is : ", coordsCentreSmall);
-#endif
-    T preFinalPosBarySmall[2] = {coordsCentreSmall[0]+smallCompMoveVect[0], coordsCentreSmall[1]+smallCompMoveVect[1]};
-    T prefinalPosBarySmall2[2] = {goalCoordChosenSmall[0]+unitCentreSmallVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitCentreSmallVect[1]*distBaryPointSmall};
-    //TODO check identiques
-    T finalPosBarySmall[2] = {goalCoordChosenSmall[0]-unitCentreBigVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]-unitCentreBigVect[1]*distBaryPointSmall};
-
-    //TODO : actuellement pour aligner les barycentres, normalement on voudrait aligner les bissectrices je pense
-    //
-    for (size_t curIdSmall : compSmall)
-    {
-#if VERB > 3
-      std::cout << "pointSmall : " << outputCoords[curIdSmall*2] << "," << outputCoords[curIdSmall*2+1] << std::endl;
-#endif
-      outputCoords[curIdSmall*2] += smallCompMoveVect[0];
-      outputCoords[curIdSmall*2+1] += smallCompMoveVect[1];
-#if VERB > 3
-      std::cout << "\tPre-new-coordinates for " << curIdSmall << " are: " << outputCoords[curIdSmall*2]<<","<<outputCoords[curIdSmall*2+1] << "\n";
-#endif
-
-      double rotationAngle = computeAngle(goalCoordChosenSmall, preFinalPosBarySmall, finalPosBarySmall);
-#if VERB > 1
-      std::cout << " We chose for big and small: " << idChosenBig << " and " << idChosenSmall << std::endl;
-#endif
-      if (nSmall > 1 && std::isfinite(rotationAngle))
-      {
-#if VERB > 2
-        std::cout << "angle is " << rotationAngle << std::endl;
-        std::cout << "cos,sin: " << cos(rotationAngle) << "," << sin(rotationAngle) << std::endl;
-#endif
-#if VERB > 4
-        printCoords("coordCenter = ", goalCoordChosenSmall);
-        printCoords("coordFrom = ", preFinalPosBarySmall);
-        printCoords("coordFrom2 = ", prefinalPosBarySmall2);
-        printCoords("coordTo = ", finalPosBarySmall);
-#endif
-
-        rotate(&outputCoords[curIdSmall*2], goalCoordChosenSmall, rotationAngle); //Ou - rotatinAngle ?
-#if VERB > 4
-        std::cout << "\t\tPost-new-coordinates for " << curIdSmall << " are: " << outputCoords[curIdSmall*2]<<","<<outputCoords[curIdSmall*2+1] << "\n";
-#endif
-      }
-    }
-    if (nBig > 1)
-    {
-      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
-#if VERB > 4
-      std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*2]<<","<<outputCoords[idChosenBig*2+1] << "\n";
-#endif
-    }
-
-    T finalDist = compute_dist(&outputCoords[2*idChosenSmall], &outputCoords[2*idChosenBig]);
-
-    if (fabs(finalDist-edgeCost) > EPS)
-      std::cout << "PROBLEM de distances : " << edgeCost << " against " << finalDist << std::endl;
-    UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
-    UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
-    if (unionRepr != reprU && unionRepr != reprV)
-      std::cerr << "NOOOOOOOOOOOOOOO\n";
-    std::set<size_t> &unionSet = ufToSets[unionRepr];
-    std::set<size_t> &otherSet = ufToSets[otherRepr];
-
-    unionSet.insert(otherSet.begin(), otherSet.end());
-    //TODO faire des trucs;
-
-    ufPtrVector[u] = unionRepr;
-    ufPtrVector[v] = unionRepr;
-
-
-#if VERB > 3
-    std::cout << " Resulting component = ";
-    for (auto x : unionSet)
-      std::cout << x << " ";
-    std::cout << "=======================\n";
-#endif
-
-    ufToSets.erase(otherRepr);
-    //ufToSets[otherRepr] = unionSet;
-  }
-  std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
-
-
-
-  std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
-  for (int u1 = 0; u1 < n; u1++)
-  {
-    for (int u2 = u1+1; u2 < n; u2++)
-    {
-      edgeHeapVectAfter.push_back({compute_dist(&outputCoords[2*u1], &outputCoords[2*u2]), {u1, u2}});
-    }
-  }
-  sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
-
-
-  std::map<UnionFind*, std::set<size_t>> ufToSetsAfter;
-  std::vector<UnionFind> ufVectorAfter(n);
-  std::vector<UnionFind*> ufPtrVectorAfter(n);
-  for (int i = 0; i < n; i++)
-  {
-    ufPtrVectorAfter[i] = &ufVectorAfter[i];
-    ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
-  }
-
-  // We check that the lengths of the edges selected to build a minimum spanning tree
-  // are preserved by our algorithm.
-  if (CheckMST)
-  {
-    std::cout << " checking " << std::endl;
-    for (const auto &elt : edgeHeapVectAfter)
-    {
-      T edgeCost = elt.first;
-      size_t u = elt.second.first;
-      size_t v = elt.second.second;
-
-
-      UnionFind *reprU = ufPtrVectorAfter[u]->find();
-      UnionFind *reprV = ufPtrVectorAfter[v]->find();
-      if (reprU == reprV) // Already in the same component
-      {
-        continue;
-      }
-      UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
-      UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
-      if (unionRepr != reprU && unionRepr != reprV)
-        std::cerr << "NOOOOOOOOOOOOOOO\n";
-      std::set<size_t> &unionSet = ufToSetsAfter[unionRepr];
-      std::set<size_t> &otherSet = ufToSetsAfter[otherRepr];
-
-      unionSet.insert(otherSet.begin(), otherSet.end());
-      //TODO faire des trucs;
-
-      ufPtrVectorAfter[u] = unionRepr;
-      ufPtrVectorAfter[v] = unionRepr;
-
-      ufToSetsAfter.erase(otherRepr);
-      edgesMSTAfter.push_back(edgeCost);
-    }
-
-    for (int i = 0; i < edgesMSTBefore.size(); i++)
-      if (fabs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= EPS)
-        std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << std::endl;
-
-
-  }
-  for (size_t iPt = 0; iPt < n; iPt++)
-  {
-    if (fabs(outputCoords[2*iPt])+fabs(outputCoords[2*iPt+1]) < EPS)
-      continue;
-    std::cout << "Coords of " << iPt << ": ";
-    for (size_t k = 0; k < dim; k++)
-    {
-      std::cout << outputCoords[iPt*dim+k];
-      if ((int)k < (int)dim-1)
-        std::cout << ",";
-    }
-    std::cout << "\n";
-  }
-
-  return 0;
-}
-
-} // namespace ttk
-
-
 

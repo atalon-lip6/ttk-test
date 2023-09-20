@@ -360,9 +360,10 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     }
 
     size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
+    
+    // Identifying the angles we are working on from the convex hulls.
     T coordPrevBig[2], coordPostBig[2];
     T coordPrevSmall[2], coordPostSmall[2];
-    // Identifying the angles we are working on from the convex hulls.
     getPrevNextEdges(idsInHullSmall, idChosenSmall, outputCoords, coordPrevSmall, coordPostSmall);
     getPrevNextEdges(idsInHullBig, idChosenBig, outputCoords, coordPrevBig, coordPostBig);
 #if VERB > 3
@@ -600,6 +601,12 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
     }
   }
 
+  double angle = computeAngle(&allCoords[2*idCenter], &allCoords[2*iPtPrev], &allCoords[2*iPtPost]);
+  if (angle > M_PI)
+  {
+    std::cout << "swaaaaaap\n";
+    std::swap(iPtPrev, iPtPost);
+  }
   coordPrev[0] = allCoords[2*iPtPrev];
   coordPrev[1] = allCoords[2*iPtPrev+1];
   coordPost[0] = allCoords[2*iPtPost];
@@ -640,16 +647,8 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
 #if VERB > 2
   std::cout << "The angles are " << deg(angle1) << " " << deg(angle2) << std::endl;
 #endif
-  if (angle1 > M_PI)
-  {
-    std::swap(coordPrev1, coordPost1);
-    angle1 = 2*M_PI-angle1;
-  }
-  if (angle2 > M_PI)
-  {
-    std::swap(coordPrev2, coordPost2);
-    angle2 = 2*M_PI-angle2;
-  }
+  if (angle1 > M_PI || angle2 > M_PI)
+    printErr("Angle, zut quoi!");
 #if VERB > 2
   std::cout << "The angles REALLY are " << deg(angle1) << " " << deg(angle2) << std::endl;
 #endif

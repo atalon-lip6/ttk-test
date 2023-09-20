@@ -156,21 +156,21 @@ void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<
 
   };
 
+
+
+
+
+//Sketch of the algorithm:
 //1. Sort the edges
 //2. For each edge uv with cost c_uv
-
-// Get connected components comp(u), comp(v)
-
-// Compute convex hull of comp(u) and of (comp(v))
-
-
-// Find shortest edge (between two points) e_u of comp(u), same for e_v
-
-// Rotate the two connected components so that they are parallel to the x axis
-
-// Put c_uv distance between the two components
-
-
+//     a. Get connected components comp(u), comp(v)
+//     b. Compute convex hull of comp(u) and of (comp(v))
+//     c. Find in hull(u) (resp. hull(v)) the point pU (resp. pV) in the convex hull which is closest to u (resp. v) in high dimension, u if possible.
+//     Let angleU (resp. angleV) the angle of hull(u) (resp. hull(v)) at vertex pU (resp. pV).
+//     d. Translate comp(u) such that pU lies on the line of the bissector of angleV, at distance c_uv of pV, and on the opposite direction of hull(v).
+//     e. Rotate comp(u) such that the bissector of angleU prolongates the one of angleU, and such that pU and pV are closest than any pair of points in comp(u),comp(v): the two components are facing each other at pU and pV.
+//     f. Try several rotations of comp(u) and comp(v) such that pU and pV still are the closest pair of vertices from the two components. We keep the angle of rotation which minimizes the difference between the high dimension distance matrix and the new distance matrix between the two components.
+//     g. comp(u) and comp(v) were merged, we now consider them as a single component.
 
 
 //TODO inputPoints remove
@@ -195,6 +195,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   std::cout << "Il y a " << n << " points! :-)\n";
 #endif
 
+  // 1. Sorting the edges
   std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
   edgeHeapVect.reserve(n*(n-1)/2);
   for (int u1 = 0; u1 < n; u1++)
@@ -220,15 +221,17 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     outputCoords[i] = 0;
 
 
+  // 2. Processing the edges
   size_t nbEdgesMerged = 0;
   for (const auto &elt : edgeHeapVect)
   {
-    if (nbEdgesMerged == n-1)
+    if (nbEdgesMerged == n-1) // Our spanning tree is finished
       break;
     T edgeCost = elt.first;
     size_t u = elt.second.first;
     size_t v = elt.second.second;
 
+    // 2.a Getting the components
     UnionFind *reprU = ufPtrVector[u]->find();
     UnionFind *reprV = ufPtrVector[v]->find();
     if (reprU == reprV) // Already in the same component
@@ -294,6 +297,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       curPointsSet.resize(nCur*2);
       std::vector<size_t> curCompVect(nCur);
 
+      // 2.b Computing the convex hull.
+
       // We retrieve the current coordinates of our component.
       size_t cptCur = 0;
       for (int vertId : curComp)
@@ -322,7 +327,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
 
       idChosenVert = curHullVerts[0];
-      // We want to select, among all vertices in the convex hull, the one which is
+      // 2.c We want to select, among all vertices in the convex hull, the one which is
       // closest to the vertex of the edge we work on.
       for (size_t vert : curHullVerts)
       {
@@ -358,6 +363,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
     T coordPrevBig[2], coordPostBig[2];
     T coordPrevSmall[2], coordPostSmall[2];
+    // Identifying the angles we are working on from the convex hulls.
     getPrevNextEdges(idsInHullSmall, idChosenSmall, outputCoords, coordPrevSmall, coordPostSmall);
     getPrevNextEdges(idsInHullBig, idChosenBig, outputCoords, coordPrevBig, coordPostBig);
 #if VERB > 3
@@ -367,6 +373,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     T coordPtSmall[2] = {outputCoords[2*idChosenSmall], outputCoords[2*idChosenSmall+1]};
     T coordPtBig[2] = {outputCoords[2*idChosenBig], outputCoords[2*idChosenBig+1]};
 
+    // Computing the angles.
     double angleSmall = computeAngle(coordPtSmall, coordPrevSmall, coordPostSmall);
     double angleBig = computeAngle(coordPtBig, coordPrevBig, coordPostBig);
 #if VERB > 1
@@ -385,6 +392,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     }
     T coordscenterBig[2] = {coordPrevBig[0], coordPrevBig[1]};
     T coordscenterSmall[2] = {coordPrevSmall[0], coordPrevSmall[1]};
+    // Computing the coordinates of the bisectors.
     rotate(coordscenterSmall, coordPtSmall, angleSmall/2);
     rotate(coordscenterBig, coordPtBig, angleBig/2);
 
@@ -401,7 +409,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     printCoords("center for small comp is : ", coordscenterSmall);
 #endif
 
-    //TODO create vector from two points?
+    // Computing the new coordinates for the chosen point on the small components, and then translating the whole component.
     T goalCoordChosenSmall[2] = {outputCoords[idChosenBig*2]-edgeCost*unitcenterBigVect[0], outputCoords[idChosenBig*2+1]-edgeCost*unitcenterBigVect[1]};
     if (sizeBigHull == 1)
     {
@@ -422,8 +430,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     //TODO check identiques
     T finalPosBarySmall[2] = {goalCoordChosenSmall[0]-unitcenterBigVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]-unitcenterBigVect[1]*distBaryPointSmall};
 
-    //TODO : actuellement pour aligner les barycenters, normalement on voudrait aligner les bissectrices je pense
-    //
+    // Performing the translation + rotation such that the bisectors in compSmall and compBig are aligned, and the two components are facing each other, not crossing.
     for (size_t curIdSmall : compSmall)
     {
 #if VERB > 3
@@ -435,6 +442,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       std::cout << "\tPre-new-coordinates for " << curIdSmall << " are: " << outputCoords[curIdSmall*2]<<","<<outputCoords[curIdSmall*2+1] << "\n";
 #endif
 
+      // 2.e Performing the rotation.
       double rotationAngle = computeAngle(goalCoordChosenSmall, preFinalPosBarySmall, finalPosBarySmall);
 #if VERB > 1
       std::cout << " We chose for big and small: " << idChosenBig << " and " << idChosenSmall << std::endl;
@@ -458,6 +466,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
       }
     }
+
+    // 2.f Trying several rotations of the two components and keeping the one which makes the new distance matrix closest to the one provided in the input.
     if (nBig > 1)
     {
       rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
@@ -498,30 +508,31 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
 
 
-  std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
-  for (int u1 = 0; u1 < n; u1++)
-  {
-    for (int u2 = u1+1; u2 < n; u2++)
-    {
-      edgeHeapVectAfter.push_back({compute_dist(&outputCoords[2*u1], &outputCoords[2*u2]), {u1, u2}});
-    }
-  }
-  sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
-
-
-  std::map<UnionFind*, std::set<size_t>> ufToSetsAfter;
-  std::vector<UnionFind> ufVectorAfter(n);
-  std::vector<UnionFind*> ufPtrVectorAfter(n);
-  for (int i = 0; i < n; i++)
-  {
-    ufPtrVectorAfter[i] = &ufVectorAfter[i];
-    ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
-  }
-
   // We check that the lengths of the edges selected to build a minimum spanning tree
-  // are preserved by our algorithm.
+  // are preserved by our algorithm, as should be.
   if (CheckMST)
   {
+    std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
+    for (int u1 = 0; u1 < n; u1++)
+    {
+      for (int u2 = u1+1; u2 < n; u2++)
+      {
+        edgeHeapVectAfter.push_back({compute_dist(&outputCoords[2*u1], &outputCoords[2*u2]), {u1, u2}});
+      }
+    }
+    sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
+
+
+    std::map<UnionFind*, std::set<size_t>> ufToSetsAfter;
+    std::vector<UnionFind> ufVectorAfter(n);
+    std::vector<UnionFind*> ufPtrVectorAfter(n);
+    for (int i = 0; i < n; i++)
+    {
+      ufPtrVectorAfter[i] = &ufVectorAfter[i];
+      ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
+    }
+
+
     std::cout << " checking " << std::endl;
     for (const auto &elt : edgeHeapVectAfter)
     {

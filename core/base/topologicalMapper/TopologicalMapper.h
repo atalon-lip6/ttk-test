@@ -208,13 +208,12 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   sort(edgeHeapVect.begin(), edgeHeapVect.end());
 
 
+  // ufVectors is the union find vector
   std::map<UnionFind*, std::set<size_t>> ufToSets;
   std::vector<UnionFind> ufVector(n);
-  std::vector<UnionFind*> ufPtrVector(n);
   for (int i = 0; i < n; i++)
   {
-    ufPtrVector[i] = &ufVector[i];
-    ufToSets[ufPtrVector[i]].insert(i);
+    ufToSets[&ufVector[i]].insert(i);
   }
 
   for (size_t i = 0; i < 2*n; i++)
@@ -232,8 +231,8 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     size_t v = elt.second.second;
 
     // 2.a Getting the components
-    UnionFind *reprU = ufPtrVector[u]->find();
-    UnionFind *reprV = ufPtrVector[v]->find();
+    UnionFind *reprU = ufVector[u].find();
+    UnionFind *reprV = ufVector[v].find();
     if (reprU == reprV) // Already in the same component
     {
       continue;
@@ -483,15 +482,15 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     UnionFind* unionRepr = UnionFind::makeUnion(reprU, reprV);
     UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
     if (unionRepr != reprU && unionRepr != reprV)
-      std::cerr << "NOOOOOOOOOOOOOOO\n";
+    {
+      printErr("Error with the union find module results. Aborting.");
+      return 1;
+    }
     std::set<size_t> &unionSet = ufToSets[unionRepr];
     std::set<size_t> &otherSet = ufToSets[otherRepr];
 
     unionSet.insert(otherSet.begin(), otherSet.end());
     //TODO faire des trucs;
-
-    ufPtrVector[u] = unionRepr;
-    ufPtrVector[v] = unionRepr;
 
 
 #if VERB > 3
@@ -502,7 +501,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 #endif
 
     ufToSets.erase(otherRepr);
-    //ufToSets[otherRepr] = unionSet;
   }
   std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
 

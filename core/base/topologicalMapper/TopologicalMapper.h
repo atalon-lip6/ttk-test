@@ -93,7 +93,7 @@ static inline T compute_dist(const T* ptA, const T* ptB)
 template<typename T>
 inline bool are_colinear(const T* ptA, const T* ptB, const T* ptC)
 {
-  return (fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1]))) <= Epsilon;
+  return fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1])) <= Epsilon;
 }
 
 // Normalizes a given vector.
@@ -730,7 +730,7 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     nbIter1 = 1;
   if (step2*nbIter2 < 0.001) // No need to split such a small angle
     nbIter2 = 1;
-#pragma omp parallel for num_threads(nThread) shared(allCoords)
+//#pragma omp parallel for num_threads(nThread) shared(allCoords)
   for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
     std::vector<T> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
@@ -960,6 +960,72 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
     }
     return;
   }
+
+  // Testing if all points are colinear
+
+  double dirVect[2] = {0,0};
+  bool areColinear = true;
+
+  size_t idFirstDistinct = 0;
+  while (idFirstDistinct < nbPoint && abs(dirVect[0]) < Epsilon && abs(dirVect[1]) < Epsilon)
+  {
+    idFirstDistinct++;
+    dirVect[0] = coords[2*idFirstDistinct]-coords[0];
+    dirVect[1] = coords[2*idFirstDistinct+1]-coords[1]; //TODO tester avec deux points mêmes coordonnées !
+    if (abs(dirVect[0]) < Epsilon)
+      dirVect[0] =  0;
+    if (abs(dirVect[1]) < Epsilon)
+      dirVect[1] =  0;
+  }
+
+  T idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
+  T idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
+
+  const T* pt0 = &coords[0];
+  const T* ptDistinct = &coords[2*idFirstDistinct];
+
+  for (size_t iPt = idFirstDistinct+1; iPt < nbPoint; iPt++)
+  {
+    T curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
+    if (abs(curVect[0]) < Epsilon && abs(curVect[1]) < Epsilon)
+      continue;
+    const T* ptCur = &coords[2*iPt];
+    if (!are_colinear(pt0, ptDistinct, ptCur))
+    {
+      areColinear = false;
+      break;
+    }
+
+    if (coords[2*iPt] < coords[2*idMins[0]])
+      idMins[0] = iPt;
+    if (coords[2*iPt+1] < coords[2*idMins[1]])
+      idMins[1] = iPt;
+    if (coords[2*iPt] > coords[2*idMaxs[0]])
+      idMaxs[0] = iPt;
+    if (coords[2*iPt+1] > coords[2*idMaxs[1]])
+      idMaxs[1] = iPt;
+
+  }
+
+  if (areColinear)
+  {
+#if VERB > 5
+    std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
+#endif
+    if (abs(dirVect[0]) > Epsilon)
+    {
+      idsInHull.push_back(idMins[0]);
+      idsInHull.push_back(idMaxs[0]);
+    }
+    else
+    {
+      idsInHull.push_back(idMins[1]);
+      idsInHull.push_back(idMaxs[1]);
+    }
+    return;
+  }
+
+
 
   Mpoints multiPoints;
   Polygon hull;

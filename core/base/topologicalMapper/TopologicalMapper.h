@@ -1011,9 +1011,9 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
 
   if (areColinear)
   {
-//#if VERB > 5
+#if VERB > 5
     std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
-//#endif
+#endif
     if (fabs(dirVect[0]) > Epsilon)
     {
       idsInHull.push_back(idMins[0]);

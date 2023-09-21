@@ -72,6 +72,7 @@ void printCoords(const char prefix[], const T *coords)
 
 // cos and sin computations, so we are cautious on testing equalities between double.
 static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG+2)};
+static double EpsilonDBL{ttk::Geometry::pow(10.0, -DBL_DIG+2)};
 
 
 template<typename T>
@@ -91,9 +92,10 @@ static inline T compute_dist(const T* ptA, const T* ptB)
 }
 
 template<typename T>
-inline bool are_colinear(const T* ptA, const T* ptB, const T* ptC)
+inline bool are_colinear(const T* pptA, const T* pptB, const T* pptC)
 {
-  return fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1])) <= Epsilon;
+  double ptA[2] = {pptA[0], pptA[1]}, ptB[2] = {pptB[0], pptB[1]}, ptC[2] = {pptC[0], pptC[1]};
+  return fabs(ptA[0]*(ptB[1]-ptC[1])+ptB[0]*(ptC[1]-ptA[1])+ptC[0]*(ptA[1]-ptB[1])) <= EpsilonDBL;
 }
 
 // Normalizes a given vector.
@@ -346,7 +348,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       coordsBigHull[iHull*2] = outputCoords[vert*2];
       coordsBigHull[iHull*2+1] = outputCoords[vert*2+1];
 #if VERB > 3
-      printCoords(("Vertbig " + to_string(vert)).c_str(), &coordsBigHull[2*iHull]);
+      printCoords(("Vertbig " + std::to_string(vert)).c_str(), &coordsBigHull[2*iHull]);
 #endif
     }
     for (size_t iHull = 0; iHull < sizeSmallHull; iHull++)
@@ -355,7 +357,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       coordsSmallHull[iHull*2] = outputCoords[vert*2];
       coordsSmallHull[iHull*2+1] = outputCoords[vert*2+1];
 #if VERB > 3
-      printCoords(("Vertsmall " + to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
+      printCoords(("Vertsmall " + std::to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
 #endif
     }
 
@@ -639,7 +641,7 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
   for (int x : comp2)
     std::cout << x << " ";
   std::cout << std::endl;
-  std::cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << std::endl;
+  //std::cout << "prev2, cur2, post2 : " << iPtPrev2 << ", " << iPt2 << ", " << iPtPost2 << std::endl;
 #endif
 
   double angle1 = computeAngle(coordPt1, coordPrev1, coordPost1);
@@ -900,7 +902,7 @@ static double computeAngle(const T* ptA, const T* ptB, const T* ptC)
   double vect2[2] = {ptC[0]-ptA[0], ptC[1]-ptA[1]};
   double dirVect[2] = {0,0};
 
-#if VERB > 4
+#if VERB > 7
   printCoords("A : ", ptA);
   printCoords("B : ", ptB);
   printCoords("C : ", ptC);
@@ -926,7 +928,7 @@ static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double 
 {
   double xCenter = centerCoords[0], yCenter = centerCoords[1];
   size_t nbPoint = coords.size()/2;
-#if VERB > 3
+#if VERB > 7
   std::cout << "center = " << xCenter << "," << yCenter << std::endl;
 #endif
   for (size_t iPt = 0; iPt < nbPoint; iPt++)
@@ -935,7 +937,7 @@ static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double 
     double xNew, yNew;
     xNew = (x-xCenter)*cos(angle)-(y-yCenter)*sin(angle)+xCenter;
     yNew = (y-yCenter)*cos(angle)+(x-xCenter)*sin(angle)+yCenter;
-#if VERB > 3
+#if VERB > 7
     std::cout << "point = " << x << "," << y << " ===> (" << xNew << ", " << yNew << ")" <<  std::endl;
 #endif
     x = xNew;
@@ -967,14 +969,14 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
   bool areColinear = true;
 
   size_t idFirstDistinct = 0;
-  while (idFirstDistinct < nbPoint && abs(dirVect[0]) < Epsilon && abs(dirVect[1]) < Epsilon)
+  while (idFirstDistinct < nbPoint && fabs(dirVect[0]) < Epsilon && fabs(dirVect[1]) < Epsilon)
   {
     idFirstDistinct++;
     dirVect[0] = coords[2*idFirstDistinct]-coords[0];
     dirVect[1] = coords[2*idFirstDistinct+1]-coords[1]; //TODO tester avec deux points mêmes coordonnées !
-    if (abs(dirVect[0]) < Epsilon)
+    if (fabs(dirVect[0]) < Epsilon)
       dirVect[0] =  0;
-    if (abs(dirVect[1]) < Epsilon)
+    if (fabs(dirVect[1]) < Epsilon)
       dirVect[1] =  0;
   }
 
@@ -987,7 +989,7 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
   for (size_t iPt = idFirstDistinct+1; iPt < nbPoint; iPt++)
   {
     T curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
-    if (abs(curVect[0]) < Epsilon && abs(curVect[1]) < Epsilon)
+    if (fabs(curVect[0]) < Epsilon && fabs(curVect[1]) < Epsilon)
       continue;
     const T* ptCur = &coords[2*iPt];
     if (!are_colinear(pt0, ptDistinct, ptCur))
@@ -1009,10 +1011,10 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
 
   if (areColinear)
   {
-#if VERB > 5
+//#if VERB > 5
     std::cout << "COLINEAR = " << idMins[0] << "," << idMins[1] << "  ;  " << idMaxs[0] << "," << idMaxs[1] << std::endl;
-#endif
-    if (abs(dirVect[0]) > Epsilon)
+//#endif
+    if (fabs(dirVect[0]) > Epsilon)
     {
       idsInHull.push_back(idMins[0]);
       idsInHull.push_back(idMaxs[0]);
@@ -1042,6 +1044,7 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
       if (fabs(coords[2*j]-coordsCur[0])+fabs(coords[2*j+1]-coordsCur[1]) < Epsilon)
       {
         idsInHull.push_back(j);
+        break;
       }
     }
   }

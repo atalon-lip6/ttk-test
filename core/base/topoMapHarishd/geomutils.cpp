@@ -16,9 +16,17 @@ std::vector<int> sortEdges(const std::vector<std::pair<int, int>> &edges, const 
         order[i] = i;
     }
 
-    std::sort(order.begin(),order.end(), [weights](int i, int j){
-        return (weights[i] < weights[j]);
-    });
+    int n = edges.size();
+    std::vector<std::pair<double, int>> trucs(edges.size());
+    for (int i = 0; i < n; i++)
+      trucs[i] = {weights[i], i};
+    //std::sort(order.begin(),order.end(), [weights](int i, int j){
+        //return (weights[i] < weights[j]);
+    //});
+    std::sort(trucs.begin(), trucs.end());
+
+    for (int i = 0; i < n; i++)
+      order[i] = trucs[i].second;
     return order;
 }
 

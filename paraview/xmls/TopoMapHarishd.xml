@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-    <SourceProxy
-      name="ttkTopoMapHarishd"
-      class="ttkTopoMapHarishd"
-      label="TTK Topological Mapper">
+<SourceProxy name="ttkTopoMapHarishd" class="ttkTopoMapHarishd" label="TTK TopoMapHarishd">
       <Documentation
         long_help="TTK plugin for TODO."
         short_help="TTK plugin for TODO.">

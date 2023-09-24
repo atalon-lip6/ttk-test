@@ -5,7 +5,6 @@ ttk_add_base_library(topologicalMapper
     TopologicalMapper.h
   DEPENDS
     geometry
-    dimensionReduction
     unionFind
 )
 target_compile_options(topologicalMapper PUBLIC -ggdb -O0)

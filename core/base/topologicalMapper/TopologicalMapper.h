@@ -24,7 +24,6 @@
 
 // ttk common includes
 #include <Debug.h>
-#include <DimensionReduction.h>
 #include <Geometry.h>
 #include <UnionFind.h>
 
@@ -42,16 +41,9 @@
 
 namespace bg = boost::geometry;
 BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
-typedef boost::tuple<double, double> PointDouble;
-typedef boost::tuple<float, float> PointFloat;
+
 typedef boost::tuple<double, double> Point;
-
-typedef boost::geometry::model::polygon<PointDouble> PolygonDouble;
-typedef boost::geometry::model::polygon<PointFloat> PolygonFloat;
 typedef boost::geometry::model::polygon<Point> Polygon;
-
-typedef boost::geometry::model::multi_point<PointDouble> MpointsDouble;
-typedef boost::geometry::model::multi_point<PointFloat> MpointsFloat;
 typedef boost::geometry::model::multi_point<Point> Mpoints;
 
 
@@ -117,7 +109,7 @@ static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double 
 
 
 template<typename T>
-void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t> &idsInHull);
+void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std::vector<size_t> &idsInHull);
 
 
 
@@ -126,7 +118,7 @@ namespace ttk {
   /**
    * The TopologicalMapper class TODO
    */
-  class TopologicalMapper : virtual public Debug, public DimensionReduction {
+  class TopologicalMapper : virtual public Debug {
 
   public:
     TopologicalMapper();
@@ -154,12 +146,9 @@ namespace ttk {
 
     // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
+void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
 
   };
-
-
-
 
 
 //Sketch of the algorithm:
@@ -211,11 +200,11 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
 
   // ufVectors is the union find vector
-  std::map<UnionFind*, std::set<size_t>> ufToSets;
+  std::map<UnionFind*, std::vector<size_t>> ufToComp;
   std::vector<UnionFind> ufVector(n);
   for (int i = 0; i < n; i++)
   {
-    ufToSets[&ufVector[i]].insert(i);
+    ufToComp[&ufVector[i]].push_back(i);
   }
 
   for (size_t i = 0; i < 2*n; i++)
@@ -258,18 +247,16 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     edgesMSTBefore.push_back(edgeCost);
     //TODO function
-    std::set<size_t> &compU = ufToSets[reprU], &compV = ufToSets[reprV];
+    std::vector<size_t> &compU = ufToComp[reprU], &compV = ufToComp[reprV];
     size_t idSmall = compU.size() < compV.size() ? u:v;
     size_t idBig = idSmall == u ? v:u;
-    std::set<size_t> &compSmall = idSmall == u ? compU:compV;
-    std::set<size_t> &compBig = idSmall == u ? compV:compU;
+    std::vector<size_t> &compSmall = idSmall == u ? compU:compV;
+    std::vector<size_t> &compBig = idSmall == u ? compV:compU;
     size_t nBig = compBig.size();
     size_t nSmall = compSmall.size();
+    
+    std::vector<size_t> idsInHullSmall, idsInHullBig;
 
-    size_t idEdgeVert[2] = {idSmall == u ? u:v, idSmall == u ? v:u};
-    std::vector<T> pointsSets[2];
-    std::vector<size_t> idsInHullSets[2];
-    size_t idChosenVerts[2];
 
 
 #if VERB > 2
@@ -285,62 +272,52 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     //TODO mettre en fonction ?
     //
-    // Retour de la fonction : vertexHull, coordonnéesPointsComp, chosenVert,
-    // Input : distance matrix, composante (set), vertexHull, coordonnéesPointsComp, chosenVert?
-    for (int idSet = 0; idSet < 2; idSet++)
-    {
-      std::vector<T> &curPointsSet = pointsSets[idSet];// stores coordinates
-      std::vector<size_t> &curHullVerts = idsInHullSets[idSet];
-      size_t &idChosenVert = idChosenVerts[idSet];
-      size_t idCur = idSet == 0 ? idSmall:idBig;
-      std::set<size_t> &curComp = idCur == u ? compU:compV;
-      size_t nCur = curComp.size();
-      curPointsSet.resize(nCur*2);
-      std::vector<size_t> curCompVect(nCur);
+    // 2.b Computing the convex hull.
 
-      // 2.b Computing the convex hull.
+    // We retrieve the current coordinates of the big component..
+   computeConvexHull(outputCoords, compBig, idsInHullBig);
+   computeConvexHull(outputCoords, compSmall, idsInHullSmall);
 
-      // We retrieve the current coordinates of our component.
-      size_t cptCur = 0;
-      for (int vertId : curComp)
-      {
-        for (int k = 0; k < 2; k++)
-        {
-          curPointsSet[2*cptCur+k] = outputCoords[2*vertId+k];
-        }
-        curCompVect[cptCur] = vertId;
-        cptCur++;
-      }
-      computeConvexHull(curPointsSet, 2, curHullVerts);
-      // The ids in curHullVerts are the index of the vertices in the component list, not
-      // the real ids of the vertices. The loop just below solves this.
-      for (size_t &vert : curHullVerts)
-        vert = curCompVect[vert];
 
 #if VERB > 2
+
       std::cout << std::endl;
-      std::cout << "\n\nConvex hull : ";
-      for (size_t &x : curHullVerts)
+      std::cout << "\n\nConvex hull small(" << idsInHullSmall.size() <<"): ";
+      for (size_t &x : idsInHullSmall)
+      {
+        std::cout << x << " ";
+      }
+      std::cout << std::endl;
+
+
+      std::cout << std::endl;
+      std::cout << "\n\nConvex hull big(" <<idsInHullBig.size() << "): ";
+      for (size_t &x : idsInHullBig)
       {
         std::cout << x << " ";
       }
       std::cout << std::endl;
 #endif
 
-      idChosenVert = curHullVerts[0];
+      size_t idChosenBig = idsInHullBig[0], idChosenSmall = idsInHullSmall[0];
+ 
       // 2.c We want to select, among all vertices in the convex hull, the one which is
       // closest to the vertex of the edge we work on.
-      for (size_t vert : curHullVerts)
+      for (size_t vert : idsInHullBig)
       {
-        T dist = distMatrix[vert][idEdgeVert[idSet]];
-        if (dist < distMatrix[idChosenVert][idEdgeVert[idSet]])
-          idChosenVert = vert;
+        T dist = distMatrix[vert][idBig];
+        if (dist < distMatrix[idChosenBig][idBig])
+          idChosenBig = vert;
       }
-    }
 
-    std::vector<size_t> &idsInHullSmall = idsInHullSets[0], idsInHullBig = idsInHullSets[1];
-    std::vector<T> &pointsBig = pointsSets[1], &pointsSmall = pointsSets[0];
-    size_t sizeBigHull = idsInHullSets[1].size(), sizeSmallHull = idsInHullSets[0].size();
+      for (size_t vert : idsInHullSmall)
+      {
+        T dist = distMatrix[vert][idSmall];
+        if (dist < distMatrix[idChosenSmall][idSmall])
+          idChosenSmall = vert;
+      }
+
+    size_t sizeBigHull = idsInHullBig.size(), sizeSmallHull = idsInHullSmall.size();
     std::vector<T> coordsBigHull(sizeBigHull*2), coordsSmallHull(sizeSmallHull*2);
     for (size_t iHull = 0; iHull < sizeBigHull; iHull++)
     {
@@ -355,13 +332,12 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     {
       size_t vert = idsInHullSmall[iHull];
       coordsSmallHull[iHull*2] = outputCoords[vert*2];
-      coordsSmallHull[iHull*2+1] = outputCoords[vert*2+1];
+      coordsSmallHull[iHull*2+1] = outputCoords[vert*2+1]; //TODO put in computeconvexhull
 #if VERB > 3
       printCoords(("Vertsmall " + std::to_string(vert)).c_str(), &coordsSmallHull[2*iHull]);
 #endif
     }
 
-    size_t idChosenBig = idChosenVerts[1], idChosenSmall = idChosenVerts[0];
     
     // Identifying the angles we are working on from the convex hulls.
     T coordPrevBig[2], coordPostBig[2];
@@ -489,12 +465,10 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       printErr("Error with the union find module results. Aborting.");
       return 1;
     }
-    std::set<size_t> &unionSet = ufToSets[unionRepr];
-    std::set<size_t> &otherSet = ufToSets[otherRepr];
+    std::vector<size_t> &unionSet = ufToComp[unionRepr];
+    std::vector<size_t> &otherSet = ufToComp[otherRepr];
 
-    unionSet.insert(otherSet.begin(), otherSet.end());
-    //TODO faire des trucs;
-
+    unionSet.insert(unionSet.end(), otherSet.begin(), otherSet.end());
 
 #if VERB > 3
     std::cout << " Resulting component = ";
@@ -503,7 +477,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     std::cout << "=======================\n";
 #endif
 
-    ufToSets.erase(otherRepr);
+    ufToComp.erase(otherRepr);
   }
   std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
 
@@ -524,13 +498,13 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     sort(edgeHeapVectAfter.begin(), edgeHeapVectAfter.end());
 
 
-    std::map<UnionFind*, std::set<size_t>> ufToSetsAfter;
+    std::map<UnionFind*, std::vector<size_t>> ufToCompAfter;
     std::vector<UnionFind> ufVectorAfter(n);
     std::vector<UnionFind*> ufPtrVectorAfter(n);
     for (int i = 0; i < n; i++)
     {
       ufPtrVectorAfter[i] = &ufVectorAfter[i];
-      ufToSetsAfter[ufPtrVectorAfter[i]].insert(i);
+      ufToCompAfter[ufPtrVectorAfter[i]].push_back(i);
     }
 
 
@@ -552,16 +526,16 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       UnionFind* otherRepr = (unionRepr == reprU) ? reprV : reprU;
       if (unionRepr != reprU && unionRepr != reprV)
         std::cerr << "NOOOOOOOOOOOOOOO\n";
-      std::set<size_t> &unionSet = ufToSetsAfter[unionRepr];
-      std::set<size_t> &otherSet = ufToSetsAfter[otherRepr];
+      std::vector<size_t> &unionSet = ufToCompAfter[unionRepr];
+      std::vector<size_t> &otherSet = ufToCompAfter[otherRepr];
 
-      unionSet.insert(otherSet.begin(), otherSet.end());
+      unionSet.insert(unionSet.end(), otherSet.begin(), otherSet.end());
       //TODO faire des trucs;
 
       ufPtrVectorAfter[u] = unionRepr;
       ufPtrVectorAfter[v] = unionRepr;
 
-      ufToSetsAfter.erase(otherRepr);
+      ufToCompAfter.erase(otherRepr);
       edgesMSTAfter.push_back(edgeCost);
     }
 
@@ -617,7 +591,7 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::set<size_t> &comp1, const std::set<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
+void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.
@@ -691,34 +665,31 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
   double bestAnglePair[2] = {0,0};
   T bestScore = 1e20; //TODO numerics_limit
 
-  std::vector<size_t> idsComp1, idsComp2;;
-  idsComp1.insert(idsComp1.begin(), comp1.cbegin(), comp1.cend());
-  idsComp2.insert(idsComp2.begin(), comp2.cbegin(), comp2.cend());
+ 
   std::vector<std::vector<T>> origDistMatrix(comp1Size);
   for (size_t i = 0; i < comp1Size; i++)
   {
     origDistMatrix[i].resize(comp2Size);
     for (size_t j = 0; j < comp2Size; j++)
     {
-      origDistMatrix[i][j] = distMatrix[idsComp1[i]][idsComp2[j]];
+      origDistMatrix[i][j] = distMatrix[comp1[i]][comp2[j]];
     }
   }
   std::vector<T> initialCoords1(2*comp1Size), initialCoords2(2*comp2Size);
-  std::set<size_t>::const_iterator it = comp1.cbegin();
-  for (size_t i = 0; it != comp1.cend(); ++it, i++)
+  for (size_t i = 0; i < comp1.size(); i++)
   {
-    size_t iPt = *it;
+    size_t iPt = comp1[i];
     initialCoords1[2*i] = allCoords[2*iPt];
     initialCoords1[2*i+1] = allCoords[2*iPt+1];
   }
-
-  it = comp2.cbegin();
-  for (size_t i = 0; it != comp2.cend(); ++it, i++)
+  for (size_t i = 0; i < comp2.size(); i++)
   {
-    size_t iPt = *it;
+    size_t iPt = comp2[i];
     initialCoords2[2*i] = allCoords[2*iPt];
     initialCoords2[2*i+1] = allCoords[2*iPt+1];
   }
+
+
 
 
 #if VERB > 0
@@ -732,7 +703,7 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     nbIter1 = 1;
   if (step2*nbIter2 < 0.001) // No need to split such a small angle
     nbIter2 = 1;
-//#pragma omp parallel for num_threads(nThread) shared(allCoords)
+#pragma omp parallel for num_threads(nThread) shared(allCoords)
   for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
     std::vector<T> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
@@ -777,10 +748,10 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     for (size_t i2 = 0; i2 < nbIter2; i2++)
     {
       coords2Test = initialCoords2;
+      double testAngle2 = angleMin2+i2*step2;
 #if VERB > 2
       std::cout << "\t\t\t\tTesting angle2 " << deg(testAngle2) << std::endl;
 #endif
-      double testAngle2 = angleMin2+i2*step2;
       rotatePolygon(coords2Test, coordPt2, testAngle2);
 
       T curScore = 0;
@@ -795,7 +766,7 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
           curScore += (newDist-origDistMatrix[i][j])*(newDist-origDistMatrix[i][j]);
           if (newDist+Epsilon < shortestDistPossible)
           {
-            std::cout << "problem " << newDist << '(' << idsComp1[i] << ',' << idsComp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << std::endl;
+            std::cout << "problem " << newDist << '(' << comp1[i] << ',' << comp2[j] << ')' << " is lower than " << shortestDistPossible << " =====> (" << i1 << "," << i2 << ") (angles iterations)" << std::endl;
             printCoords(" comp1 pt : ", coordARotate);
             printCoords(" comp2 pt : ", coordBRotate);
 
@@ -862,10 +833,11 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     }
   }
 
-  for (size_t i1 : idsComp1)
+  //Todo rotatepolygon
+  for (size_t i1 : comp1)
     rotate(&allCoords[2*i1], coordPt1, bestAnglePair[0]);
 
-  for (size_t i2 : idsComp2)
+  for (size_t i2 : comp2)
     rotate(&allCoords[2*i2], coordPt2, bestAnglePair[1]);
 
 #if VERB > 1
@@ -946,19 +918,28 @@ static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double 
 }
 
 template<typename T>
-void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<size_t> &idsInHull)
+void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std::vector<size_t> &idsInHull)
 {
   //TODO copier coords puis sort
-  size_t nbPoint = coords.size()/dim;
+  size_t nbPoint = compPtsIds.size();
+  std::vector<T> compCoords(2*nbPoint);
+  for (size_t i = 0; i < nbPoint; i++)
+  {
+    size_t vertId = compPtsIds[i];
+    compCoords[2*i] = allCoords[2*vertId];
+    compCoords[2*i+1] = allCoords[2*vertId+1];
+  }
+
+
   if (nbPoint <= 2)
   {
-    idsInHull.push_back(0);
+    idsInHull.push_back(compPtsIds[0]);
     if (nbPoint == 2)
     {
-      T dist = compute_dist(&coords[0], &coords[2]);
+      T dist = compute_dist(&compCoords[0], &compCoords[2]);
 
-      if (dist > Epsilon) //TODO voir si distance trop grande ?
-        idsInHull.push_back(1);
+      if (dist > Epsilon)
+        idsInHull.push_back(compPtsIds[1]);
     }
     return;
   }
@@ -972,39 +953,39 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
   while (idFirstDistinct < nbPoint && fabs(dirVect[0]) < Epsilon && fabs(dirVect[1]) < Epsilon)
   {
     idFirstDistinct++;
-    dirVect[0] = coords[2*idFirstDistinct]-coords[0];
-    dirVect[1] = coords[2*idFirstDistinct+1]-coords[1]; //TODO tester avec deux points mêmes coordonnées !
+    dirVect[0] = compCoords[2*idFirstDistinct]-compCoords[0];
+    dirVect[1] = compCoords[2*idFirstDistinct+1]-compCoords[1]; //TODO tester avec deux points mêmes coordonnées !
     if (fabs(dirVect[0]) < Epsilon)
       dirVect[0] =  0;
     if (fabs(dirVect[1]) < Epsilon)
       dirVect[1] =  0;
   }
 
-  T idMins[2] = {coords[0] < coords[2] ? 0:1, coords[1] < coords[3] ? 0:1};
-  T idMaxs[2] = {coords[0] > coords[2] ? 0:1, coords[1] > coords[3] ? 0:1};
+  int idMins[2] = {compCoords[0] < compCoords[2] ? 0:1, compCoords[1] < compCoords[3] ? 0:1};
+  int idMaxs[2] = {compCoords[0] > compCoords[2] ? 0:1, compCoords[1] > compCoords[3] ? 0:1};
 
-  const T* pt0 = &coords[0];
-  const T* ptDistinct = &coords[2*idFirstDistinct];
+  const T* pt0 = &compCoords[0];
+  const T* ptDistinct = &compCoords[2*idFirstDistinct];
 
   for (size_t iPt = idFirstDistinct+1; iPt < nbPoint; iPt++)
   {
-    T curVect[2] = {coords[2*iPt]-coords[0], coords[2*iPt+1]-coords[1]};
+    T curVect[2] = {compCoords[2*iPt]-compCoords[0], compCoords[2*iPt+1]-compCoords[1]};
     if (fabs(curVect[0]) < Epsilon && fabs(curVect[1]) < Epsilon)
       continue;
-    const T* ptCur = &coords[2*iPt];
+    const T* ptCur = &compCoords[2*iPt];
     if (!are_colinear(pt0, ptDistinct, ptCur))
     {
       areColinear = false;
       break;
     }
 
-    if (coords[2*iPt] < coords[2*idMins[0]])
+    if (compCoords[2*iPt] < compCoords[2*idMins[0]])
       idMins[0] = iPt;
-    if (coords[2*iPt+1] < coords[2*idMins[1]])
+    if (compCoords[2*iPt+1] < compCoords[2*idMins[1]])
       idMins[1] = iPt;
-    if (coords[2*iPt] > coords[2*idMaxs[0]])
+    if (compCoords[2*iPt] > compCoords[2*idMaxs[0]])
       idMaxs[0] = iPt;
-    if (coords[2*iPt+1] > coords[2*idMaxs[1]])
+    if (compCoords[2*iPt+1] > compCoords[2*idMaxs[1]])
       idMaxs[1] = iPt;
 
   }
@@ -1016,13 +997,13 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
 #endif
     if (fabs(dirVect[0]) > Epsilon)
     {
-      idsInHull.push_back(idMins[0]);
-      idsInHull.push_back(idMaxs[0]);
+      idsInHull.push_back(compPtsIds[idMins[0]]);
+      idsInHull.push_back(compPtsIds[idMaxs[0]]);
     }
     else
     {
-      idsInHull.push_back(idMins[1]);
-      idsInHull.push_back(idMaxs[1]);
+      idsInHull.push_back(compPtsIds[idMins[1]]);
+      idsInHull.push_back(compPtsIds[idMaxs[1]]);
     }
     return;
   }
@@ -1033,17 +1014,17 @@ void computeConvexHull(const std::vector<T>& coords, size_t dim, std::vector<siz
   Polygon hull;
   for (size_t i = 0; i < nbPoint; i++)
   {
-    boost::geometry::append(multiPoints, Point(coords[2*i], coords[2*i+1]));
+    boost::geometry::append(multiPoints, Point(compCoords[2*i], compCoords[2*i+1]));
   }
   boost::geometry::convex_hull(multiPoints, hull);
   for (auto boostPt : hull.outer())
   {
     T coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
-    for (int j = 0; j < coords.size()/2; j++)
+    for (int j = 0; j < compCoords.size()/2; j++)
     {
-      if (fabs(coords[2*j]-coordsCur[0])+fabs(coords[2*j+1]-coordsCur[1]) < Epsilon)
+      if (fabs(compCoords[2*j]-coordsCur[0])+fabs(compCoords[2*j+1]-coordsCur[1]) < Epsilon)
       {
-        idsInHull.push_back(j);
+        idsInHull.push_back(compPtsIds[j]);
         break;
       }
     }

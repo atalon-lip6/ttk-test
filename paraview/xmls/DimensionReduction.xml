@@ -119,6 +119,7 @@
           <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
           <Entry value="4" text="Isomap Embedding"/>
           <Entry value="5" text="Principal Component Analysis" />
+          <Entry value="6" text="Topological Mapper" />
         </EnumerationDomain>
         <Documentation>
         </Documentation>

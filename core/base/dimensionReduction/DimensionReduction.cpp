@@ -73,7 +73,7 @@ int DimensionReduction::execute(
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
   if (this->Method == METHOD::TOPOMAP)
   {
-    TopologicalMapper topomap(this->topo_AngleSamplingFreq);
+    TopologicalMapper topomap(this->topo_AngleSamplingFreq, false); //TODO checkMST
 
     double* ptrForCoordsTopomap = new double[2*nRows];
 //TODO nrows == ncolumns check

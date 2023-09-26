@@ -63,6 +63,8 @@ namespace ttk {
       ISOMAP = 4,
       /** Principal Component Analysis */
       PCA = 5,
+      /** Topological Mapper */
+      TOPOMAP = 6,
     };
 
     inline void setSEParameters(const std::string &Affinity,
@@ -160,6 +162,10 @@ namespace ttk {
       pca_SVDSolver = SVDSolver;
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
+    }
+    inline void setTopoParameters(const size_t AngleSamplingFreq)
+    {
+      topo_AngleSamplingFreq = AngleSamplingFreq;
     }
 
     inline void setInputModulePath(const std::string &modulePath) {
@@ -262,6 +268,9 @@ namespace ttk {
     std::string pca_SVDSolver{"auto"};
     float pca_Tolerance{0};
     std::string pca_MaxIteration{"auto"};
+
+    // Topological Mapper
+    size_t topo_AngleSamplingFreq;
 
     // testing
     std::string ModulePath{"default"};

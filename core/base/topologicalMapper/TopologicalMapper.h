@@ -122,6 +122,7 @@ namespace ttk {
 
   public:
     TopologicalMapper();
+    TopologicalMapper(size_t angleSamplingFreq,bool checkMST) : AngleSamplingFreq(angleSamplingFreq), CheckMST(checkMST) {}
     ~TopologicalMapper();
 
     /**

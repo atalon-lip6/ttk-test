@@ -222,8 +222,12 @@ public:
   vtkGetMacro(pca_MaxIteration, std::string);
 
   // Topological Mapper
-  vtkSetMacro(topo_AngleSamplingFreq, size_t);
-  vtkGetMacro(topo_AngleSamplingFreq, size_t);
+  vtkSetMacro(topomap_AngleSamplingFreq, int);
+  vtkGetMacro(topomap_AngleSamplingFreq, int);
+
+  vtkSetMacro(topomap_CheckMST, bool);
+  vtkGetMacro(topomap_CheckMST, bool);
+
 
   // testing
   vtkSetMacro(ModulePath, const std::string &);

@@ -67,8 +67,8 @@ public:
     this->Modified();
   }
 
-  vtkSetMacro(AngleSamplingFreq, int);
-  vtkGetMacro(AngleSamplingFreq, int);
+  vtkSetMacro(AngleSamplingFreq, unsigned long);
+  vtkGetMacro(AngleSamplingFreq, unsigned long);
   
   vtkSetMacro(CheckMST, bool);
   vtkGetMacro(CheckMST, bool);

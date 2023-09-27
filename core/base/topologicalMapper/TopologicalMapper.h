@@ -1019,7 +1019,7 @@ void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std:
   boost::geometry::convex_hull(multiPoints, hull);
   for (auto boostPt : hull.outer())
   {
-    T coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
+    T coordsCur[2] = {static_cast<float>(boostPt.get<0>()), static_cast<float>(boostPt.get<1>())};
     for (size_t j = 0; j < compCoords.size()/2; j++)
     {
       if (fabs(compCoords[2*j]-coordsCur[0])+fabs(compCoords[2*j+1]-coordsCur[1]) < Epsilon)

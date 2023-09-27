@@ -1,9 +1,0 @@
-NAME
-  ttkTopoMapHarishd
-SOURCES
-  ttkTopoMapHarishd.cpp
-HEADERS
-  ttkTopoMapHarishd.h
-DEPENDS
-  topoMapHarishd
-  ttkAlgorithm

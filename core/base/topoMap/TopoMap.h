@@ -138,7 +138,7 @@ namespace ttk {
      * @return 0 in case of success.
      */
     template<typename T>
-    int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
+    int execute(T* outputCoords, const std::vector<T> &inputMatrix, bool isDistMat, size_t n) const;
   protected:
     size_t AngularSampleNb{20};
     bool CheckMST{false};
@@ -150,7 +150,7 @@ namespace ttk {
 
     // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angularSampleNb, size_t nThread) const;
+T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<T> &distMatrix, T* allCoords, size_t n, size_t angularSampleNb, size_t nThread) const;
 
   };
 
@@ -170,7 +170,7 @@ T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<siz
 
 //TODO inputPoints remove
 template<typename T>
-int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
+int ttk::TopoMap::execute(T* outputCoords, const std::vector<T> &inputMatrix, bool isDistMat, size_t n) const
 {
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
 
@@ -185,7 +185,38 @@ int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &di
     return 1;
   }
 
-  size_t n = distMatrix.size();
+  std::vector<T> computedDistMatrix(n*n);
+  if (!isDistMat)
+  {
+    size_t dim = inputMatrix.size()/n;
+    std::cout << "dim = " << dim << std::endl;
+    if (n*dim != inputMatrix.size())
+    {
+      this->printErr("Error, the coordinates input matrix has invalid size.");
+      return 1;
+    }
+    for (size_t i1 = 0; i1 < n; i1++)
+    {
+      for (size_t i2 = i1; i2 < n; i2++)
+      {
+        T dist2 = 0;
+        for (size_t k = 0; k < dim; k++)
+          dist2 += (inputMatrix[dim*i1+k]-inputMatrix[dim*i2+k])*(inputMatrix[dim*i1+k]-inputMatrix[dim*i2+k]);
+        T dist = sqrt(dist2);
+        computedDistMatrix[i1*n+i2] = dist;
+        computedDistMatrix[i2*n+i1] = dist;
+      }
+    }
+  }
+  else
+  {
+    if (inputMatrix.size() != n*n)
+      this->printErr("Invalid size for distance matrix.");
+  }
+
+  const std::vector<T> &distMatrix = isDistMat ? inputMatrix : computedDistMatrix;
+
+
 #if VERB > 0
   std::cout << "Il y a " << n << " points! :-)\n";
 #endif
@@ -197,7 +228,7 @@ int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &di
   {
     for (size_t u2 = u1+1; u2 < n; u2++)
     {
-      edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
+      edgeHeapVect.push_back({distMatrix[u1*n+u2], {u1, u2}});
     }
   }
   sort(edgeHeapVect.begin(), edgeHeapVect.end());
@@ -310,15 +341,15 @@ int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &di
       // closest to the vertex of the edge we work on.
       for (size_t vert : idsInHullBig)
       {
-        T dist = distMatrix[vert][idBig];
-        if (dist < distMatrix[idChosenBig][idBig])
+        T dist = distMatrix[vert*n+idBig];
+        if (dist < distMatrix[idChosenBig*n+idBig])
           idChosenBig = vert;
       }
 
       for (size_t vert : idsInHullSmall)
       {
-        T dist = distMatrix[vert][idSmall];
-        if (dist < distMatrix[idChosenSmall][idSmall])
+        T dist = distMatrix[vert*n+idSmall];
+        if (dist < distMatrix[idChosenSmall*n+idSmall])
           idChosenSmall = vert;
       }
 
@@ -452,7 +483,7 @@ int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &di
     // 2.f Trying several rotations of the two components and keeping the one which makes the new distance matrix closest to the one provided in the input.
     if (nBig > 1)
     {
-      finalDistortion = rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngularSampleNb, this->threadNumber_);
+      finalDistortion = rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, n, this->AngularSampleNb, this->threadNumber_);
 #if VERB > 4
       std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*2]<<","<<outputCoords[idChosenBig*2+1] << "\n";
 #endif
@@ -600,7 +631,7 @@ void TopoMap::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t 
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angularSampleNb, size_t nThread) const
+T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<T> &distMatrix, T* allCoords, size_t n, size_t angularSampleNb, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.
@@ -680,7 +711,7 @@ T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::v
     origDistMatrix[i].resize(comp2Size);
     for (size_t j = 0; j < comp2Size; j++)
     {
-      origDistMatrix[i][j] = distMatrix[comp1[i]][comp2[j]];
+      origDistMatrix[i][j] = distMatrix[comp1[i]*n+comp2[j]];
     }
   }
   std::vector<T> initialCoords1(2*comp1Size), initialCoords2(2*comp2Size);

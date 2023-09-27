@@ -163,9 +163,10 @@ namespace ttk {
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
     }
-    inline void setTopoParameters(const size_t AngleSamplingFreq)
+    inline void setTopoParameters(const size_t AngleSamplingFreq, bool CheckMST)
     {
-      topo_AngleSamplingFreq = AngleSamplingFreq;
+      topomap_AngleSamplingFreq = AngleSamplingFreq;
+      topomap_CheckMST = CheckMST;
     }
 
     inline void setInputModulePath(const std::string &modulePath) {
@@ -197,6 +198,7 @@ namespace ttk {
     }
 
     inline void setIsInputDistanceMatrix(const bool data) {
+      this->IsInputADistanceMatrix = data;
       if(data) {
         this->se_Affinity = "precomputed";
         this->mds_Dissimilarity = "precomputed";
@@ -270,7 +272,8 @@ namespace ttk {
     std::string pca_MaxIteration{"auto"};
 
     // Topological Mapper
-    size_t topo_AngleSamplingFreq;
+    size_t topomap_AngleSamplingFreq;
+    bool topomap_CheckMST;
 
     // testing
     std::string ModulePath{"default"};
@@ -282,5 +285,6 @@ namespace ttk {
     int NumberOfNeighbors{5};
     int IsDeterministic{true};
     char majorVersion_{'0'};
+    bool IsInputADistanceMatrix{false};
   };
 } // namespace ttk

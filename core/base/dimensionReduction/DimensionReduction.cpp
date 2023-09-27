@@ -73,11 +73,10 @@ int DimensionReduction::execute(
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
   if (this->Method == METHOD::TOPOMAP)
   {
-    TopologicalMapper topomap(this->topo_AngleSamplingFreq, false); //TODO checkMST
+    TopologicalMapper topomap(this->topomap_AngleSamplingFreq, topomap_CheckMST);
 
-    double* ptrForCoordsTopomap = new double[2*nRows];
-//TODO nrows == ncolumns check
-    topomap.execute<double>(ptrForCoordsTopomap, inputMatrix, nRows);
+    double* ptrForCoordsTopomap = (double*) new double[2*nRows];
+    topomap.execute<double>(ptrForCoordsTopomap, inputMatrix, IsInputADistanceMatrix, nRows);
     outputEmbedding.resize(2);
     outputEmbedding[0].resize(nRows);
     outputEmbedding[1].resize(nRows);
@@ -86,7 +85,7 @@ int DimensionReduction::execute(
       outputEmbedding[0][i] = ptrForCoordsTopomap[2*i];
       outputEmbedding[1][i] = ptrForCoordsTopomap[2*i+1];
     }
-    delete ptrForCoordsTopomap;
+    delete[] ptrForCoordsTopomap;
 
     this->printMsg("Computed Topological Mapper",
                  1.0, t.getElapsedTime(), this->threadNumber_);

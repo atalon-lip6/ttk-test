@@ -50,7 +50,7 @@ std::vector<Point> ttk::TopoMapHarishd::placePoints(const std::vector<std::pair<
   compMap.resize(n);
   verts.resize(n);
 
-  for(int i = 0;i < compMap.size();i ++) {
+  for(size_t i = 0;i < compMap.size();i ++) {
     verts[i].p = Point(0,0);
     verts[i].id = i;
     compMap[i].vertices.push_back(i);
@@ -59,8 +59,8 @@ std::vector<Point> ttk::TopoMapHarishd::placePoints(const std::vector<std::pair<
   }
   std::vector<int> order = sortEdges(edges,weights);
 
-  for(int _i = 0;_i < order.size();_i ++) {
-    int i = order[_i];
+  for(size_t _i = 0;_i < order.size();_i ++) {
+    size_t i = order[_i];
     int p1 = edges[i].first;
     int p2 = edges[i].second;
 
@@ -82,7 +82,7 @@ std::vector<Point> ttk::TopoMapHarishd::placePoints(const std::vector<std::pair<
     compMap[c] = comp;
   }
   std::vector<Point> pts;
-  for(int i = 0;i < verts.size();i ++) {
+  for(size_t i = 0;i < verts.size();i ++) {
     pts.push_back(verts[i].p);
   }
   return pts;
@@ -91,7 +91,7 @@ std::vector<Point> ttk::TopoMapHarishd::placePoints(const std::vector<std::pair<
 Transformation ttk::TopoMapHarishd::alignHull(const Polygon &hull, const Point &p, bool topEdge) {
   int v = -1;
   double d2;
-  for(int i = 0;i < hull.size()-1;i ++) {
+  for(size_t i = 0;i < hull.size()-1;i ++) {
     double d = distance2(hull[i],p);
     if(v == -1) {
       d2 = d;
@@ -146,7 +146,7 @@ inline Point transform(const Point &p, const Transformation &t, double yOffset) 
 }
 
 void ttk::TopoMapHarishd::transformComponent(const Component &c, const Transformation &t, double yOffset) {
-  for(int i = 0;i < c.vertices.size();i ++) {
+  for(size_t i = 0;i < c.vertices.size();i ++) {
     int vin = c.vertices[i];
     this->verts[vin].p = transform(this->verts[vin].p,t, yOffset);
   }
@@ -170,10 +170,10 @@ Component ttk::TopoMapHarishd::mergeComponents(Component &c1, Component &c2, int
 
     // compute the hull of the merged component
     Polygon pts;
-    for(int i = 0;i < c1.hull.size() - 1;i ++) {
+    for(size_t i = 0;i < c1.hull.size() - 1;i ++) {
       pts.push_back(transform(c1.hull[i],t1,0));
     }
-    for(int i = 0;i < c2.hull.size() - 1;i ++) {
+    for(size_t i = 0;i < c2.hull.size() - 1;i ++) {
       pts.push_back(transform(c2.hull[i],t2,length));
     }
     computeConvexHull(pts,merged.hull);

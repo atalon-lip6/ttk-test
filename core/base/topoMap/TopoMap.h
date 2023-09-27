@@ -106,7 +106,7 @@ static double computeAngle(const T* ptA, const T* ptB, const T* ptC);
 template<typename T>
 static void rotate(T* ptToRotate, const T* center, double angle);
 
-// Rotate the set of coords by the given angle, considering the given center as center of the rotation.
+// Rotate the set of points by the given angle, considering the given center as center of the rotation.
 template<typename T>
 static void rotatePolygon(std::vector<T> &coords, T* centerCoords, const double angle);
 
@@ -132,9 +132,13 @@ namespace ttk {
      * @brief Computes the topological mapper
      *
      * @param[out] outputCoords the final coordinates of the points, computed by the topological mapper
-     *
-     * @param[in] distMatrix the high-dimension input distance matrix
      * 
+     * @param[in] inputMatrix the high-dimension input distance matrix or coordinates of the points
+     * 
+     * @param[in] isDistMat equal to true if inputMatrix is a distance matrix, false if it stores input point coordinates
+     *
+     * @param[in] n the number of input points
+     
      * @return 0 in case of success.
      */
     template<typename T>

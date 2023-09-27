@@ -12,7 +12,7 @@ BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
 
 std::vector<int> sortEdges(const std::vector<std::pair<int, int>> &edges, const std::vector<double> &weights) {
     std::vector<int> order(edges.size());
-    for(int i = 0;i < order.size();i ++) {
+    for(size_t i = 0;i < order.size();i ++) {
         order[i] = i;
     }
 
@@ -61,7 +61,7 @@ void computeConvexHull(Polygon &pts, Polygon &chull) {
 
     mpoints mpts;
 
-    for(int i = 0;i < pts.size();i ++) {
+    for(size_t i = 0;i < pts.size();i ++) {
         boost::geometry::append(mpts,point(pts[i].x,pts[i].y));
     }
     polygon hull;

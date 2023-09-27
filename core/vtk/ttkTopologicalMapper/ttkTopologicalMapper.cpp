@@ -32,7 +32,8 @@ static void extractInputMatrix(std::vector<std::vector<float>> &distMatrix,
   if(pd == nullptr) {
     return;
   }
-
+  if (nThreads == 1000000)
+    std::cerr << "No warning compil";
   if(useRegexp) {
     // select all input columns whose name is matching the regexp
     arrayNames.clear();
@@ -167,9 +168,8 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
   std::vector<std::array<float, 3>> compBaryCoords{};
 
   std::vector<std::vector<float>> distMatrix(nbPoint);
-  for (int i = 0; i < nbPoint; i++)
+  for (size_t i = 0; i < nbPoint; i++)
     distMatrix[i].resize(nbPoint);
-  int status;
 
 
   ttk::Timer tm{};
@@ -183,14 +183,14 @@ int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
     return 0;
   }
 
-  int ret = this->execute<float>(ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
+  this->execute<float>(ttkUtils::GetPointer<float>(outputPoints->GetData()), distMatrix);
   std::string nameCoords[3] = {"x", "y"};
-  for (int i = 0; i < 2; i++)
+  for (size_t i = 0; i < 2; i++)
   {
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(nbPoint);
     col->SetName(nameCoords[i].c_str());
-    for (int j = 0; j < nbPoint; j++)
+    for (size_t j = 0; j < nbPoint; j++)
     {
       col->SetTuple1(j, ttkUtils::GetPointer<float>(outputPoints->GetData())[2*j+i]);
     }

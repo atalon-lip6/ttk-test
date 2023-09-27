@@ -56,6 +56,8 @@ static inline double deg(double angle)
 template<typename T>
 void printCoords(const char prefix[], const T *coords)
 {
+  if (prefix == nullptr && coords == nullptr)
+    std::cerr << "No compil warning\n";
 #if VERB >= 1
   std::cout << prefix <<  coords[0] << "," << coords[1] << "\n";
 #endif
@@ -190,9 +192,9 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   // 1. Sorting the edges
   std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVect;
   edgeHeapVect.reserve(n*(n-1)/2);
-  for (int u1 = 0; u1 < n; u1++)
+  for (size_t u1 = 0; u1 < n; u1++)
   {
-    for (int u2 = u1+1; u2 < n; u2++)
+    for (size_t u2 = u1+1; u2 < n; u2++)
     {
       edgeHeapVect.push_back({distMatrix[u1][u2], {u1, u2}});
     }
@@ -203,7 +205,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   // ufVectors is the union find vector
   std::map<UnionFind*, std::vector<size_t>> ufToComp;
   std::vector<UnionFind> ufVector(n);
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
   {
     ufToComp[&ufVector[i]].push_back(i);
   }
@@ -405,7 +407,6 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     printCoords("Barycenter for small comp is : ", coordscenterSmall);
 #endif
     T preFinalPosBarySmall[2] = {coordscenterSmall[0]+smallCompMoveVect[0], coordscenterSmall[1]+smallCompMoveVect[1]};
-    T prefinalPosBarySmall2[2] = {goalCoordChosenSmall[0]+unitcenterSmallVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]+unitcenterSmallVect[1]*distBaryPointSmall};
     //TODO check identiques
     T finalPosBarySmall[2] = {goalCoordChosenSmall[0]-unitcenterBigVect[0]*distBaryPointSmall, goalCoordChosenSmall[1]-unitcenterBigVect[1]*distBaryPointSmall};
 
@@ -489,9 +490,9 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
   if (CheckMST)
   {
     std::vector<std::pair<T, std::pair<size_t, size_t>>> edgeHeapVectAfter;
-    for (int u1 = 0; u1 < n; u1++)
+    for (size_t u1 = 0; u1 < n; u1++)
     {
-      for (int u2 = u1+1; u2 < n; u2++)
+      for (size_t u2 = u1+1; u2 < n; u2++)
       {
         edgeHeapVectAfter.push_back({compute_dist(&outputCoords[2*u1], &outputCoords[2*u2]), {u1, u2}});
       }
@@ -502,7 +503,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     std::map<UnionFind*, std::vector<size_t>> ufToCompAfter;
     std::vector<UnionFind> ufVectorAfter(n);
     std::vector<UnionFind*> ufPtrVectorAfter(n);
-    for (int i = 0; i < n; i++)
+    for (size_t i = 0; i < n; i++)
     {
       ufPtrVectorAfter[i] = &ufVectorAfter[i];
       ufToCompAfter[ufPtrVectorAfter[i]].push_back(i);
@@ -540,7 +541,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
       edgesMSTAfter.push_back(edgeCost);
     }
 
-    for (int i = 0; i < edgesMSTBefore.size(); i++)
+    for (size_t i = 0; i < edgesMSTBefore.size(); i++)
       if (fabs(edgesMSTBefore[i]-edgesMSTAfter[i]) >= Epsilon)
         std::cout << " ERREUR SUR LARRETE " << i << " ====> " << edgesMSTBefore[i] << " VVSS " << edgesMSTAfter[i] << std::endl;
 
@@ -565,7 +566,7 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
   size_t iPtPrev, iPtPost;
 
 #if VERB > 4
-  for (int i = 0; i < n; i++)
+  for (size_t i = 0; i < n; i++)
     printCoords("", &allCoords[idsPtsPolygon[i]*2]);
 #endif
   for (size_t i = 0; i < n; i++)
@@ -599,7 +600,6 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
   T shortestDistPossible = compute_dist(&allCoords[2*iPt1], &allCoords[2*iPt2]);
   T coordPt1[2] = {allCoords[2*iPt1], allCoords[2*iPt1+1]};
   T coordPt2[2] = {allCoords[2*iPt2], allCoords[2*iPt2+1]};
-  size_t hull1Size = hull1.size(), hull2Size = hull2.size();
   size_t comp1Size = comp1.size(), comp2Size = comp2.size();
 
   T coordPrev1[2], coordPost1[2];
@@ -873,7 +873,6 @@ static double computeAngle(const T* ptA, const T* ptB, const T* ptC)
   double angle;
   double vect1[2] = {ptB[0]-ptA[0], ptB[1]-ptA[1]};
   double vect2[2] = {ptC[0]-ptA[0], ptC[1]-ptA[1]};
-  double dirVect[2] = {0,0};
 
 #if VERB > 7
   printCoords("A : ", ptA);
@@ -1021,7 +1020,7 @@ void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std:
   for (auto boostPt : hull.outer())
   {
     T coordsCur[2] = {boostPt.get<0>(), boostPt.get<1>()};
-    for (int j = 0; j < compCoords.size()/2; j++)
+    for (size_t j = 0; j < compCoords.size()/2; j++)
     {
       if (fabs(compCoords[2*j]-coordsCur[0])+fabs(compCoords[2*j+1]-coordsCur[1]) < Epsilon)
       {

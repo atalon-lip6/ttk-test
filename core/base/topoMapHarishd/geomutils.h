@@ -7,7 +7,7 @@ struct Point {
     double x,y;
 
     Point(){}
-    Point(double x, double y):x(x),y(y){}
+    Point(double xx, double yy):x(xx),y(yy){}
 };
 
 typedef std::vector<Point> Polygon;

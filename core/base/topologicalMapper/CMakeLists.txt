@@ -6,6 +6,7 @@ ttk_add_base_library(topologicalMapper
   DEPENDS
     geometry
     unionFind
+    Boost::boost
 )
 target_compile_options(topologicalMapper PUBLIC -ggdb -O0)
 

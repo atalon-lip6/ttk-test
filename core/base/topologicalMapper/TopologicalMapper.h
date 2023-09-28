@@ -563,7 +563,7 @@ template<typename T>
 void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
 {
   size_t n = idsPtsPolygon.size();
-  size_t iPtPrev, iPtPost;
+  size_t iPtPrev = -1, iPtPost = -1;
 
 #if VERB > 4
   for (size_t i = 0; i < n; i++)
@@ -578,6 +578,9 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
       break;
     }
   }
+
+  if (iPtPrev == -1 || iPtPost == -1)
+    printErr("Error, we could not find the edges incident to the point we chose for the rotation of the component.");
 
   double angle = computeAngle(&allCoords[2*idCenter], &allCoords[2*iPtPrev], &allCoords[2*iPtPost]);
   if (angle > M_PI)

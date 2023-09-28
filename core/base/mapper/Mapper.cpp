@@ -98,11 +98,11 @@ void ttk::Mapper::extractSubDistMat(Matrix &subDistMat,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_) collapse(2)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nConnComps - 1; ++i) {
-    for(size_t j = i + 1; j < nConnComps; ++j) {
+  for(size_t i = 0; i < nConnComps; ++i) {
+    for(size_t j = 0; j < nConnComps; ++j) {
       const auto dij = distMat.get(vertsId[i], vertsId[j]);
       subDistMat.get(i, j) = dij;
-      subDistMat.get(j, i) = dij;
+      //subDistMat.get(j, i) = dij;
     }
   }
 }

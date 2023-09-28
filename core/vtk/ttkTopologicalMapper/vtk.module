@@ -2,4 +2,3 @@ NAME
   ttkTopologicalMapper
 DEPENDS
   ttkAlgorithm
-  ttkMapper

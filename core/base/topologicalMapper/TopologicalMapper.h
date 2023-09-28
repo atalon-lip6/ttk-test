@@ -149,7 +149,7 @@ namespace ttk {
 
     // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-void rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
+T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
 
   };
 
@@ -214,6 +214,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     outputCoords[i] = 0;
 
 
+  T finalDistortion = 0;
   // 2. Processing the edges
   size_t nbEdgesMerged = 0;
   for (const auto &elt : edgeHeapVect)
@@ -450,7 +451,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
     // 2.f Trying several rotations of the two components and keeping the one which makes the new distance matrix closest to the one provided in the input.
     if (nBig > 1)
     {
-      rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
+      finalDistortion = rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
 #if VERB > 4
       std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*2]<<","<<outputCoords[idChosenBig*2+1] << "\n";
 #endif
@@ -481,6 +482,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
     ufToComp.erase(otherRepr);
   }
+  this->printMsg("Non normalized distance matrix distortion: "+std::to_string(2*finalDistortion));
   std::cout << " visited " << nbEdgesMerged << " out of " << n-1 << std::endl;
 
 
@@ -563,7 +565,7 @@ template<typename T>
 void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
 {
   size_t n = idsPtsPolygon.size();
-  size_t iPtPrev = 0, iPtPost = 0;
+  size_t iPtPrev = n, iPtPost = n;
 
 #if VERB > 4
   for (size_t i = 0; i < n; i++)
@@ -579,7 +581,7 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
     }
   }
 
-  if (idsPtsPolygon[(iPtPrev+1)%n] != idCenter)
+  if (iPtPrev == n)
     printErr("Error, we could not find the edges incident to the point we chose for the rotation of the component.");
 
   double angle = computeAngle(&allCoords[2*idCenter], &allCoords[2*iPtPrev], &allCoords[2*iPtPost]);
@@ -596,7 +598,7 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
+T TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.
@@ -667,7 +669,7 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     std::cout << "bizarre, max < min: " << deg(angleMin2) << " and " << deg(angleMax2) << "\n";
   double step1 = (angleMax1-angleMin1)/angleSamplingFreq, step2 = (angleMax2-angleMin2)/angleSamplingFreq;
   double bestAnglePair[2] = {0,0};
-  T bestScore = 1e20; //TODO numerics_limit
+  T bestScore = 3.e38; // Near the maximum value for float
 
  
   std::vector<std::vector<T>> origDistMatrix(comp1Size);
@@ -707,7 +709,9 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
     nbIter1 = 1;
   if (step2*nbIter2 < 0.001) // No need to split such a small angle
     nbIter2 = 1;
+#ifdef TTK_ENABLE_OMP
 #pragma omp parallel for num_threads(nThread) shared(allCoords)
+#endif
   for (size_t i1 = 0; i1 < nbIter1; i1++)
   {
     std::vector<T> coords1Test(2*comp1Size), coords2Test(2*comp2Size);
@@ -820,7 +824,9 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
       }
 #endif
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
+#endif
 {
   //TODO maybe juste update bestScore et bestAnglePair, calculer coords à la fin ?
       if (curScore < bestScore || (curScore == bestScore && (testAngle1 < bestAnglePair[0] || (testAngle1 == bestAnglePair[0] && testAngle2 < bestAnglePair[1])))) // This pair of angle minimises the distortion and the choice is deterministic with threads
@@ -849,6 +855,8 @@ void TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1,
 
   std::cout << "The best angles are " << deg(bestAnglePair[0]) << " for 1 and " << deg(bestAnglePair[1]) << " for 2." << std::endl;
 #endif
+
+  return bestScore;
 }
 
 } // namespace ttk

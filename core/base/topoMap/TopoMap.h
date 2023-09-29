@@ -566,7 +566,8 @@ template<typename T>
 void TopoMap::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
 {
   size_t n = idsPtsPolygon.size();
-  size_t iPtPrev = n, iPtPost = n;
+  size_t iPtPrev = 0, iPtPost = 0;
+  bool found = false;
 
 #if VERB > 4
   for (size_t i = 0; i < n; i++)
@@ -576,13 +577,13 @@ void TopoMap::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t 
   {
     if (idsPtsPolygon[i] == idCenter)
     {
+      found = true;
       iPtPost = idsPtsPolygon[(i+1)%n];
       iPtPrev = idsPtsPolygon[(i+n-1)%n];
       break;
     }
   }
-
-  if (iPtPrev == n)
+  if (!found)
     printErr("Error, we could not find the edges incident to the point we chose for the rotation of the component.");
 
   double angle = computeAngle(&allCoords[2*idCenter], &allCoords[2*iPtPrev], &allCoords[2*iPtPost]);

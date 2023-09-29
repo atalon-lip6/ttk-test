@@ -3,11 +3,11 @@
 /// specified with the standard VTK call SetInputArrayToProcess()).
 ///
 /// \ingroup vtk
-/// \class ttkTopologicalMapper
+/// \class ttkTopoMap
 /// \author Alexandre Talon <alexandre.talon@lip6.fr>
 /// \date June 2023
 ///
-/// \brief TTK VTK-filter that wraps the ttk::TopologicalMapper module.
+/// \brief TTK VTK-filter that wraps the ttk::TopoMap module.
 ///
 /// This class generates a mapper from a data-set. The mapper is computed using some minimum spanning tree
 /// and convex hull arguments.
@@ -31,18 +31,18 @@
 #pragma once
 
 // VTK Module
-#include <ttkTopologicalMapperModule.h>
+#include <ttkTopoMapModule.h>
 
 // ttk code includes
-#include <TopologicalMapper.h>
+#include <TopoMap.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>
 
 
-  //vtkTypeMacro(ttkTopologicalMapper, ttkAlgorithm);
+  //vtkTypeMacro(ttkTopoMap, ttkAlgorithm);
 
-class TTKTOPOLOGICALMAPPER_EXPORT ttkTopologicalMapper
-  : public ttkAlgorithm , protected ttk::TopologicalMapper {
+class TTKTOPOMAP_EXPORT ttkTopoMap
+  : public ttkAlgorithm , protected ttk::TopoMap {
 private:
   /**
    * TODO 5: Add all filter parameters only as private member variables and
@@ -73,13 +73,13 @@ public:
   vtkSetMacro(CheckMST, bool);
   vtkGetMacro(CheckMST, bool);
 
-  static ttkTopologicalMapper *New();
-  vtkTypeMacro(ttkTopologicalMapper, ttkAlgorithm);
+  static ttkTopoMap *New();
+  vtkTypeMacro(ttkTopoMap, ttkAlgorithm);
 
 protected:
 
-  ttkTopologicalMapper();
-  ~ttkTopologicalMapper() override = default;
+  ttkTopoMap();
+  ~ttkTopoMap() override = default;
 
 
   int FillInputPortInformation(int port, vtkInformation *info) override;

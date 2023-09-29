@@ -1,4 +1,4 @@
-#include <ttkTopologicalMapper.h>
+#include <ttkTopoMap.h>
 #include <vtkInformation.h>
 
 #include <vtkDataArray.h>
@@ -15,12 +15,12 @@
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
-#include <ttkTopologicalMapper.h>
+#include <ttkTopoMap.h>
 
 #include <regex>
 #include <string>
 
-vtkStandardNewMacro(ttkTopologicalMapper);
+vtkStandardNewMacro(ttkTopoMap);
 
 
 static void extractInputMatrix(std::vector<std::vector<float>> &distMatrix,
@@ -80,13 +80,13 @@ static void extractInputMatrix(std::vector<std::vector<float>> &distMatrix,
   }
 }
 
-ttkTopologicalMapper::ttkTopologicalMapper() {
+ttkTopoMap::ttkTopoMap() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 
 
-int ttkTopologicalMapper::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkTopoMap::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable"); // ou table
     return 1;
@@ -95,7 +95,7 @@ int ttkTopologicalMapper::FillInputPortInformation(int port, vtkInformation *inf
 }
 
 
-int ttkTopologicalMapper::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkTopoMap::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set( vtkDataObject::DATA_TYPE_NAME(), "vtkTable" );//table ?
     return 1;
@@ -135,7 +135,7 @@ static void setNodes(vtkUnstructuredGrid *const nodes,
 
 
 
-int ttkTopologicalMapper::RequestData(vtkInformation *ttkNotUsed(request),
+int ttkTopoMap::RequestData(vtkInformation *ttkNotUsed(request),
                            vtkInformationVector **inputVector,
                            vtkInformationVector *outputVector) {
 

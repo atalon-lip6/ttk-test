@@ -2,8 +2,8 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ttkTopologicalMapper"
-      class="ttkTopologicalMapper"
+      name="ttkTopoMap"
+      class="ttkTopoMap"
       label="TTK Topological Mapper">
       <Documentation
         long_help="TTK plugin for TODO."

@@ -1,11 +1,11 @@
 /// \ingroup base
-/// \class ttk::TopologicalMapper
+/// \class ttk::TopoMap
 /// \author Alexandre Talon <alexandre.talon@lip6.fr>
 /// \date March 2023
 ///
 ///
 ///TODO
-/// This module defines the %TopologicalMapper class that computes a
+/// This module defines the %TopoMap class that computes a
 /// score indicating how good the low dimension distance matrix represents the
 /// high dimension one. The score is computed according to the SIM formula.
 ///
@@ -15,7 +15,7 @@
 /// Mathieu Pont, Jules Vidal and Julien Tierny.
 /// IEEE Transactions on Visualization and Computer Graphics, 2023.
 ///
-/// \sa TopologicalMapper
+/// \sa TopoMap
 
 #pragma once
 
@@ -118,14 +118,14 @@ void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std:
 namespace ttk {
 
   /**
-   * The TopologicalMapper class TODO
+   * The TopoMap class TODO
    */
-  class TopologicalMapper : virtual public Debug {
+  class TopoMap : virtual public Debug {
 
   public:
-    TopologicalMapper();
-    TopologicalMapper(size_t angleSamplingFreq,bool checkMST) : AngleSamplingFreq(angleSamplingFreq), CheckMST(checkMST) {}
-    ~TopologicalMapper();
+    TopoMap();
+    TopoMap(size_t angleSamplingFreq,bool checkMST) : AngleSamplingFreq(angleSamplingFreq), CheckMST(checkMST) {}
+    ~TopoMap();
 
     /**
      * @brief Computes the topological mapper
@@ -169,7 +169,7 @@ T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<siz
 
 //TODO inputPoints remove
 template<typename T>
-int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
+int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const
 {
   std::vector<double> edgesMSTBefore, edgesMSTAfter;
 
@@ -562,7 +562,7 @@ int ttk::TopologicalMapper::execute(T* outputCoords, const std::vector<std::vect
 
 
 template<typename T>
-void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
+void TopoMap::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t idCenter, const T* allCoords, T* coordPrev, T* coordPost) const
 {
   size_t n = idsPtsPolygon.size();
   size_t iPtPrev = n, iPtPost = n;
@@ -598,7 +598,7 @@ void TopologicalMapper::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygo
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-T TopologicalMapper::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
+T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.

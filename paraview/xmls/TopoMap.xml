@@ -4,13 +4,17 @@
     <SourceProxy
       name="ttkTopoMap"
       class="ttkTopoMap"
-      label="TTK Topological Mapper">
+      label="TTK TopoMap (IEEE VIS 2020)">
       <Documentation
-        long_help="TTK plugin for TODO."
-        short_help="TTK plugin for TODO.">
+        long_help="TopoMap"
+        short_help="TopoMap">
 
-        This class generates a mapper from a data-set. It computes it
+        This filter generates a topological mapper from a data-set. It computes it
         by first computing a MST of the points, then reducing the dimension by preserving the cost of the edges of the MST, and if possible the edges themselves (their endvertices).
+        
+        "Topomap: A 0-dimensional homology preserving projection of high-dimensional data".
+        H.Doraiswamy, J. Tierny, P. J. S. Silva, L. G. Nonato and C. Silva.
+IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       </Documentation>
       <InputProperty
         name="Input"
@@ -90,9 +94,9 @@
 
 
       <IntVectorProperty
-        name="AngleSamplingFreq"
-        label="Angles sampling frequency"
-        command="SetAngleSamplingFreq"
+        name="AngularSampleNb"
+        label="Angular samples"
+        command="SetAngularSampleNb"
         number_of_elements="1"
         default_values="20">
         <IntRangeDomain name="range" min="1" max="100" />
@@ -117,7 +121,7 @@
      
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="AngleSamplingFreq" />
+        <Property name="AngularSampleNb" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Checks">

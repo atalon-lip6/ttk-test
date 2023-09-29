@@ -11,10 +11,11 @@
 ///
 ///
 /// \b Related \b publication: \n
-/// 'Principal Geodesic Analysis of Merge Trees (and Persistence Diagrams)'
-/// Mathieu Pont, Jules Vidal and Julien Tierny.
-/// IEEE Transactions on Visualization and Computer Graphics, 2023.
-///
+/// "Topomap: A 0-dimensional homology preserving projection of high-dimensional data"\n
+/// Harish Doraiswamy, Julien Tierny, Paulo J. S. Silva, Luis Gustavo Nonato, and Claudio Silva\n
+/// Proc. of IEEE VIS 2020.\n
+/// IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
+
 /// \sa TopoMap
 
 #pragma once
@@ -124,7 +125,7 @@ namespace ttk {
 
   public:
     TopoMap();
-    TopoMap(size_t angleSamplingFreq,bool checkMST) : AngleSamplingFreq(angleSamplingFreq), CheckMST(checkMST) {}
+    TopoMap(size_t angularSampleNb,bool checkMST) : AngularSampleNb(angularSampleNb), CheckMST(checkMST) {}
     ~TopoMap();
 
     /**
@@ -139,7 +140,7 @@ namespace ttk {
     template<typename T>
     int execute(T* outputCoords, const std::vector<std::vector<T>> &distMatrix) const;
   protected:
-    size_t AngleSamplingFreq{20};
+    size_t AngularSampleNb{20};
     bool CheckMST{false};
   
   private:
@@ -149,7 +150,7 @@ namespace ttk {
 
     // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const;
+T rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angularSampleNb, size_t nThread) const;
 
   };
 
@@ -451,7 +452,7 @@ int ttk::TopoMap::execute(T* outputCoords, const std::vector<std::vector<T>> &di
     // 2.f Trying several rotations of the two components and keeping the one which makes the new distance matrix closest to the one provided in the input.
     if (nBig > 1)
     {
-      finalDistortion = rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngleSamplingFreq, this->threadNumber_);
+      finalDistortion = rotateMergingCompsBest(idsInHullSmall, idsInHullBig, compSmall, compBig, idChosenSmall, idChosenBig, distMatrix, outputCoords, this->AngularSampleNb, this->threadNumber_);
 #if VERB > 4
       std::cout << "\t\tPost-new-coordinates for " << idChosenBig << " are: " << outputCoords[idChosenBig*2]<<","<<outputCoords[idChosenBig*2+1] << "\n";
 #endif
@@ -598,7 +599,7 @@ void TopoMap::getPrevNextEdges(const std::vector<size_t> &idsPtsPolygon, size_t 
 
 // Tries to find the best angle of rotation for the two components. Updates the coordiates of their vertices accordingly.
 template<typename T>
-T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angleSamplingFreq, size_t nThread) const
+T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::vector<size_t> &hull2, const std::vector<size_t> &comp1, const std::vector<size_t> &comp2, size_t iPt1, size_t iPt2, const std::vector<std::vector<T>> &distMatrix, T* allCoords, size_t angularSampleNb, size_t nThread) const
 {
   TTK_FORCE_USE(nThread);
   // The distance between the two components.
@@ -667,7 +668,7 @@ T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::v
 
   if (angleMax2 < angleMin2)
     std::cout << "bizarre, max < min: " << deg(angleMin2) << " and " << deg(angleMax2) << "\n";
-  double step1 = (angleMax1-angleMin1)/angleSamplingFreq, step2 = (angleMax2-angleMin2)/angleSamplingFreq;
+  double step1 = (angleMax1-angleMin1)/angularSampleNb, step2 = (angleMax2-angleMin2)/angularSampleNb;
   double bestAnglePair[2] = {0,0};
   T bestScore = 3.e38; // Near the maximum value for float
 
@@ -702,8 +703,8 @@ T TopoMap::rotateMergingCompsBest(const std::vector<size_t> &hull1, const std::v
   std::cout << "Angles for 1 (small) are to rotate min max " << deg(angleMin1) << " et " << deg(angleMax1) << std::endl;
   std::cout << "Angles for 2 (big) are to rotate min max " << deg(angleMin2) << " et " << deg(angleMax2) << std::endl;
 #endif
-  size_t nbIter1 = std::isfinite(step1) ? angleSamplingFreq+1 : 1;
-  size_t nbIter2 = std::isfinite(step2) ? angleSamplingFreq+1 : 1;
+  size_t nbIter1 = std::isfinite(step1) ? angularSampleNb+1 : 1;
+  size_t nbIter2 = std::isfinite(step2) ? angularSampleNb+1 : 1;
 
   if (step1*nbIter1 < 0.001) // No need to split such a small angle
     nbIter1 = 1;

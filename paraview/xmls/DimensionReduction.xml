@@ -30,6 +30,10 @@
 
         - https://topology-tool-kit.github.io/examples/persistentGenerators_periodicPicture/
 
+        Related publication:
+        "Topomap: A 0-dimensional homology preserving projection of high-dimensional data".
+        H.Doraiswamy, J. Tierny, P. J. S. Silva, L. G. Nonato and C. Silva.
+IEEE Transactions on Visualization and Computer Graphics 27(2): 561-571, 2020.
       </Documentation>
       <InputProperty
         name="Input"
@@ -118,7 +122,7 @@
           <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
           <Entry value="4" text="Isomap Embedding"/>
           <Entry value="5" text="Principal Component Analysis" />
-          <Entry value="6" text="Topological Mapper" />
+          <Entry value="6" text="TopoMap (IEEE VIS 2020)" />
         </EnumerationDomain>
         <Documentation>
         </Documentation>
@@ -746,9 +750,9 @@
       </StringVectorProperty>
 
 <IntVectorProperty
-        name="topomap_AngleSamplingFreq"
-        label="Angles sampling frequency"
-        command="Settopomap_AngleSamplingFreq"
+        name="topomap_AngularSampleNb"
+        label="Anglular samples"
+        command="Settopomap_AngularSampleNb"
         number_of_elements="1"
         default_values="20">
         <IntRangeDomain name="range" min="1" max="100" />
@@ -913,8 +917,8 @@
         </Hints>
     </PropertyGroup>
 
-      <PropertyGroup panel_widget="Line" label="Topological Mapper">
-        <Property name="topomap_AngleSamplingFreq" />
+      <PropertyGroup panel_widget="Line" label="TopoMap (IEEE VIS 2020)">
+        <Property name="topomap_AngularSampleNb" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"

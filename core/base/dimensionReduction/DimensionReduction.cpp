@@ -1,5 +1,5 @@
 #include <DimensionReduction.h>
-#include <TopologicalMapper.h>
+#include <TopoMap.h>
 
 #include <map>
 
@@ -73,14 +73,14 @@ int DimensionReduction::execute(
   const int numberOfComponents = std::max(2, this->NumberOfComponents);
   if (this->Method == METHOD::TOPOMAP)
   {
-    TopologicalMapper topomap(this->topomap_AngleSamplingFreq, topomap_CheckMST);
+    TopoMap topomap(this->topomap_AngularSampleNb, topomap_CheckMST);
 
     double* ptrForCoordsTopomap = (double*) new double[2*nRows];
     topomap.execute<double>(ptrForCoordsTopomap, inputMatrix, IsInputADistanceMatrix, nRows);
     outputEmbedding.resize(2);
     outputEmbedding[0].resize(nRows);
     outputEmbedding[1].resize(nRows);
-    for (size_t i = 0; i < nRows; i++)
+    for (int i = 0; i < nRows; i++)
     {
       outputEmbedding[0][i] = ptrForCoordsTopomap[2*i];
       outputEmbedding[1][i] = ptrForCoordsTopomap[2*i+1];

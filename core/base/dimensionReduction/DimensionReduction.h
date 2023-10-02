@@ -163,9 +163,9 @@ namespace ttk {
       pca_Tolerance = Tolerance;
       pca_MaxIteration = MaxIteration;
     }
-    inline void setTopoParameters(const size_t AngleSamplingFreq, bool CheckMST)
+    inline void setTopoParameters(const size_t AngularSampleNb, bool CheckMST)
     {
-      topomap_AngleSamplingFreq = AngleSamplingFreq;
+      topomap_AngularSampleNb = AngularSampleNb;
       topomap_CheckMST = CheckMST;
     }
 
@@ -272,7 +272,7 @@ namespace ttk {
     std::string pca_MaxIteration{"auto"};
 
     // Topological Mapper
-    size_t topomap_AngleSamplingFreq;
+    size_t topomap_AngularSampleNb;
     bool topomap_CheckMST;
 
     // testing

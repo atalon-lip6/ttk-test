@@ -126,7 +126,7 @@ namespace ttk {
   public:
     TopoMap();
     TopoMap(size_t angularSampleNb,bool checkMST) : AngularSampleNb(angularSampleNb), CheckMST(checkMST) {}
-    ~TopoMap();
+    ~TopoMap() override;
 
     /**
      * @brief Computes the topological mapper

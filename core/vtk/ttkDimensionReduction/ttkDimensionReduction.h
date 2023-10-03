@@ -222,8 +222,8 @@ public:
   vtkGetMacro(pca_MaxIteration, std::string);
 
   // TopoMap
-  vtkSetMacro(topomap_AngularSampleNb, int);
-  vtkGetMacro(topomap_AngularSampleNb, int);
+  vtkSetMacro(topomap_AngularSampleNb, unsigned long int);
+  vtkGetMacro(topomap_AngularSampleNb, unsigned long int);
 
   vtkSetMacro(topomap_CheckMST, bool);
   vtkGetMacro(topomap_CheckMST, bool);

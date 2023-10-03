@@ -43,9 +43,9 @@
 namespace bg = boost::geometry;
 BOOST_GEOMETRY_REGISTER_BOOST_TUPLE_CS(cs::cartesian)
 
-typedef boost::tuple<double, double> Point;
-typedef boost::geometry::model::polygon<Point> Polygon;
-typedef boost::geometry::model::multi_point<Point> Mpoints;
+using Point = boost::tuple<double, double>;
+using Polygon =  boost::geometry::model::polygon<Point>;
+using Mpoints =  boost::geometry::model::multi_point<Point>;
 
 
 
@@ -1030,7 +1030,7 @@ void computeConvexHull(T* allCoords, const std::vector<size_t> &compPtsIds, std:
     boost::geometry::append(multiPoints, Point(compCoords[2*i], compCoords[2*i+1]));
   }
   boost::geometry::convex_hull(multiPoints, hull);
-  for (auto boostPt : hull.outer())
+  for (const auto &boostPt : hull.outer())
   {
     T coordsCur[2] = {static_cast<T>(boostPt.get<0>()), static_cast<T>(boostPt.get<1>())};
     for (size_t j = 0; j < compCoords.size()/2; j++)

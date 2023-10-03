@@ -8,5 +8,4 @@ ttk_add_base_library(topoMap
     unionFind
     Boost::boost
 )
-target_compile_options(topoMap PUBLIC -ggdb -O0)
 

@@ -18,14 +18,24 @@
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
-vtkStandardNewMacro(ttkDistanceMatrixDistortion);
 
-ttkDistanceMatrixDistortion::ttkDistanceMatrixDistortion() {
+/* #define vtkStandardNewMacro(thisClass)                                                             \
+   thisClass* thisClass::New() { VTK_STANDARD_NEW_BODY(thisClass); }
+*/
+
+template<size_t toto>
+ttkDistanceMatrixDistortion<toto>* ttkDistanceMatrixDistortion<toto>::New() {VTK_STANDARD_NEW_BODY(ttkDistanceMatrixDistortion<toto>);}
+
+//vtkStandardNewMacro(ttkDistanceMatrixDistortion);
+
+template<size_t toto>
+ttkDistanceMatrixDistortion<toto>::ttkDistanceMatrixDistortion() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkDistanceMatrixDistortion::FillInputPortInformation(
+template<size_t toto>
+int ttkDistanceMatrixDistortion<toto>::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
@@ -37,7 +47,8 @@ int ttkDistanceMatrixDistortion::FillInputPortInformation(
   return 0;
 }
 
-int ttkDistanceMatrixDistortion::FillOutputPortInformation(
+template<size_t toto>
+int ttkDistanceMatrixDistortion<toto>::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
@@ -60,11 +71,13 @@ inline void fillWithInputColumns(vtkTable *input,
   }
 }
 
-int ttkDistanceMatrixDistortion::RequestData(
+template<size_t toto>
+int ttkDistanceMatrixDistortion<toto>::RequestData(
   vtkInformation *ttkNotUsed(request),
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
+  std::cout << toto << std::endl;
   // Get input objects from input vector
   vtkTable *inputHigh = vtkTable::GetData(inputVector[0]);
   vtkTable *inputLow = vtkTable::GetData(inputVector[1]);

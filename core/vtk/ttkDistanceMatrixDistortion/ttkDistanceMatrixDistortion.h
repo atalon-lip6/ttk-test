@@ -41,10 +41,12 @@
 // TTK Base Includes
 #include <DistanceMatrixDistortion.h>
 
+// Macro to implement the standard form of the New() method.
+template<size_t toto>
 class TTKDISTANCEMATRIXDISTORTION_EXPORT ttkDistanceMatrixDistortion
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
   ,
-    protected ttk::DistanceMatrixDistortion // and we inherit from the base
+    protected ttk::DistanceMatrixDistortion<toto> // and we inherit from the base
                                             // class
 {
 private:
@@ -102,3 +104,4 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 };
+

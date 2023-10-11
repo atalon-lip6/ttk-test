@@ -265,7 +265,7 @@ namespace ttk {
     for(size_t u1 = 0; u1 < n; u1++) {
 
       for(size_t u2 = u1 + 1; u2 < n; u2++) {
-        edgeHeapVect.emplace_back(std::make_pair(distMatrix[u1 * n + u2], std::make_pair(u1, u2}));
+        edgeHeapVect.emplace_back(std::make_pair(distMatrix[u1 * n + u2], std::make_pair(u1, u2)));
       }
     }
     sort(edgeHeapVect.begin(), edgeHeapVect.end());

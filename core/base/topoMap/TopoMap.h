@@ -33,14 +33,6 @@
 #include <utility> // For std::pair
 #include <vector>
 
-// Boost includes
-#include "libqhullcpp/Qhull.h"
-
-inline double truncateDouble(double val) {
-  const double div = 1e-14;
-  return std::round(val * 1e14) * div;
-}
-
 // cos and sin computations, so we are cautious on testing equalities between
 // double.
 static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG + 2)};
@@ -87,6 +79,11 @@ static void rotate(T *ptToRotate, const T *center, double angle);
 template <typename T>
 static void
   rotatePolygon(std::vector<T> &coords, T *centerCoords, const double angle);
+
+// Real call to the convex hull engine: either Qhull or Boost.
+bool computeConvexHull_aux(const std::vector<double> &coords,
+                           std::vector<size_t> &res,
+                           std::string &errMsg);
 
 namespace ttk {
 
@@ -186,10 +183,20 @@ namespace ttk {
                             const std::vector<std::vector<T>> &distMatrix) {
     ttk::Timer timer;
 
-#ifndef TTK_ENABLE_QHULL
+#ifdef TTK_ENABLE_QHULL
+#ifndef Qhull_FOUND
+    std::cout << "lol1\n";
     this->printErr(
-      "Qhull is not installed or was not found, this module cannot work.");
+      "Qhull was enabled but it is not installed or was not found. If you want "
+      "to use Boost instead, configure the CMake variable TTK_ENABLE_QHULL to "
+      "FALSE, but you may encounter some errors due to bugs in Boost "
+      "computations for the convex hull.");
+    this->printErr("Aborting");
     return 1;
+#endif
+#else
+    this->printWrn("Using boost for convex hull. We found some bugs when using "
+                   "it, consider enabling Qhull instead.");
 #endif
 
     std::vector<double> edgesMSTBefore, edgesMSTAfter;
@@ -223,7 +230,8 @@ namespace ttk {
         return 1;
       }
       for(size_t u2 = u1 + 1; u2 < n; u2++) {
-        edgeHeapVect.emplace_back(std::make_pair(distMatrix[u1][u2], std::make_pair(u1, u2)));
+        edgeHeapVect.emplace_back(
+          std::make_pair(distMatrix[u1][u2], std::make_pair(u1, u2)));
       }
     }
     sort(edgeHeapVect.begin(), edgeHeapVect.end());
@@ -275,6 +283,7 @@ namespace ttk {
       statusHull = statusHull
                    | computeConvexHull(outputCoords, compSmall, idsInHullSmall);
       if(!statusHull) {
+        this->printErr("Aborting.");
         return 1;
       }
 
@@ -742,58 +751,16 @@ namespace ttk {
       return true;
     }
 
-    char qHullFooStr[1] = "";
-    orgQhull::Qhull qhull;
-    try {
-      qhull.runQhull(qHullFooStr, 2, nbPoint, compCoords.data(), qHullFooStr);
-    } catch(orgQhull::QhullError &e) {
-      printErr("Error with qHull module: " + std::string(e.what())
-               + "\nAborting.");
-      std::cout << "MAIS " + std::string(e.what()) << std::endl;
+    std::string errMsg;
+    bool status = computeConvexHull_aux(compCoords, idsInHull, errMsg);
+    if(!status) {
+      this->printErr(errMsg);
       return false;
     }
-
-    double sumX = 0, sumY = 0;
-    for(const auto &u : qhull.vertexList()) {
-      const orgQhull::QhullPoint &qhullPt = u.point();
-      auto coordsCur = qhullPt.coordinates();
-      sumX += coordsCur[0];
-      sumY += coordsCur[1];
-      for(size_t j = 0; j < compCoords.size() / 2; j++) {
-        if(fabs(compCoords[2 * j] - coordsCur[0])
-             + fabs(compCoords[2 * j + 1] - coordsCur[1])
-           < EpsilonDBL) {
-          idsInHull.push_back(j);
-          break;
-        }
-      }
-    }
-
-    double bary[2] = {sumX / idsInHull.size(), sumY / idsInHull.size()};
-    double baryRight[2] = {bary[0] + 2, bary[1]};
-    std::vector<std::pair<double, size_t>> ptsToSort;
-    for(size_t u : idsInHull) {
-      const double curPt[2] = {compCoords[2 * u], compCoords[2 * u + 1]};
-      double curAngle = computeAngle(bary, baryRight, curPt);
-      ptsToSort.push_back({curAngle, u});
-    }
-
-    sort(ptsToSort.begin(), ptsToSort.end());
-    for(size_t i = 0; i < ptsToSort.size(); i++)
-      idsInHull[i] = ptsToSort[i].second;
-
     for(size_t &x : idsInHull)
       x = compPtsIds[x];
-
-    if(idsInHull.size() != qhull.vertexList().size()) {
-      this->printErr("Error : could not retrieve all vertices in the convex "
-                     "hull. Aborting.");
-      std::cout << "SHIT\n";
-      return false;
-    }
     return true;
   }
-
 } // namespace ttk
 
 template <typename T>

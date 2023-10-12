@@ -9,8 +9,12 @@ ttk_add_base_library(topoMap
 )
 
 if(TTK_ENABLE_QHULL)
+  if (Qhull_FOUND)
+    target_link_libraries(topoMap PUBLIC Qhull::qhullcpp)
+    target_link_libraries(topoMap PUBLIC Qhull::qhull_r)
+    target_compile_definitions(topoMap PUBLIC Qhull_FOUND)
+  endif()
   target_compile_definitions(topoMap PUBLIC TTK_ENABLE_QHULL)
-  target_link_libraries(topoMap PRIVATE Qhull::qhullcpp)
-  target_link_libraries(topoMap PRIVATE Qhull::qhull_r)
 endif()
+
 

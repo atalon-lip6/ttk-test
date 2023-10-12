@@ -13,7 +13,7 @@ if (@TTK_ENABLE_OPENMP@)
   find_dependency(OpenMP REQUIRED)
 endif()
 
-if (@TTK_ENABLE_QHULL@)
+if (@TTK_ENABLE_QHULL@ AND @Qhull_FOUND@)
   find_dependency(Qhull REQUIRED)
 endif()
 

@@ -29,5 +29,4 @@ target_compile_definitions(dimensionReduction PUBLIC TTK_SCRIPTS_PATH=${TTK_SCRI
 if(TTK_ENABLE_SCIKIT_LEARN)
   target_compile_definitions(dimensionReduction PRIVATE TTK_ENABLE_SCIKIT_LEARN)
   target_link_libraries(dimensionReduction PRIVATE Python3::Python Python3::NumPy)
-  target_link_libraries(dimensionReduction PRIVATE Qhull::qhullcpp)
 endif()

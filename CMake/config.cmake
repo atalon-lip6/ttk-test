@@ -295,10 +295,11 @@ else()
   message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
 endif()
 
+
 find_package(Qhull QUIET)
 if(Qhull_FOUND)
   option(TTK_ENABLE_QHULL "Enable Qhull support" ON)
-  message(STATUS "Found Qhull ${Qhull_VERSION} (Qhull::qhull)")
+  message(STATUS "Found Qhull ${Qhull_VERSION} (${Qhull_DIR})")
 else()
   option(TTK_ENABLE_QHULL "Enable Qhull support" OFF)
   message(STATUS "Qhull not found, disabling Qhull support in TTK.")

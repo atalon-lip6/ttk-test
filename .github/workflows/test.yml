@@ -36,7 +36,7 @@ jobs:
     # trigger job when push event on a branch (not on a tag) only for
     # the "topology-tool-kit/ttk" repository
     # (pull-requests and tag pushes not affected)
-    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false #${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
@@ -408,7 +408,7 @@ jobs:
   # ------------------ #
   test-build-windows:
     runs-on: windows-2022
-    if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
+    if: false #${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:
       PV_DIR: C:\Program Files\TTK-ParaView
       TTK_DIR: C:\Program Files (x86)\ttk

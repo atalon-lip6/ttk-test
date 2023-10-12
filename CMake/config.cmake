@@ -14,6 +14,8 @@ mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 # like the TopologyToolKit.so file for paraview
 option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
 
+option(TTK_USE_QHULL "Use Qhull instead of Boost for convex hulls" ON)
+
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
   message(WARNING "Can't build standalones without the VTK wrappers: disable")
   set(TTK_BUILD_STANDALONE_APPS OFF CACHE BOOL "Build the cmd and gui commands" FORCE)

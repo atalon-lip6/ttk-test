@@ -13,10 +13,23 @@ jobs:
       matrix:
         #os: [ubuntu-20.04, macos-12, windows-2022]
         os: [windows-2022]
-    
+
+    env:
+      PV_DIR: C:\Program Files\TTK-ParaView
+      TTK_DIR: C:\Program Files (x86)\ttk
+      CONDA_ROOT: C:\Miniconda
+      SCCACHE_CACHE_SIZE: 200M
     steps:
     - uses: actions/checkout@v3
+      name: Checkout TTK source code
+
     - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c conda-forge boost glew eigen spectralib zfp \
+          scikit-learn openmp graphviz ninja websocketpp sccache python=3.9.13 zlib
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
     - name: lsdo

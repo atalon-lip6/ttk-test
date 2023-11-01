@@ -35,7 +35,7 @@
 #define ttkTemplateMacro(triangulationType, call)                              \
   switch(triangulationType) {                                                  \
     ttkTemplateMacroCase(                                                      \
-      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call);   \
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation<0>, call);   \
     ttkTemplateMacroCase(                                                      \
       ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitNoPreconditions, call); \
     ttkTemplateMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,            \

@@ -71,7 +71,7 @@ int ttkTriangulationReader::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   auto explTri
-    = static_cast<ttk::ExplicitTriangulation *>(triangulation->getData());
+    = static_cast<ttk::ExplicitTriangulation<0> *>(triangulation->getData());
 
   if(!this->validateFilePath()) {
     return 0;

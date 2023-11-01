@@ -69,7 +69,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkVtkTemplateMacro(dataType, triangulationType, call)            \
   switch(triangulationType) {                                             \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
-                            ttk::ExplicitTriangulation, call);            \
+                            ttk::ExplicitTriangulation<0>, call);            \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
                             ttk::ImplicitNoPreconditions, call);          \
     ttkVtkTemplateMacroCase(dataType,                                     \
@@ -140,7 +140,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkTypeMacroT(group, call)                                            \
   switch(group) {                                                             \
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,                      \
-                     ttk::ExplicitTriangulation, 0, call);                    \
+                     ttk::ExplicitTriangulation<0>, 0, call);                    \
     ttkTypeMacroCase(                                                         \
       ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, 0, call); \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,                      \
@@ -217,7 +217,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkTypeMacroAT(group0, group1, call)                    \
   switch(group1) {                                              \
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
-                     ttk::ExplicitTriangulation, 1,             \
+                     ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
                      ttk::CompactTriangulation, 1,              \
@@ -240,7 +240,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkTypeMacroRT(group0, group1, call)                    \
   switch(group1) {                                              \
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
-                     ttk::ExplicitTriangulation, 1,             \
+                     ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
                      ttk::CompactTriangulation, 1,              \
@@ -263,7 +263,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 #define ttkTypeMacroIT(group0, group1, call)                    \
   switch(group1) {                                              \
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,        \
-                     ttk::ExplicitTriangulation, 1,             \
+                     ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
                      ttk::CompactTriangulation, 1,              \

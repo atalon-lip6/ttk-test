@@ -2989,7 +2989,7 @@ namespace ttk {
     void switchGrid(const bool usePeriodic, const bool usePreconditions);
 
     AbstractTriangulation *abstractTriangulation_;
-    ExplicitTriangulation explicitTriangulation_;
+    ExplicitTriangulation<0> explicitTriangulation_;
     ImplicitNoPreconditions implicitTriangulation_;
     ImplicitWithPreconditions implicitPreconditionsTriangulation_;
     PeriodicNoPreconditions periodicImplicitTriangulation_;

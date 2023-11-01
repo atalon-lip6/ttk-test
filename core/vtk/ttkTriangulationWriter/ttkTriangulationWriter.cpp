@@ -67,7 +67,7 @@ int ttkTriangulationWriter::Write() {
   }
 
   const auto explTri
-    = static_cast<ttk::ExplicitTriangulation *>(triangulation->getData());
+    = static_cast<ttk::ExplicitTriangulation<0> *>(triangulation->getData());
 
   if(this->OpenFile() == -1) {
     this->printErr("Could not open file `" + std::string{Filename} + "' :(");

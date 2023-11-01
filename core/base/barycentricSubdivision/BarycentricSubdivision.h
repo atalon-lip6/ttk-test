@@ -63,7 +63,7 @@ namespace ttk {
 
     template <typename triangulationType>
     int execute(const triangulationType &inputTriangl,
-                ExplicitTriangulation &outputTriangl);
+                ExplicitTriangulation<0> &outputTriangl);
 
     /**
      * @brief Interpolate floating-point point data on subdivised triangulation
@@ -165,7 +165,7 @@ namespace ttk {
     template <typename triangulationType>
     int subdiviseTriangulation(const triangulationType &inputTriangl);
 
-    int buildOutputTriangulation(ExplicitTriangulation &outputTriangl);
+    int buildOutputTriangulation(ExplicitTriangulation<0> &outputTriangl);
 
     // input triangulation properties
     SimplexId nVertices_{};
@@ -312,7 +312,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
 template <typename triangulationType>
 int ttk::BarycentricSubdivision::execute(
   const triangulationType &inputTriangl,
-  ttk::ExplicitTriangulation &outputTriangl) {
+  ttk::ExplicitTriangulation<0> &outputTriangl) {
 
   // not implemented for dimension >= 3
   if(inputTriangl.getDimensionality() >= 3) {

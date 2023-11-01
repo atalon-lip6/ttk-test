@@ -1,7 +1,7 @@
 #include <BarycentricSubdivision.h>
 
 int ttk::BarycentricSubdivision::buildOutputTriangulation(
-  ttk::ExplicitTriangulation &outputTriangl) {
+  ttk::ExplicitTriangulation<0> &outputTriangl) {
 
   // ensure subdivision is already performed
   if(points_.empty() || cells_connectivity_.empty()) {

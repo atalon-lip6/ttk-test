@@ -83,7 +83,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
   case CASE:                                                                  \
     switch(inputTriangulation.getType()) {                                    \
       BARYSUBD_TRIANGL_CALLS(                                                 \
-        TYPE, ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation) \
+        TYPE, ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation<0>) \
       BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::IMPLICIT,        \
                              ttk::ImplicitNoPreconditions)                    \
       BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::HYBRID_IMPLICIT, \
@@ -163,7 +163,7 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  ttk::ExplicitTriangulation triangulationSubdivision{};
+  ttk::ExplicitTriangulation<0> triangulationSubdivision{};
 
   if(triangulation == nullptr) {
     printMsg("Error, internal triangulation is empty.");

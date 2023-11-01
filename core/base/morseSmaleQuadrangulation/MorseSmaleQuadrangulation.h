@@ -247,7 +247,7 @@ template <typename triangulationType>
 int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   const triangulationType &triangulation) {
 
-  ExplicitTriangulation newT{};
+  ExplicitTriangulation<0> newT{};
   bs.execute(triangulation, newT);
 
   newT.setDebugLevel(this->debugLevel_);

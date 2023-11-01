@@ -10,16 +10,19 @@
 
 using namespace ttk;
 
-ExplicitTriangulation::ExplicitTriangulation() {
+template <size_t card>
+ExplicitTriangulation<card>::ExplicitTriangulation() {
 
   setDebugMsgPrefix("ExplicitTriangulation");
 
   clear();
 }
 
-ExplicitTriangulation::~ExplicitTriangulation() = default;
+template <size_t card>
+ExplicitTriangulation<card>::~ExplicitTriangulation() = default;
 
-int ExplicitTriangulation::clear() {
+template <size_t card>
+int ExplicitTriangulation<card>::clear() {
   vertexNumber_ = 0;
   cellNumber_ = 0;
   doublePrecision_ = false;
@@ -29,7 +32,8 @@ int ExplicitTriangulation::clear() {
   return AbstractTriangulation::clear();
 }
 
-size_t ExplicitTriangulation::footprint(size_t size) const {
+template <size_t card>
+size_t ExplicitTriangulation<card>::footprint(size_t size) const {
 
   const auto printArrayFootprint
     = [this](const FlatJaggedArray &array, const std::string &name) {
@@ -55,7 +59,8 @@ size_t ExplicitTriangulation::footprint(size_t size) const {
   return AbstractTriangulation::footprint(size);
 }
 
-int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionBoundaryEdgesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -126,7 +131,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 
 #ifdef TTK_ENABLE_MPI
 
-int ExplicitTriangulation::preconditionVertexRankArray() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexRankArray() {
   if(vertexRankArray_.size() == 0) {
     this->vertexRankArray_.resize(this->vertexNumber_, 0);
     if(ttk::isRunningWithMPI()) {
@@ -143,7 +149,8 @@ int ExplicitTriangulation::preconditionVertexRankArray() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionCellRankArray() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionCellRankArray() {
   if(cellRankArray_.size() == 0) {
     this->cellRankArray_.resize(this->cellNumber_, 0);
     if(ttk::isRunningWithMPI()) {
@@ -156,7 +163,8 @@ int ExplicitTriangulation::preconditionCellRankArray() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionEdgeRankArray() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionEdgeRankArray() {
   ttk::SimplexId edgeNumber = this->getNumberOfEdgesInternal();
   edgeRankArray_.resize(edgeNumber, 0);
   if(ttk::isRunningWithMPI()) {
@@ -179,7 +187,8 @@ int ExplicitTriangulation::preconditionEdgeRankArray() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionTriangleRankArray() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionTriangleRankArray() {
   ttk::SimplexId triangleNumber = this->getNumberOfTrianglesInternal();
   triangleRankArray_.resize(triangleNumber, 0);
   if(ttk::isRunningWithMPI()) {
@@ -205,7 +214,8 @@ int ExplicitTriangulation::preconditionTriangleRankArray() {
 
 #endif // TTK_ENABLE_MPI
 
-int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionBoundaryTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -268,7 +278,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionBoundaryVerticesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -331,7 +342,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     for(int i = 0; i < vertexNumber_; ++i) {
       charBoundary[i] = boundaryVertices_[i] ? '1' : '0';
     }
-    ttk::exchangeGhostVertices<unsigned char, ExplicitTriangulation>(
+    ttk::exchangeGhostVertices<unsigned char, ExplicitTriangulation<card>>(
       charBoundary.data(), this, ttk::MPIcomm_);
 
     for(int i = 0; i < vertexNumber_; ++i) {
@@ -343,12 +354,14 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
 
 #endif // TTK_ENABLE_MPI
 
+  std::cout << "mdr = " << card << std::endl;
   this->printMsg("Extracted boundary vertices", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
 
-int ExplicitTriangulation::preconditionCellEdgesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionCellEdgesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -366,7 +379,8 @@ int ExplicitTriangulation::preconditionCellEdgesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionCellNeighborsInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionCellNeighborsInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -394,7 +408,8 @@ int ExplicitTriangulation::preconditionCellNeighborsInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionCellTrianglesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionCellTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -440,7 +455,8 @@ int ExplicitTriangulation::preconditionCellTrianglesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionEdgesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionEdgesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -481,7 +497,8 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionEdgeLinksInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionEdgeLinksInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -520,7 +537,8 @@ int ExplicitTriangulation::preconditionEdgeLinksInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionEdgeStarsInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionEdgeStarsInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -536,7 +554,8 @@ int ExplicitTriangulation::preconditionEdgeStarsInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionEdgeTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -560,7 +579,8 @@ int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionTrianglesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -586,7 +606,8 @@ int ExplicitTriangulation::preconditionTrianglesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionTriangleEdgesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -616,7 +637,8 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionTriangleLinksInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionTriangleLinksInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -639,7 +661,8 @@ int ExplicitTriangulation::preconditionTriangleLinksInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionTriangleStarsInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionTriangleStarsInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -660,7 +683,8 @@ int ExplicitTriangulation::preconditionTriangleStarsInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionVertexEdgesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexEdgesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -684,7 +708,8 @@ int ExplicitTriangulation::preconditionVertexEdgesInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionVertexLinksInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexLinksInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -721,7 +746,8 @@ int ExplicitTriangulation::preconditionVertexLinksInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexNeighborsInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -741,7 +767,8 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionVertexStarsInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexStarsInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -761,7 +788,8 @@ int ExplicitTriangulation::preconditionVertexStarsInternal() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionVertexTrianglesInternal() {
 
   if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
 #ifdef TTK_ENABLE_MPI
@@ -785,7 +813,8 @@ int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
   return 0;
 }
 
-int ttk::ExplicitTriangulation::preconditionManifoldInternal() {
+template <size_t card>
+int ttk::ExplicitTriangulation<card>::preconditionManifoldInternal() {
 
   // quick check by numbering (d-1)-simplices star
   FlatJaggedArray *simplexStar{};
@@ -818,7 +847,8 @@ int ttk::ExplicitTriangulation::preconditionManifoldInternal() {
 
 #ifdef TTK_ENABLE_MPI
 
-int ExplicitTriangulation::preconditionDistributedCells() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
@@ -859,7 +889,8 @@ int ExplicitTriangulation::preconditionDistributedCells() {
   return 0;
 }
 
-int ttk::ExplicitTriangulation::preconditionExchangeGhostCells() {
+template <size_t card>
+int ttk::ExplicitTriangulation<card>::preconditionExchangeGhostCells() {
 
   if(this->hasPreconditionedExchangeGhostCells_) {
     return 0;
@@ -912,7 +943,8 @@ int ttk::ExplicitTriangulation::preconditionExchangeGhostCells() {
   return 0;
 }
 
-int ttk::ExplicitTriangulation::preconditionDistributedCellRanges() {
+template <size_t card>
+int ttk::ExplicitTriangulation<card>::preconditionDistributedCellRanges() {
 
   // 1. store all local cells owned by current rank by global id
 
@@ -1007,7 +1039,8 @@ int ttk::ExplicitTriangulation::preconditionDistributedCellRanges() {
   return 0;
 }
 
-size_t ttk::ExplicitTriangulation::computeCellRangeOffsets(
+template <size_t card>
+size_t ttk::ExplicitTriangulation<card>::computeCellRangeOffsets(
   std::vector<size_t> &nSimplicesPerRange) const {
 
   // 1. send to rank 0 number of edges per cell range
@@ -1064,8 +1097,8 @@ size_t ttk::ExplicitTriangulation::computeCellRangeOffsets(
   return nSimplices;
 }
 
-template <typename Func0, typename Func1, typename Func2>
-int ttk::ExplicitTriangulation::exchangeDistributedInternal(
+template <size_t card> template <typename Func0, typename Func1, typename Func2>
+int ttk::ExplicitTriangulation<card>::exchangeDistributedInternal(
   const Func0 &getGlobalSimplexId,
   const Func1 &storeGlobalSimplexId,
   const Func2 &iterCond,
@@ -1149,7 +1182,8 @@ int ttk::ExplicitTriangulation::exchangeDistributedInternal(
   return 0;
 }
 
-int ExplicitTriangulation::preconditionDistributedEdges() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionDistributedEdges() {
   if(this->hasPreconditionedDistributedEdges_) {
     return 0;
   }
@@ -1294,7 +1328,8 @@ int ExplicitTriangulation::preconditionDistributedEdges() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionDistributedTriangles() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionDistributedTriangles() {
   if(this->hasPreconditionedDistributedTriangles_) {
     return 0;
   }
@@ -1429,7 +1464,8 @@ int ExplicitTriangulation::preconditionDistributedTriangles() {
   return 0;
 }
 
-int ExplicitTriangulation::preconditionDistributedVertices() {
+template <size_t card>
+int ExplicitTriangulation<card>::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
@@ -1458,7 +1494,8 @@ int ExplicitTriangulation::preconditionDistributedVertices() {
   return 0;
 }
 
-int ttk::ExplicitTriangulation::preconditionExchangeGhostVertices() {
+template <size_t card>
+int ttk::ExplicitTriangulation<card>::preconditionExchangeGhostVertices() {
 
   if(this->hasPreconditionedExchangeGhostVertices_) {
     return 0;
@@ -1527,16 +1564,19 @@ void writeBinArray(std::ofstream &stream,
 }
 
 // initialize static member variables
-const char *ExplicitTriangulation::magicBytes_ = "TTKTriangulationFileFormat";
-const unsigned long ExplicitTriangulation::formatVersion_ = 1;
+template <size_t card>
+const char *ExplicitTriangulation<card>::magicBytes_ = "TTKTriangulationFileFormat";
+template <size_t card>
+const unsigned long ExplicitTriangulation<card>::formatVersion_ = 1;
 
-int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
+template <size_t card>
+int ExplicitTriangulation<card>::writeToFile(std::ofstream &stream) const {
 
   // 1. magic bytes (char *)
-  stream.write(ttk::ExplicitTriangulation::magicBytes_,
-               std::strlen(ttk::ExplicitTriangulation::magicBytes_));
+  stream.write(ttk::ExplicitTriangulation<card>::magicBytes_,
+               std::strlen(ttk::ExplicitTriangulation<card>::magicBytes_));
   // 2. format version (unsigned long)
-  writeBin(stream, ttk::ExplicitTriangulation::formatVersion_);
+  writeBin(stream, ttk::ExplicitTriangulation<card>::formatVersion_);
   // 3. dimensionality (int)
   const auto dim = this->getDimensionality();
   writeBin(stream, dim);
@@ -1652,11 +1692,12 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   return 0;
 }
 
-int ExplicitTriangulation::writeToFileASCII(std::ofstream &stream) const {
+template <size_t card>
+int ExplicitTriangulation<card>::writeToFileASCII(std::ofstream &stream) const {
   // 1. magic bytes
-  stream << ttk::ExplicitTriangulation::magicBytes_ << '\n';
+  stream << ttk::ExplicitTriangulation<card>::magicBytes_ << '\n';
   // 2. format version
-  stream << ttk::ExplicitTriangulation::formatVersion_ + 1 << '\n';
+  stream << ttk::ExplicitTriangulation<card>::formatVersion_ + 1 << '\n';
   // 3. dimensionality
   const auto dim = this->getDimensionality();
   stream << "dim " << dim << '\n';
@@ -1752,15 +1793,16 @@ void readBinArray(std::ifstream &stream, T *const res, const size_t size) {
   stream.read(reinterpret_cast<char *>(res), size * sizeof(T));
 }
 
-int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
+template <size_t card>
+int ExplicitTriangulation<card>::readFromFile(std::ifstream &stream) {
 
   // 1. magic bytes (char *)
   const auto magicBytesLen
-    = std::strlen(ttk::ExplicitTriangulation::magicBytes_);
+    = std::strlen(ttk::ExplicitTriangulation<card>::magicBytes_);
   std::vector<char> mBytes(magicBytesLen + 1);
   stream.read(mBytes.data(), magicBytesLen);
   const auto hasMagicBytes
-    = std::strcmp(mBytes.data(), ttk::ExplicitTriangulation::magicBytes_) == 0;
+    = std::strcmp(mBytes.data(), ttk::ExplicitTriangulation<card>::magicBytes_) == 0;
   if(!hasMagicBytes) {
     this->printErr("Could not find magic bytes in input files!");
     this->printErr("Aborting...");
@@ -1769,10 +1811,10 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
   // 2. format version (unsigned long)
   unsigned long version{};
   readBin(stream, version);
-  if(version != ttk::ExplicitTriangulation::formatVersion_) {
+  if(version != ttk::ExplicitTriangulation<card>::formatVersion_) {
     this->printWrn("File format version (" + std::to_string(version)
                    + ") and software version ("
-                   + std::to_string(ttk::ExplicitTriangulation::formatVersion_)
+                   + std::to_string(ttk::ExplicitTriangulation<card>::formatVersion_)
                    + ") are different!");
   }
 
@@ -1892,3 +1934,10 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
 
   return 0;
 }
+
+
+// explicit instanciations
+template class ttk::ExplicitTriangulation<0>;
+template class ttk::ExplicitTriangulation<1>;
+template class ttk::ExplicitTriangulation<2>;
+template class ttk::ExplicitTriangulation<3>;

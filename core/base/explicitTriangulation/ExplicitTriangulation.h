@@ -14,10 +14,19 @@
 #include <CellArray.h>
 #include <FlatJaggedArray.h>
 
+#include <OneSkeleton.h>
+#include <ThreeSkeleton.h>
+#include <TwoSkeleton.h>
+#include <ZeroSkeleton.h>
+
+#include <cstring>
+#include <numeric>
+
 #include <memory>
 
 namespace ttk {
 
+  template <size_t card>
   class ExplicitTriangulation final : public AbstractTriangulation {
 
   public:
@@ -813,4 +822,7 @@ namespace ttk {
     // breaking change to keep backward compatibility.
     static const unsigned long formatVersion_;
   };
+  //
+  //
+
 } // namespace ttk

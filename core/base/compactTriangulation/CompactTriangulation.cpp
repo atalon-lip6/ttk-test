@@ -2,14 +2,16 @@
 
 using namespace ttk;
 
-CompactTriangulation::CompactTriangulation() {
+template<size_t card>
+CompactTriangulation<card>::CompactTriangulation() {
   setDebugMsgPrefix("CompactTriangulation");
   clear();
   caches_.resize(threadNumber_);
   cacheMaps_.resize(threadNumber_);
 }
 
-CompactTriangulation::CompactTriangulation(const CompactTriangulation &rhs)
+template<size_t card>
+CompactTriangulation<card>::CompactTriangulation(const CompactTriangulation<card> &rhs)
   : AbstractTriangulation(rhs), doublePrecision_(rhs.doublePrecision_),
     maxCellDim_(rhs.maxCellDim_), cellNumber_(rhs.cellNumber_),
     vertexNumber_(rhs.vertexNumber_), nodeNumber_(rhs.nodeNumber_),
@@ -20,8 +22,9 @@ CompactTriangulation::CompactTriangulation(const CompactTriangulation &rhs)
     externalCells_(rhs.externalCells_) {
 }
 
-CompactTriangulation &
-  CompactTriangulation::operator=(const CompactTriangulation &rhs) {
+template<size_t card>
+CompactTriangulation<card> &
+  CompactTriangulation<card>::operator=(const CompactTriangulation<card> &rhs) {
   if(this != &rhs) {
     doublePrecision_ = rhs.doublePrecision_;
     maxCellDim_ = rhs.maxCellDim_;
@@ -41,9 +44,11 @@ CompactTriangulation &
   return *this;
 }
 
-CompactTriangulation::~CompactTriangulation() = default;
+template<size_t card>
+CompactTriangulation<card>::~CompactTriangulation() = default;
 
-int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
+template<size_t card>
+int CompactTriangulation<card>::reorderVertices(std::vector<SimplexId> &vertexMap) {
   // get the number of nodes (the max value in the array)
   nodeNumber_ = 0;
   for(SimplexId vid = 0; vid < vertexNumber_; vid++) {
@@ -110,7 +115,8 @@ int CompactTriangulation::reorderVertices(std::vector<SimplexId> &vertexMap) {
   return 0;
 }
 
-int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
+template<size_t card>
+int CompactTriangulation<card>::reorderCells(const std::vector<SimplexId> &vertexMap,
                                        const SimplexId &cellNumber,
                                        const LongSimplexId *connectivity,
                                        const LongSimplexId *offset) {
@@ -160,7 +166,8 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
   return 0;
 }
 
-int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
+template<size_t card>
+int CompactTriangulation<card>::reorderCells(const std::vector<SimplexId> &vertexMap,
                                        const LongSimplexId *cellArray) {
   // change the indices in cell array
   SimplexId cellCount = 0, verticesPerCell = cellArray[0];
@@ -209,8 +216,9 @@ int CompactTriangulation::reorderCells(const std::vector<SimplexId> &vertexMap,
   return 0;
 }
 
-int CompactTriangulation::buildInternalEdgeMap(
-  ImplicitCluster *const nodePtr,
+template <size_t card>
+int CompactTriangulation<card>::buildInternalEdgeMap(
+  ImplicitCluster<card> *const nodePtr,
   bool computeInternalEdgeList,
   bool computeInternalEdgeMap) const {
 
@@ -298,8 +306,9 @@ int CompactTriangulation::buildInternalEdgeMap(
   return 0;
 }
 
-int CompactTriangulation::buildExternalEdgeMap(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::buildExternalEdgeMap(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -335,7 +344,7 @@ int CompactTriangulation::buildExternalEdgeMap(
   boost::unordered_map<SimplexId,
                        std::vector<std::array<SimplexId, 2>>>::iterator iter;
   for(iter = edgeNodes.begin(); iter != edgeNodes.end(); iter++) {
-    ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+    ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
     if(exnode) {
       if(exnode->internalEdgeMap_.empty())
         buildInternalEdgeMap(exnode, false, true);
@@ -345,7 +354,7 @@ int CompactTriangulation::buildExternalEdgeMap(
             + edgeIntervals_[iter->first - 1];
       }
     } else {
-      ImplicitCluster tmpCluster(iter->first);
+      ImplicitCluster<card> tmpCluster(iter->first);
       buildInternalEdgeMap(&tmpCluster, false, true);
       for(std::array<SimplexId, 2> const edgePair : iter->second) {
         (nodePtr->externalEdgeMap_)[edgePair]
@@ -358,8 +367,9 @@ int CompactTriangulation::buildExternalEdgeMap(
   return 0;
 }
 
-int CompactTriangulation::buildInternalTriangleMap(
-  ImplicitCluster *const nodePtr,
+template<size_t card>
+int CompactTriangulation<card>::buildInternalTriangleMap(
+  ImplicitCluster<card> *const nodePtr,
   bool computeInternalTriangleList,
   bool computeInternalTriangleMap) const {
 
@@ -451,8 +461,9 @@ int CompactTriangulation::buildInternalTriangleMap(
   return 0;
 }
 
-int CompactTriangulation::buildExternalTriangleMap(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::buildExternalTriangleMap(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -494,7 +505,7 @@ int CompactTriangulation::buildExternalTriangleMap(
   boost::unordered_map<SimplexId,
                        std::vector<std::array<SimplexId, 3>>>::iterator iter;
   for(iter = nodeTriangles.begin(); iter != nodeTriangles.end(); iter++) {
-    ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+    ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
     if(exnode) {
       if(exnode->internalTriangleMap_.empty())
         buildInternalTriangleMap(exnode, false, true);
@@ -504,7 +515,7 @@ int CompactTriangulation::buildExternalTriangleMap(
             + triangleIntervals_[iter->first - 1];
       }
     } else {
-      ImplicitCluster tmpCluster(iter->first);
+      ImplicitCluster<card> tmpCluster(iter->first);
       buildInternalTriangleMap(&tmpCluster, false, true);
       for(std::array<SimplexId, 3> const triangleVec : iter->second) {
         (nodePtr->externalTriangleMap_)[triangleVec]
@@ -517,7 +528,8 @@ int CompactTriangulation::buildExternalTriangleMap(
   return 0;
 }
 
-SimplexId CompactTriangulation::countInternalEdges(SimplexId nodeId) const {
+template<size_t card>
+SimplexId CompactTriangulation<card>::countInternalEdges(SimplexId nodeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodeId <= 0 || nodeId > nodeNumber_)
@@ -578,7 +590,8 @@ SimplexId CompactTriangulation::countInternalEdges(SimplexId nodeId) const {
   return edgeCount;
 }
 
-int CompactTriangulation::countInternalTriangles(SimplexId nodeId) const {
+template<size_t card>
+int CompactTriangulation<card>::countInternalTriangles(SimplexId nodeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodeId <= 0 || nodeId > nodeNumber_)
@@ -642,8 +655,9 @@ int CompactTriangulation::countInternalTriangles(SimplexId nodeId) const {
   return triangleCount;
 }
 
-int CompactTriangulation::getClusterCellNeighbors(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterCellNeighbors(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -672,7 +686,7 @@ int CompactTriangulation::getClusterCellNeighbors(
         SimplexId const nodeId
           = vertexIndices_[cellArray_->getCellVertex(cid, j)];
         if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-          ImplicitCluster newNode(nodeId);
+          ImplicitCluster<card> newNode(nodeId);
           getClusterVertexStars(&newNode);
           // sort the vertex star list
           std::vector<std::vector<SimplexId>> tmpVec;
@@ -858,8 +872,9 @@ int CompactTriangulation::getClusterCellNeighbors(
   return 0;
 }
 
-int CompactTriangulation::getClusterCellTriangles(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterCellTriangles(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -910,7 +925,7 @@ int CompactTriangulation::getClusterCellTriangles(
   }
 
   for(auto iter = nodeTriangles.begin(); iter != nodeTriangles.end(); iter++) {
-    ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+    ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
     if(exnode) {
       if(exnode->internalTriangleMap_.empty())
         buildInternalTriangleMap(exnode, false, true);
@@ -924,7 +939,7 @@ int CompactTriangulation::getClusterCellTriangles(
             + triangleIntervals_[iter->first - 1];
       }
     } else {
-      ImplicitCluster tmpCluster(iter->first);
+      ImplicitCluster<card> tmpCluster(iter->first);
       buildInternalTriangleMap(&tmpCluster, false, true);
       for(std::vector<SimplexId> triangleVec : iter->second) {
         std::array<SimplexId, 3> const triangle
@@ -941,8 +956,9 @@ int CompactTriangulation::getClusterCellTriangles(
   return 0;
 }
 
-int CompactTriangulation::getClusterEdgeLinks(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterEdgeLinks(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1114,7 +1130,7 @@ int CompactTriangulation::getClusterEdgeLinks(
     }
 
     // loop through the external cell list
-    boost::unordered_map<SimplexId, ImplicitCluster> nodeMaps;
+    boost::unordered_map<SimplexId, ImplicitCluster<card>> nodeMaps;
     for(SimplexId const cid : externalCells_[nodePtr->nid]) {
       std::array<SimplexId, 4> vertexIds
         = {(SimplexId)cellArray_->getCellVertex(cid, 0),
@@ -1140,7 +1156,7 @@ int CompactTriangulation::getClusterEdgeLinks(
                 } else if(otherEdge[1] == -1) {
                   otherEdge[1] = vertexIds[i];
                 } else {
-                  printErr("[CompactTriangulation] More than two other "
+                  printErr("[CompactTriangulation<card>] More than two other "
                            "vertices are "
                            "found in the edge!\n");
                 }
@@ -1148,7 +1164,7 @@ int CompactTriangulation::getClusterEdgeLinks(
             }
             SimplexId const nodeId = vertexIndices_[otherEdge[0]];
             if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-              nodeMaps[nodeId] = ImplicitCluster(nodeId);
+              nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
               buildInternalEdgeMap(&nodeMaps[nodeId], false, true);
             }
             SimplexId const localEdgeId
@@ -1168,8 +1184,9 @@ int CompactTriangulation::getClusterEdgeLinks(
   return 0;
 }
 
-int CompactTriangulation::getClusterEdgeStars(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterEdgeStars(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1268,8 +1285,9 @@ int CompactTriangulation::getClusterEdgeStars(
   return 0;
 }
 
-int CompactTriangulation::getClusterEdgeTriangles(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterEdgeTriangles(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1364,8 +1382,9 @@ int CompactTriangulation::getClusterEdgeTriangles(
   return 0;
 }
 
-int CompactTriangulation::getClusterTetraEdges(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterTetraEdges(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1417,7 +1436,7 @@ int CompactTriangulation::getClusterTetraEdges(
   }
 
   for(auto iter = edgeNodes.begin(); iter != edgeNodes.end(); iter++) {
-    ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+    ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
     if(exnode) {
       if(exnode->internalEdgeMap_.empty())
         buildInternalEdgeMap(exnode, false, true);
@@ -1429,7 +1448,7 @@ int CompactTriangulation::getClusterTetraEdges(
             + edgeIntervals_[iter->first - 1];
       }
     } else {
-      ImplicitCluster tmpCluster(iter->first);
+      ImplicitCluster<card> tmpCluster(iter->first);
       buildInternalEdgeMap(&tmpCluster, false, true);
       for(std::vector<SimplexId> edgeTuple : iter->second) {
         std::array<SimplexId, 2> const edgePair = {edgeTuple[2], edgeTuple[3]};
@@ -1444,8 +1463,9 @@ int CompactTriangulation::getClusterTetraEdges(
   return 0;
 }
 
-int CompactTriangulation::getClusterTriangleEdges(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterTriangleEdges(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1491,7 +1511,7 @@ int CompactTriangulation::getClusterTriangleEdges(
     }
 
     for(auto iter = edgeNodes.begin(); iter != edgeNodes.end(); iter++) {
-      ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+      ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
       if(exnode) {
         if(exnode->internalEdgeMap_.empty())
           buildInternalEdgeMap(exnode, false, true);
@@ -1504,7 +1524,7 @@ int CompactTriangulation::getClusterTriangleEdges(
               + edgeIntervals_[iter->first - 1];
         }
       } else {
-        ImplicitCluster tmpCluster(iter->first);
+        ImplicitCluster<card> tmpCluster(iter->first);
         buildInternalEdgeMap(&tmpCluster, false, true);
         for(std::vector<SimplexId> edgeTuple : iter->second) {
           std::array<SimplexId, 2> const edgePair
@@ -1547,7 +1567,7 @@ int CompactTriangulation::getClusterTriangleEdges(
     }
 
     for(auto iter = edgeNodes.begin(); iter != edgeNodes.end(); iter++) {
-      ImplicitCluster *exnode = searchCache(iter->first, nodePtr->nid);
+      ImplicitCluster<card> *exnode = searchCache(iter->first, nodePtr->nid);
       if(exnode) {
         if(exnode->internalEdgeMap_.empty())
           buildInternalEdgeMap(exnode, false, true);
@@ -1559,7 +1579,7 @@ int CompactTriangulation::getClusterTriangleEdges(
               + edgeIntervals_[iter->first - 1];
         }
       } else {
-        ImplicitCluster tmpCluster(iter->first);
+        ImplicitCluster<card> tmpCluster(iter->first);
         buildInternalEdgeMap(&tmpCluster, false, true);
         for(std::vector<SimplexId> edgeTuple : iter->second) {
           std::array<SimplexId, 2> const edgePair
@@ -1575,8 +1595,9 @@ int CompactTriangulation::getClusterTriangleEdges(
   return 0;
 }
 
-int CompactTriangulation::getClusterTriangleLinks(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterTriangleLinks(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1646,8 +1667,9 @@ int CompactTriangulation::getClusterTriangleLinks(
   return 0;
 }
 
-int CompactTriangulation::getClusterTriangleStars(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterTriangleStars(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1766,8 +1788,9 @@ int CompactTriangulation::getClusterTriangleStars(
   return 0;
 }
 
-int CompactTriangulation::getClusterVertexEdges(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterVertexEdges(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1837,8 +1860,9 @@ int CompactTriangulation::getClusterVertexEdges(
   return 0;
 }
 
-int CompactTriangulation::getClusterVertexLinks(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterVertexLinks(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -1849,7 +1873,7 @@ int CompactTriangulation::getClusterVertexLinks(
     = vertexIntervals_[nodePtr->nid] - vertexIntervals_[nodePtr->nid - 1];
   std::vector<SimplexId> offsets(localVertexNum + 1, 0),
     linksCount(localVertexNum, 0);
-  boost::unordered_map<SimplexId, ImplicitCluster> nodeMaps;
+  boost::unordered_map<SimplexId, ImplicitCluster<card>> nodeMaps;
   // triangle mesh
   if(getDimensionality() == 2) {
     if(nodePtr->internalEdgeMap_.empty()) {
@@ -1898,7 +1922,7 @@ int CompactTriangulation::getClusterVertexLinks(
       std::array<SimplexId, 2> edgePair = {vertexIds[1], vertexIds[2]};
       SimplexId const nodeId = vertexIndices_[vertexIds[1]];
       if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-        nodeMaps[nodeId] = ImplicitCluster(nodeId);
+        nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
         buildInternalEdgeMap(&nodeMaps[nodeId], false, true);
       }
       SimplexId localVertexId
@@ -1933,7 +1957,7 @@ int CompactTriangulation::getClusterVertexLinks(
       std::array<SimplexId, 2> edgePair = {vertexIds[0], vertexIds[2]};
       SimplexId const nodeId = vertexIndices_[edgePair[0]];
       if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-        nodeMaps[nodeId] = ImplicitCluster(nodeId);
+        nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
         buildInternalEdgeMap(&nodeMaps[nodeId], false, true);
       }
       SimplexId localVertexId
@@ -2012,7 +2036,7 @@ int CompactTriangulation::getClusterVertexLinks(
         = {vertexIds[1], vertexIds[2], vertexIds[3]};
       SimplexId const nodeId = vertexIndices_[vertexIds[1]];
       if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-        nodeMaps[nodeId] = ImplicitCluster(nodeId);
+        nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
         buildInternalTriangleMap(&nodeMaps[nodeId], false, true);
       }
       SimplexId localVertexId
@@ -2062,7 +2086,7 @@ int CompactTriangulation::getClusterVertexLinks(
         = {vertexIds[0], vertexIds[2], vertexIds[3]};
       SimplexId const nodeId = vertexIndices_[vertexIds[0]];
       if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-        nodeMaps[nodeId] = ImplicitCluster(nodeId);
+        nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
         buildInternalTriangleMap(&nodeMaps[nodeId], false, true);
       }
       SimplexId localVertexId
@@ -2103,8 +2127,9 @@ int CompactTriangulation::getClusterVertexLinks(
   return 0;
 }
 
-int CompactTriangulation::getClusterVertexNeighbors(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterVertexNeighbors(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2169,8 +2194,9 @@ int CompactTriangulation::getClusterVertexNeighbors(
   return 0;
 }
 
-int CompactTriangulation::getClusterVertexStars(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterVertexStars(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2254,8 +2280,9 @@ int CompactTriangulation::getClusterVertexStars(
   return 0;
 }
 
-int CompactTriangulation::getClusterVertexTriangles(
-  ImplicitCluster *const nodePtr) const {
+template<size_t card>
+int CompactTriangulation<card>::getClusterVertexTriangles(
+  ImplicitCluster<card> *const nodePtr) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nodePtr->nid <= 0 || nodePtr->nid > nodeNumber_)
@@ -2338,7 +2365,8 @@ int CompactTriangulation::getClusterVertexTriangles(
   return 0;
 }
 
-int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
+template<size_t card>
+int CompactTriangulation<card>::getBoundaryCells(ImplicitCluster<card> *const nodePtr,
                                            const SimplexId dim) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -2384,12 +2412,12 @@ int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
         }
       }
       // external edges
-      boost::unordered_map<SimplexId, ImplicitCluster> nodeMaps;
+      boost::unordered_map<SimplexId, ImplicitCluster<card>> nodeMaps;
       for(auto iter = nodePtr->externalEdgeMap_.begin();
           iter != nodePtr->externalEdgeMap_.end(); iter++) {
         SimplexId const nodeId = vertexIndices_[iter->first[0]];
         if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-          nodeMaps[nodeId] = ImplicitCluster(nodeId);
+          nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
           getBoundaryCells(&nodeMaps[nodeId]);
         }
         if((nodeMaps[nodeId]
@@ -2444,12 +2472,12 @@ int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
         }
       }
       // external triangles
-      boost::unordered_map<SimplexId, ImplicitCluster> nodeMaps;
+      boost::unordered_map<SimplexId, ImplicitCluster<card>> nodeMaps;
       for(auto iter = nodePtr->externalTriangleMap_.begin();
           iter != nodePtr->externalTriangleMap_.end(); iter++) {
         SimplexId const nodeId = vertexIndices_[iter->first[0]];
         if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-          nodeMaps[nodeId] = ImplicitCluster(nodeId);
+          nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
           getBoundaryCells(&nodeMaps[nodeId]);
         }
         if((nodeMaps[nodeId]
@@ -2491,12 +2519,12 @@ int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
         }
       }
       // external triangles
-      boost::unordered_map<SimplexId, ImplicitCluster> nodeMaps;
+      boost::unordered_map<SimplexId, ImplicitCluster<card>> nodeMaps;
       for(auto iter = nodePtr->externalTriangleMap_.begin();
           iter != nodePtr->externalTriangleMap_.end(); iter++) {
         SimplexId const nodeId = vertexIndices_[iter->first[0]];
         if(nodeMaps.find(nodeId) == nodeMaps.end()) {
-          nodeMaps[nodeId] = ImplicitCluster(nodeId);
+          nodeMaps[nodeId] = ImplicitCluster<card>(nodeId);
           ;
           getBoundaryCells(&nodeMaps[nodeId]);
         }
@@ -2526,3 +2554,9 @@ int CompactTriangulation::getBoundaryCells(ImplicitCluster *const nodePtr,
 
   return 0;
 }
+
+// explicit instanciations
+template class ttk::CompactTriangulation<0>;
+template class ttk::CompactTriangulation<1>;
+template class ttk::CompactTriangulation<2>;
+template class ttk::CompactTriangulation<3>;

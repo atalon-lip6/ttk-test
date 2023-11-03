@@ -81,7 +81,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                             ttk::Triangulation::Type::HYBRID_PERIODIC,    \
                             ttk::PeriodicWithPreconditions, call);        \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::COMPACT,  \
-                            ttk::CompactTriangulation, call);             \
+                            ttk::CompactTriangulation<0>, call);             \
   }
 
 #define ttkTemplate2IdMacro(call)                                           \
@@ -142,7 +142,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkTypeMacroCase(ttk::Triangulation::Type::EXPLICIT,                      \
                      ttk::ExplicitTriangulation<0>, 0, call);                    \
     ttkTypeMacroCase(                                                         \
-      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation, 0, call); \
+      ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation<0>, 0, call); \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,                      \
                      ttk::ImplicitNoPreconditions, 0, call);                  \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,               \
@@ -220,7 +220,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
-                     ttk::CompactTriangulation, 1,              \
+                     ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
                      ttk::ImplicitNoPreconditions, 1,           \
@@ -243,7 +243,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
-                     ttk::CompactTriangulation, 1,              \
+                     ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
                      ttk::ImplicitNoPreconditions, 1,           \
@@ -266,7 +266,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::ExplicitTriangulation<0>, 1,             \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::COMPACT,         \
-                     ttk::CompactTriangulation, 1,              \
+                     ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
                      ttk::ImplicitNoPreconditions, 1,           \

@@ -20,7 +20,7 @@
 
 namespace ttk {
 
-  class PeriodicImplicitTriangulation : public RegularGridTriangulation {
+  class PeriodicImplicitTriangulation : public RegularGridTriangulation<0> {
 
   public:
     PeriodicImplicitTriangulation();

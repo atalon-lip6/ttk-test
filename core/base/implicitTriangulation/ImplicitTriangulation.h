@@ -17,7 +17,7 @@
 
 namespace ttk {
 
-  class ImplicitTriangulation : public RegularGridTriangulation {
+  class ImplicitTriangulation : public RegularGridTriangulation<0> {
 
   public:
     ImplicitTriangulation();

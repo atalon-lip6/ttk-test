@@ -2,12 +2,14 @@
 #include <numeric>
 #include <string>
 
-ttk::RegularGridTriangulation::RegularGridTriangulation()
+template <size_t card>
+ttk::RegularGridTriangulation<card>::RegularGridTriangulation()
   : dimensionality_{-1} {
-  setDebugMsgPrefix("RegularGridTriangulation");
+  setDebugMsgPrefix("RegularGridTriangulation<card>");
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::findEdgeFromVertices(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::findEdgeFromVertices(
   const SimplexId v0, const SimplexId v1) const {
   // loop over v0 edges to find the one between v0 and v1
   const auto nEdges = this->getVertexEdgeNumberInternal(v0);
@@ -26,7 +28,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::findEdgeFromVertices(
   return -1;
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::findTriangleFromVertices(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::findTriangleFromVertices(
   std::array<SimplexId, 3> &verts) const {
   std::sort(verts.begin(), verts.end());
 
@@ -50,7 +53,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::findTriangleFromVertices(
 
 #ifdef TTK_ENABLE_MPI
 
-int ttk::RegularGridTriangulation::getVertexRankInternal(
+template <size_t card>
+int ttk::RegularGridTriangulation<card>::getVertexRankInternal(
   const SimplexId lvid) const {
 
   if(this->vertexGhost_[lvid] == 0) {
@@ -74,7 +78,8 @@ int ttk::RegularGridTriangulation::getVertexRankInternal(
   return -1;
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getVertexGlobalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getVertexGlobalIdInternal(
   const SimplexId lvid) const {
   if(!ttk::isRunningWithMPI()) {
     return lvid;
@@ -97,7 +102,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getVertexGlobalIdInternal(
   return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getVertexLocalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getVertexLocalIdInternal(
   const SimplexId gvid) const {
   if(!ttk::isRunningWithMPI()) {
     return gvid;
@@ -126,7 +132,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getVertexLocalIdInternal(
   return p[0] + p[1] * dims[0] + p[2] * dims[0] * dims[1];
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getCellGlobalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getCellGlobalIdInternal(
   const SimplexId lcid) const {
   if(!ttk::isRunningWithMPI()) {
     return lcid;
@@ -165,7 +172,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getCellGlobalIdInternal(
   return globCubeId * nCellsPerCube + lcid % nCellsPerCube;
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getCellLocalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getCellLocalIdInternal(
   const SimplexId gcid) const {
   if(!ttk::isRunningWithMPI()) {
     return gcid;
@@ -204,7 +212,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getCellLocalIdInternal(
   return locCubeId * nCellsPerCube + gcid % nCellsPerCube;
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getEdgeGlobalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getEdgeGlobalIdInternal(
   const SimplexId leid) const {
   if(!ttk::isRunningWithMPI()) {
     return leid;
@@ -238,7 +247,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getEdgeGlobalIdInternal(
   return this->metaGrid_->findEdgeFromVertices(gv0, gv1);
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getEdgeLocalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getEdgeLocalIdInternal(
   const SimplexId geid) const {
   if(!ttk::isRunningWithMPI()) {
     return geid;
@@ -272,7 +282,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getEdgeLocalIdInternal(
   return this->findEdgeFromVertices(lv0, lv1);
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getTriangleGlobalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getTriangleGlobalIdInternal(
   const SimplexId ltid) const {
   if(!ttk::isRunningWithMPI()) {
     return ltid;
@@ -312,7 +323,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getTriangleGlobalIdInternal(
   return this->metaGrid_->findTriangleFromVertices(globVerts);
 }
 
-ttk::SimplexId ttk::RegularGridTriangulation::getTriangleLocalIdInternal(
+template <size_t card>
+ttk::SimplexId ttk::RegularGridTriangulation<card>::getTriangleLocalIdInternal(
   const SimplexId gtid) const {
   if(!ttk::isRunningWithMPI()) {
     return gtid;
@@ -352,7 +364,8 @@ ttk::SimplexId ttk::RegularGridTriangulation::getTriangleLocalIdInternal(
   return this->findTriangleFromVertices(locVerts);
 }
 
-int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
+template <size_t card>
+int ttk::RegularGridTriangulation<card>::preconditionDistributedVertices() {
   if(this->hasPreconditionedDistributedVertices_) {
     return 0;
   }
@@ -432,7 +445,8 @@ int ttk::RegularGridTriangulation::preconditionDistributedVertices() {
   return 0;
 }
 
-int ttk::RegularGridTriangulation::preconditionExchangeGhostCells() {
+template <size_t card>
+int ttk::RegularGridTriangulation<card>::preconditionExchangeGhostCells() {
 
   if(this->hasPreconditionedExchangeGhostCells_) {
     return 0;
@@ -481,7 +495,8 @@ int ttk::RegularGridTriangulation::preconditionExchangeGhostCells() {
   return 0;
 }
 
-int ttk::RegularGridTriangulation::preconditionExchangeGhostVertices() {
+template <size_t card>
+int ttk::RegularGridTriangulation<card>::preconditionExchangeGhostVertices() {
 
   if(this->hasPreconditionedExchangeGhostVertices_) {
     return 0;
@@ -530,3 +545,9 @@ int ttk::RegularGridTriangulation::preconditionExchangeGhostVertices() {
   return 0;
 }
 #endif
+
+// explicit instanciations
+template class ttk::RegularGridTriangulation<0>;
+template class ttk::RegularGridTriangulation<1>;
+template class ttk::RegularGridTriangulation<2>;
+template class ttk::RegularGridTriangulation<3>;

@@ -27,6 +27,7 @@ namespace ttk {
   class ImplicitTriangulation;
   class PeriodicImplicitTriangulation;
 
+  template <size_t card>
   class RegularGridTriangulation : public AbstractTriangulation {
     friend class ttk::ImplicitTriangulation;
     friend class ttk::PeriodicImplicitTriangulation;

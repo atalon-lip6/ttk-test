@@ -2992,8 +2992,8 @@ namespace ttk {
     ExplicitTriangulation<0> explicitTriangulation_;
     ImplicitNoPreconditions implicitTriangulation_;
     ImplicitWithPreconditions implicitPreconditionsTriangulation_;
-    PeriodicNoPreconditions periodicImplicitTriangulation_;
-    PeriodicWithPreconditions periodicPreconditionsTriangulation_;
+    PeriodicNoPreconditions<0> periodicImplicitTriangulation_;
+    PeriodicWithPreconditions<0> periodicPreconditionsTriangulation_;
     CompactTriangulation<0> compactTriangulation_;
   };
 } // namespace ttk

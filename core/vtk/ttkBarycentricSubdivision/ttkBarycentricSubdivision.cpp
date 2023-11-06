@@ -91,9 +91,9 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
       BARYSUBD_TRIANGL_CALLS(                                                 \
         TYPE, ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation<0>)   \
       BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::PERIODIC,        \
-                             ttk::PeriodicNoPreconditions)                    \
+                             ttk::PeriodicNoPreconditions<0>)                    \
       BARYSUBD_TRIANGL_CALLS(TYPE, ttk::Triangulation::Type::HYBRID_PERIODIC, \
-                             ttk::PeriodicWithPreconditions)                  \
+                             ttk::PeriodicWithPreconditions<0>)                  \
     }                                                                         \
     break;
 #define BARYSUBD_TRIANGL_CALLS(DATATYPE, TRIANGL_CASE, TRIANGL_TYPE)          \

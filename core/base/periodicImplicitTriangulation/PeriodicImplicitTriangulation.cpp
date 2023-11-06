@@ -2,24 +2,27 @@
 using namespace std;
 using namespace ttk;
 
-PeriodicImplicitTriangulation::PeriodicImplicitTriangulation()
+template <size_t card>
+ttk::PeriodicImplicitTriangulation<card>::PeriodicImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
     triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
-  setDebugMsgPrefix("PeriodicImplicitTriangulation");
-  hasPeriodicBoundaries_ = true;
+  this->setDebugMsgPrefix("PeriodicImplicitTriangulation");
+  this->hasPeriodicBoundaries_ = true;
 }
 
-PeriodicImplicitTriangulation::~PeriodicImplicitTriangulation() = default;
+template<size_t card>
+ttk::PeriodicImplicitTriangulation<card>::~PeriodicImplicitTriangulation<card>() = default;
 
-int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::setInputGrid(const float &xOrigin,
                                                 const float &yOrigin,
                                                 const float &zOrigin,
                                                 const float &xSpacing,
                                                 const float &ySpacing,
                                                 const float &zSpacing,
-                                                const SimplexId &xDim,
-                                                const SimplexId &yDim,
-                                                const SimplexId &zDim) {
+                                                const ttk::SimplexId &xDim,
+                                                const ttk::SimplexId &yDim,
+                                                const ttk::SimplexId &zDim) {
 
   // Dimensionality //
   if(xDim < 1 or yDim < 1 or zDim < 1)
@@ -35,23 +38,23 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
     dimensionality_ = 0;
 
   // Essentials //
-  origin_[0] = xOrigin;
-  origin_[1] = yOrigin;
-  origin_[2] = zOrigin;
-  spacing_[0] = xSpacing;
-  spacing_[1] = ySpacing;
-  spacing_[2] = zSpacing;
-  dimensions_[0] = xDim;
-  dimensions_[1] = yDim;
-  dimensions_[2] = zDim;
+  this->origin_[0] = xOrigin;
+  this->origin_[1] = yOrigin;
+  this->origin_[2] = zOrigin;
+  this->spacing_[0] = xSpacing;
+  this->spacing_[1] = ySpacing;
+  this->spacing_[2] = zSpacing;
+  this->dimensions_[0] = xDim;
+  this->dimensions_[1] = yDim;
+  this->dimensions_[2] = zDim;
   nbvoxels_[0] = xDim - 1;
   nbvoxels_[1] = yDim - 1;
   nbvoxels_[2] = zDim - 1;
 
   if(dimensionality_ == 3) {
     // VertexShift
-    vshift_[0] = xDim;
-    vshift_[1] = xDim * yDim;
+    this->vshift_[0] = xDim;
+    this->vshift_[1] = xDim * yDim;
     // EdgeSetDimensions
     esetdims_[0] = xDim * yDim * zDim;
     esetdims_[1] = xDim * yDim * zDim;
@@ -61,24 +64,24 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
     esetdims_[5] = xDim * yDim * zDim;
     esetdims_[6] = xDim * yDim * zDim;
     // EdgeSetShift
-    esetshift_[0] = esetdims_[0];
+    this->esetshift_[0] = esetdims_[0];
     for(int k = 1; k < 7; ++k)
-      esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
+      this->esetshift_[k] = this->esetshift_[k - 1] + esetdims_[k];
     // EdgeShift
-    eshift_[0] = xDim;
-    eshift_[1] = xDim * yDim;
-    eshift_[2] = xDim;
-    eshift_[3] = xDim * yDim;
-    eshift_[4] = xDim;
-    eshift_[5] = xDim * yDim;
-    eshift_[6] = xDim;
-    eshift_[7] = xDim * yDim;
-    eshift_[8] = xDim;
-    eshift_[9] = xDim * yDim;
-    eshift_[10] = xDim;
-    eshift_[11] = xDim * yDim;
-    eshift_[12] = xDim;
-    eshift_[13] = xDim * yDim;
+    this->eshift_[0] = xDim;
+    this->eshift_[1] = xDim * yDim;
+    this->eshift_[2] = xDim;
+    this->eshift_[3] = xDim * yDim;
+    this->eshift_[4] = xDim;
+    this->eshift_[5] = xDim * yDim;
+    this->eshift_[6] = xDim;
+    this->eshift_[7] = xDim * yDim;
+    this->eshift_[8] = xDim;
+    this->eshift_[9] = xDim * yDim;
+    this->eshift_[10] = xDim;
+    this->eshift_[11] = xDim * yDim;
+    this->eshift_[12] = xDim;
+    this->eshift_[13] = xDim * yDim;
     // TriangleSetDimensions
     tsetdims_[0] = xDim * yDim * zDim * 2;
     tsetdims_[1] = xDim * yDim * zDim * 2;
@@ -107,15 +110,15 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
     tetshift_[0] = xDim * 6;
     tetshift_[1] = xDim * yDim * 6;
 
-    wrap_[0] = xDim;
-    wrap_[1] = xDim * yDim;
-    wrap_[2] = xDim * yDim * zDim;
+    this->wrap_[0] = xDim;
+    this->wrap_[1] = xDim * yDim;
+    this->wrap_[2] = xDim * yDim * zDim;
 
     // Numbers
     vertexNumber_ = xDim * yDim * zDim;
-    edgeNumber_ = 0;
+    this->edgeNumber_ = 0;
     for(int k = 0; k < 7; ++k)
-      edgeNumber_ += esetdims_[k];
+      this->edgeNumber_ += esetdims_[k];
     triangleNumber_ = 0;
     for(int k = 0; k < 6; ++k)
       triangleNumber_ += tsetdims_[k];
@@ -127,98 +130,100 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
     // dimensions selectors
     if(xDim == 1) {
       Di_ = 1;
-      Dj_ = 2;
+      this->Dj_ = 2;
     } else if(yDim == 1) {
       Di_ = 0;
-      Dj_ = 2;
+      this->Dj_ = 2;
     } else {
       Di_ = 0;
-      Dj_ = 1;
+      this->Dj_ = 1;
     }
     // VertexShift
-    vshift_[0] = dimensions_[Di_];
+    this->vshift_[0] = this->dimensions_[Di_];
     // EdgeSetDimensions
-    esetdims_[0] = dimensions_[Di_] * dimensions_[Dj_];
-    esetdims_[1] = dimensions_[Di_] * dimensions_[Dj_];
-    esetdims_[2] = dimensions_[Di_] * dimensions_[Dj_];
+    esetdims_[0] = this->dimensions_[Di_] * this->dimensions_[this->Dj_];
+    esetdims_[1] = this->dimensions_[Di_] * this->dimensions_[this->Dj_];
+    esetdims_[2] = this->dimensions_[Di_] * this->dimensions_[this->Dj_];
     // EdgeSetShift
-    esetshift_[0] = esetdims_[0];
+    this->esetshift_[0] = esetdims_[0];
     for(int k = 1; k < 3; ++k)
-      esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
+      this->esetshift_[k] = this->esetshift_[k - 1] + esetdims_[k];
     // EdgeShift
-    eshift_[0] = dimensions_[Di_];
-    eshift_[2] = dimensions_[Di_];
-    eshift_[4] = dimensions_[Di_];
+    this->eshift_[0] = this->dimensions_[Di_];
+    this->eshift_[2] = this->dimensions_[Di_];
+    this->eshift_[4] = this->dimensions_[Di_];
     // TriangleShift
-    tshift_[0] = dimensions_[Di_] * 2;
+    tshift_[0] = this->dimensions_[Di_] * 2;
 
-    wrap_[0] = dimensions_[Di_];
-    wrap_[1] = dimensions_[Di_] * dimensions_[Dj_];
+    this->wrap_[0] = this->dimensions_[Di_];
+    this->wrap_[1] = this->dimensions_[Di_] * this->dimensions_[this->Dj_];
 
     // Numbers
-    vertexNumber_ = dimensions_[Di_] * dimensions_[Dj_];
-    edgeNumber_ = 0;
+    vertexNumber_ = this->dimensions_[Di_] * this->dimensions_[this->Dj_];
+    this->edgeNumber_ = 0;
     for(int k = 0; k < 3; ++k)
-      edgeNumber_ += esetdims_[k];
-    triangleNumber_ = dimensions_[Di_] * dimensions_[Dj_] * 2;
+      this->edgeNumber_ += esetdims_[k];
+    triangleNumber_ = this->dimensions_[Di_] * this->dimensions_[this->Dj_] * 2;
     cellNumber_ = triangleNumber_;
 
     checkAcceleration();
   } else if(dimensionality_ == 1) {
     // dimensions selectors
     for(int k = 0; k < 3; ++k) {
-      if(dimensions_[k] > 1) {
+      if(this->dimensions_[k] > 1) {
         Di_ = k;
         break;
       }
     }
 
     // Numbers
-    vertexNumber_ = dimensions_[Di_];
-    edgeNumber_ = vertexNumber_;
-    cellNumber_ = edgeNumber_;
+    vertexNumber_ = this->dimensions_[Di_];
+    this->edgeNumber_ = vertexNumber_;
+    cellNumber_ = this->edgeNumber_;
   }
 
   return 0;
 }
 
-int PeriodicImplicitTriangulation::checkAcceleration() {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::checkAcceleration() {
   isAccelerated_ = false;
 
   unsigned long long int msb[3];
   if(dimensionality_ == 3) {
     bool allDimensionsArePowerOfTwo = true;
     for(int k = 0; k < 3; ++k)
-      if(!isPowerOfTwo(dimensions_[k], msb[k]))
+      if(!isPowerOfTwo(this->dimensions_[k], msb[k]))
         allDimensionsArePowerOfTwo = false;
 
     if(allDimensionsArePowerOfTwo) {
-      mod_[0] = dimensions_[0] - 1;
-      mod_[1] = dimensions_[0] * dimensions_[1] - 1;
+      mod_[0] = this->dimensions_[0] - 1;
+      mod_[1] = this->dimensions_[0] * this->dimensions_[1] - 1;
       div_[0] = msb[0];
       div_[1] = msb[0] + msb[1];
       isAccelerated_ = true;
     }
   } else if(dimensionality_ == 2) {
-    bool const isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
-    bool const isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
+    bool const isDi = isPowerOfTwo(this->dimensions_[Di_], msb[Di_]);
+    bool const isDj = isPowerOfTwo(this->dimensions_[this->Dj_], msb[this->Dj_]);
     bool const allDimensionsArePowerOfTwo = (isDi and isDj);
 
     if(allDimensionsArePowerOfTwo) {
-      mod_[0] = dimensions_[Di_] - 1;
+      mod_[0] = this->dimensions_[Di_] - 1;
       div_[0] = msb[Di_];
       isAccelerated_ = true;
     }
   }
 
   if(isAccelerated_) {
-    printMsg("Accelerated getVertex*() requests.", debug::Priority::INFO);
+    this->printMsg("Accelerated getVertex*() requests.", debug::Priority::INFO);
   }
 
   return 0;
 }
 
-bool PeriodicImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
+template<size_t card>
+bool ttk::PeriodicImplicitTriangulation<card>::isPowerOfTwo(unsigned long long int v,
                                                  unsigned long long int &r) {
   if(v && !(v & (v - 1))) {
     r = 0;
@@ -229,8 +234,9 @@ bool PeriodicImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
   return false;
 }
 
-bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  isVertexOnBoundary)(const SimplexId &vertexId) const {
+template<size_t card>
+bool ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  isVertexOnBoundary)(const ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
@@ -241,10 +247,11 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return false;
 }
 
-bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  isEdgeOnBoundary)(const SimplexId &edgeId) const {
+template<size_t card>
+bool ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  isEdgeOnBoundary)(const ttk::SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
 #else
   TTK_FORCE_USE(edgeId);
@@ -253,8 +260,9 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return false;
 }
 
-bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  isTriangleOnBoundary)(const SimplexId &triangleId) const {
+template<size_t card>
+bool ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  isTriangleOnBoundary)(const ttk::SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -265,8 +273,9 @@ bool PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return false;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getVertexNeighborNumber)(const SimplexId &vertexId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getVertexNeighborNumber)(const ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
@@ -285,11 +294,11 @@ SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   return -1;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexNeighbor)(const SimplexId &vertexId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexNeighbor)(const ttk::SimplexId &vertexId,
                      const int &localNeighborId,
-                     SimplexId &neighborId) const {
+                     ttk::SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
      or localNeighborId >= getVertexNeighborNumber(vertexId))
@@ -299,13 +308,13 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   neighborId = -1;
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  if(dimensionality_ == 3) {
-    neighborId = getVertexNeighbor3d(p.data(), vertexId, localNeighborId);
-  } else if(dimensionality_ == 2) {
-    neighborId = getVertexNeighbor2d(p.data(), vertexId, localNeighborId);
-  } else if(dimensionality_ == 1) {
+  if(this->dimensionality_ == 3) {
+    neighborId = this->getVertexNeighbor3d(p.data(), vertexId, localNeighborId);
+  } else if(this->dimensionality_ == 2) {
+    neighborId = this->getVertexNeighbor2d(p.data(), vertexId, localNeighborId);
+  } else if(this->dimensionality_ == 1) {
     // ab
-    if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
+    if(vertexId > 0 and vertexId < this->nbvoxels_[this->Di_]) {
       if(localNeighborId == 0)
         neighborId = vertexId + 1;
       else
@@ -314,7 +323,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
       if(localNeighborId == 0)
         neighborId = vertexId + 1; // a
       else
-        neighborId = nbvoxels_[Di_];
+        neighborId = this->nbvoxels_[this->Di_];
     } else {
       if(localNeighborId == 0)
         neighborId = 0; // a
@@ -326,33 +335,35 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
     getVertexNeighbors)() {
-  if(vertexNeighborList_.empty()) {
+  if(this->vertexNeighborList_.empty()) {
     Timer t;
-    vertexNeighborList_.resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexNeighborList_[i].resize(getVertexNeighborNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexNeighborList_[i].size(); ++j)
-        getVertexNeighbor(i, j, vertexNeighborList_[i][j]);
+    this->vertexNeighborList_.resize(vertexNumber_);
+    for(ttk::SimplexId i = 0; i < vertexNumber_; ++i) {
+      this->vertexNeighborList_[i].resize(getVertexNeighborNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->vertexNeighborList_[i].size(); ++j)
+        this->getVertexNeighbor(i, j, this->vertexNeighborList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex neighbors.", 1,
+    this->printMsg("Built " + std::to_string(vertexNumber_) + " vertex neighbors.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexNeighborList_;
+  return &this->vertexNeighborList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::getVertexEdgeNumberInternal(
-  const SimplexId &vertexId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getVertexEdgeNumberInternal(
+  const ttk::SimplexId &vertexId) const {
   return getVertexNeighborNumber(vertexId);
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
-  const SimplexId &vertexId, const int &localEdgeId, SimplexId &edgeId) const {
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getVertexEdgeInternal(
+  const ttk::SimplexId &vertexId, const int &localEdgeId, ttk::SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localEdgeId < 0 or localEdgeId >= getVertexEdgeNumberInternal(vertexId))
     return -1;
@@ -361,12 +372,12 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
   edgeId = -1;
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  if(dimensionality_ == 3) {
-    edgeId = getVertexEdge3d(p.data(), localEdgeId);
-  } else if(dimensionality_ == 2) {
-    edgeId = getVertexEdge2d(p.data(), localEdgeId);
-  } else if(dimensionality_ == 1) {
-    if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
+  if(this->dimensionality_ == 3) {
+    edgeId = this->getVertexEdge3d(p.data(), localEdgeId);
+  } else if(this->dimensionality_ == 2) {
+    edgeId = this->getVertexEdge2d(p.data(), localEdgeId);
+  } else if(this->dimensionality_ == 1) {
+    if(vertexId > 0 and vertexId < this->nbvoxels_[this->Di_]) {
       // ab
       edgeId = localEdgeId == 0 ? vertexId : vertexId - 1;
     } else if(vertexId == 0) {
@@ -381,27 +392,29 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getVertexEdgesInternal() {
-  if(vertexEdgeList_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getVertexEdgesInternal() {
+  if(this->vertexEdgeList_.empty()) {
     Timer t;
 
-    vertexEdgeList_.resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexEdgeList_[i].resize(getVertexEdgeNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexEdgeList_[i].size(); ++j)
-        getVertexEdgeInternal(i, j, vertexEdgeList_[i][j]);
+    this->vertexEdgeList_.resize(vertexNumber_);
+    for(ttk::SimplexId i = 0; i < vertexNumber_; ++i) {
+      this->vertexEdgeList_[i].resize(getVertexEdgeNumberInternal(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->vertexEdgeList_[i].size(); ++j)
+        this->getVertexEdgeInternal(i, j, this->vertexEdgeList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex edges.", 1,
+    this->printMsg("Built " + std::to_string(vertexNumber_) + " vertex edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexEdgeList_;
+  return &this->vertexEdgeList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::getVertexTriangleNumberInternal(
-  const SimplexId &vertexId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getVertexTriangleNumberInternal(
+  const ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
@@ -409,18 +422,18 @@ SimplexId PeriodicImplicitTriangulation::getVertexTriangleNumberInternal(
   TTK_FORCE_USE(vertexId);
 #endif
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     return 36; // abcdefgh
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getVertexTriangleInternal(
-  const SimplexId &vertexId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getVertexTriangleInternal(
+  const ttk::SimplexId &vertexId,
   const int &localTriangleId,
-  SimplexId &triangleId) const {
+  ttk::SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId < 0
      or localTriangleId >= getVertexTriangleNumberInternal(vertexId))
@@ -430,42 +443,44 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getVertexTriangleInternal(
 
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  if(dimensionality_ == 3) {
-    triangleId = getVertexTriangle3d(p.data(), localTriangleId);
+  if(this->dimensionality_ == 3) {
+    triangleId = this->getVertexTriangle3d(p.data(), localTriangleId);
   }
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getVertexTrianglesInternal() {
-  if(vertexTriangleList_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getVertexTrianglesInternal() {
+  if(this->vertexTriangleList_.empty()) {
     Timer t;
 
-    vertexTriangleList_.resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexTriangleList_[i].resize(getVertexTriangleNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexTriangleList_[i].size(); ++j)
-        getVertexTriangleInternal(i, j, vertexTriangleList_[i][j]);
+    this->vertexTriangleList_.resize(vertexNumber_);
+    for(ttk::SimplexId i = 0; i < vertexNumber_; ++i) {
+      this->vertexTriangleList_[i].resize(getVertexTriangleNumberInternal(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->vertexTriangleList_[i].size(); ++j)
+        this->getVertexTriangleInternal(i, j, this->vertexTriangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex triangles.", 1,
+    this->printMsg("Built " + std::to_string(vertexNumber_) + " vertex triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexTriangleList_;
+  return &this->vertexTriangleList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getVertexLinkNumber)(const SimplexId &vertexId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getVertexLinkNumber)(const ttk::SimplexId &vertexId) const {
   return getVertexStarNumber(vertexId);
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexLink)(const SimplexId &vertexId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexLink)(const ttk::SimplexId &vertexId,
                  const int &localLinkId,
-                 SimplexId &linkId) const {
+                 ttk::SimplexId &linkId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getVertexLinkNumber(vertexId))
     return -1;
@@ -474,36 +489,38 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   linkId = -1;
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  if(dimensionality_ == 3) {
-    linkId = getVertexLink3d(p.data(), localLinkId);
-  } else if(dimensionality_ == 2) {
-    linkId = getVertexLink2d(p.data(), localLinkId); // abcd
+  if(this->dimensionality_ == 3) {
+    linkId = this->getVertexLink3d(p.data(), localLinkId);
+  } else if(this->dimensionality_ == 2) {
+    linkId = this->getVertexLink2d(p.data(), localLinkId); // abcd
   }
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
-  if(vertexLinkList_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
+  if(this->vertexLinkList_.empty()) {
     Timer t;
 
-    vertexLinkList_.resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexLinkList_[i].resize(getVertexLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexLinkList_[i].size(); ++j)
-        getVertexLink(i, j, vertexLinkList_[i][j]);
+    this->vertexLinkList_.resize(vertexNumber_);
+    for(ttk::SimplexId i = 0; i < vertexNumber_; ++i) {
+      this->vertexLinkList_[i].resize(getVertexLinkNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->vertexLinkList_[i].size(); ++j)
+        this->getVertexLink(i, j, this->vertexLinkList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex links.", 1,
+    this->printMsg("Built " + std::to_string(vertexNumber_) + " vertex links.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexLinkList_;
+  return &this->vertexLinkList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getVertexStarNumber)(const SimplexId &vertexId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getVertexStarNumber)(const ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
@@ -511,20 +528,20 @@ SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
   TTK_FORCE_USE(vertexId);
 #endif
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     return 24; // abcdefgh
-  } else if(dimensionality_ == 2) {
+  } else if(this->dimensionality_ == 2) {
     return 6; // abcd
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexStar)(const SimplexId &vertexId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexStar)(const ttk::SimplexId &vertexId,
                  const int &localStarId,
-                 SimplexId &starId) const {
+                 ttk::SimplexId &starId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId < 0 or localStarId >= getVertexStarNumber(vertexId))
     return -1;
@@ -533,41 +550,44 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   starId = -1;
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
-  if(dimensionality_ == 3) {
-    starId = getVertexStar3d(p.data(), localStarId);
-  } else if(dimensionality_ == 2) {
-    starId = getVertexStar2d(p.data(), localStarId);
+  if(this->dimensionality_ == 3) {
+    starId = this->getVertexStar3d(p.data(), localStarId);
+  } else if(this->dimensionality_ == 2) {
+    starId = this->getVertexStar2d(p.data(), localStarId);
   }
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
-  if(vertexStarList_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
+  if(this->vertexStarList_.empty()) {
     Timer t;
-    vertexStarList_.resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexStarList_[i].resize(getVertexStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexStarList_[i].size(); ++j)
-        getVertexStar(i, j, vertexStarList_[i][j]);
+    this->vertexStarList_.resize(vertexNumber_);
+    for(ttk::SimplexId i = 0; i < vertexNumber_; ++i) {
+      this->vertexStarList_[i].resize(getVertexStarNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->vertexStarList_[i].size(); ++j)
+        this->getVertexStar(i, j, this->vertexStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex stars.", 1,
+    this->printMsg("Built " + std::to_string(vertexNumber_) + " vertex stars.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexStarList_;
+  return &this->vertexStarList_;
 }
 
 #ifdef TTK_ENABLE_MPI
 
-void PeriodicImplicitTriangulation::setIsBoundaryPeriodic(
+template<size_t card>
+void ttk::PeriodicImplicitTriangulation<card>::setIsBoundaryPeriodic(
   std::array<unsigned char, 6> boundary) {
   this->isBoundaryPeriodic = boundary;
 }
 
-void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
+template<size_t card>
+void ttk::PeriodicImplicitTriangulation<card>::createMetaGrid(const double *const bounds) {
   // only works with 2 processes or more
   if(!ttk::isRunningWithMPI()) {
     return;
@@ -584,12 +604,12 @@ void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   for(int i = 0; i < 3; i++) {
-    if(dimensionality_ > i) {
+    if(this->dimensionality_ > i) {
       if(this->isBoundaryPeriodic[2 * i] == 1) {
-        tempBounds[i] += spacing_[i];
+        tempBounds[i] += this->spacing_[i];
       }
       if(this->isBoundaryPeriodic[2 * i + 1] == 1) {
-        tempBounds[3 + i] -= spacing_[i];
+        tempBounds[3 + i] -= this->spacing_[i];
       }
     }
   }
@@ -621,22 +641,23 @@ void PeriodicImplicitTriangulation::createMetaGrid(const double *const bounds) {
   };
 
   this->localGridOffset_ = {
-    static_cast<SimplexId>(
+    static_cast<ttk::SimplexId>(
       std::round((this->origin_[0] - globalBounds[0]) / this->spacing_[0])),
-    static_cast<SimplexId>(
+    static_cast<ttk::SimplexId>(
       std::round((this->origin_[1] - globalBounds[2]) / this->spacing_[1])),
-    static_cast<SimplexId>(
+    static_cast<ttk::SimplexId>(
       std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
   };
 
-  this->metaGrid_ = std::make_shared<PeriodicNoPreconditions>();
+  this->metaGrid_ = std::make_shared<PeriodicNoPreconditions<card>>();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
                                 dimensions[0], dimensions[1], dimensions[2]);
 }
 
-int PeriodicImplicitTriangulation::preconditionDistributedCells() {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
@@ -689,7 +710,7 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
       continue;
     }
     // local vertex coordinates
-    std::array<SimplexId, 3> p{};
+    std::array<ttk::SimplexId, 3> p{};
     if(this->dimensionality_ == 3) {
       this->tetrahedronToPosition(lcid, p.data());
     } else if(this->dimensionality_ == 2) {
@@ -742,9 +763,9 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   for(size_t i = 0; i < this->neighborRanks_.size(); ++i) {
     const auto neigh{this->neighborRanks_[i]};
     MPI_Sendrecv(this->neighborCellBBoxes_[ttk::MPIrank_].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, ttk::MPIrank_,
+                 ttk::getMPIType(ttk::SimplexId{}), neigh, ttk::MPIrank_,
                  this->neighborCellBBoxes_[neigh].data(), 6,
-                 ttk::getMPIType(SimplexId{}), neigh, neigh, ttk::MPIcomm_,
+                 ttk::getMPIType(ttk::SimplexId{}), neigh, neigh, ttk::MPIcomm_,
                  MPI_STATUS_IGNORE);
   }
 
@@ -753,10 +774,11 @@ int PeriodicImplicitTriangulation::preconditionDistributedCells() {
   return 0;
 }
 
-std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertGlobalCoords(
-  const SimplexId lvid) const {
+template<size_t card>
+std::array<ttk::SimplexId, 3> ttk::PeriodicImplicitTriangulation<card>::getVertGlobalCoords(
+  const ttk::SimplexId lvid) const {
   // local vertex coordinates
-  std::array<SimplexId, 3> p{};
+  std::array<ttk::SimplexId, 3> p{};
   if(this->dimensionality_ == 3) {
     this->vertexToPosition(lvid, p.data());
   } else if(this->dimensionality_ == 2) {
@@ -770,25 +792,26 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertGlobalCoords(
   const auto &dims{this->metaGrid_->getGridDimensions()};
 
   p[0] = (p[0] + dims[0]) % dims[0];
-  if(dimensionality_ > 1) {
+  if(this->dimensionality_ > 1) {
     p[1] = (p[1] + dims[1]) % dims[1];
-    if(dimensionality_ > 2)
+    if(this->dimensionality_ > 2)
       p[2] = (p[2] + dims[2]) % dims[2];
   }
 
   return p;
 }
 
-std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
-  const SimplexId gvid) const {
+template<size_t card>
+std::array<ttk::SimplexId, 3> ttk::PeriodicImplicitTriangulation<card>::getVertLocalCoords(
+  const ttk::SimplexId gvid) const {
   // global vertex coordinates
-  std::array<SimplexId, 3> pGlobal{};
+  std::array<ttk::SimplexId, 3> pGlobal{};
   if(this->dimensionality_ == 3) {
     this->metaGrid_->vertexToPosition(gvid, pGlobal.data());
   } else if(this->dimensionality_ == 2) {
     this->metaGrid_->vertexToPosition2d(gvid, pGlobal.data());
   }
-  std::array<SimplexId, 3> p{pGlobal};
+  std::array<ttk::SimplexId, 3> p{pGlobal};
   // local vertex coordinates
   p[0] -= this->localGridOffset_[0];
   p[1] -= this->localGridOffset_[1];
@@ -817,11 +840,12 @@ std::array<SimplexId, 3> PeriodicImplicitTriangulation::getVertLocalCoords(
       return p;
     }
   }
-  return std::array<SimplexId, 3>{-1, -1, -1};
+  return std::array<ttk::SimplexId, 3>{-1, -1, -1};
 }
 
-int ttk::PeriodicImplicitTriangulation::getCellRankInternal(
-  const SimplexId lcid) const {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getCellRankInternal(
+  const ttk::SimplexId lcid) const {
 
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
   const auto locCubeId{lcid / nTetraPerCube};
@@ -843,8 +867,8 @@ int ttk::PeriodicImplicitTriangulation::getCellRankInternal(
   for(const auto neigh : this->neighborRanks_) {
     std::fill(inRank.begin(), inRank.end(), false);
     const auto &bbox{this->neighborCellBBoxes_[neigh]};
-    for(SimplexId i = 0; i < nVertsCell; ++i) {
-      SimplexId v{};
+    for(ttk::SimplexId i = 0; i < nVertsCell; ++i) {
+      ttk::SimplexId v{};
       this->getCellVertex(lcid, i, v);
       if(this->vertexGhost_[v] == 0) {
         inRank[i] = true;
@@ -874,9 +898,9 @@ int ttk::PeriodicImplicitTriangulation::getCellRankInternal(
 
 #endif // TTK_ENABLE_MPI
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getVertexPoint)(const SimplexId &vertexId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getVertexPoint)(const ttk::SimplexId &vertexId,
                   float &x,
                   float &y,
                   float &z) const {
@@ -885,116 +909,117 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getVertexCoords(vertexId);
 
-    x = origin_[0] + spacing_[0] * p[0];
-    y = origin_[1] + spacing_[1] * p[1];
-    z = origin_[2] + spacing_[2] * p[2];
-  } else if(dimensionality_ == 2) {
+    x = this->origin_[0] + this->spacing_[0] * p[0];
+    y = this->origin_[1] + this->spacing_[1] * p[1];
+    z = this->origin_[2] + this->spacing_[2] * p[2];
+  } else if(this->dimensionality_ == 2) {
     const auto &p = this->underlying().getVertexCoords(vertexId);
 
-    if(dimensions_[0] > 1 and dimensions_[1] > 1) {
-      x = origin_[0] + spacing_[0] * p[0];
-      y = origin_[1] + spacing_[1] * p[1];
-      z = origin_[2];
-    } else if(dimensions_[1] > 1 and dimensions_[2] > 1) {
-      x = origin_[0];
-      y = origin_[1] + spacing_[1] * p[0];
-      z = origin_[2] + spacing_[2] * p[1];
-    } else if(dimensions_[0] > 1 and dimensions_[2] > 1) {
-      x = origin_[0] + spacing_[0] * p[0];
-      y = origin_[1];
-      z = origin_[2] + spacing_[2] * p[1];
+    if(this->dimensions_[0] > 1 and this->dimensions_[1] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * p[0];
+      y = this->origin_[1] + this->spacing_[1] * p[1];
+      z = this->origin_[2];
+    } else if(this->dimensions_[1] > 1 and this->dimensions_[2] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1] + this->spacing_[1] * p[0];
+      z = this->origin_[2] + this->spacing_[2] * p[1];
+    } else if(this->dimensions_[0] > 1 and this->dimensions_[2] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * p[0];
+      y = this->origin_[1];
+      z = this->origin_[2] + this->spacing_[2] * p[1];
     }
-  } else if(dimensionality_ == 1) {
-    if(dimensions_[0] > 1) {
-      x = origin_[0] + spacing_[0] * vertexId;
-      y = origin_[1];
-      z = origin_[2];
-    } else if(dimensions_[1] > 1) {
-      x = origin_[0];
-      y = origin_[1] + spacing_[1] * vertexId;
-      z = origin_[2];
-    } else if(dimensions_[2] > 1) {
-      x = origin_[0];
-      y = origin_[1];
-      z = origin_[2] + spacing_[2] * vertexId;
+  } else if(this->dimensionality_ == 1) {
+    if(this->dimensions_[0] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * vertexId;
+      y = this->origin_[1];
+      z = this->origin_[2];
+    } else if(this->dimensions_[1] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1] + this->spacing_[1] * vertexId;
+      z = this->origin_[2];
+    } else if(this->dimensions_[2] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1];
+      z = this->origin_[2] + this->spacing_[2] * vertexId;
     }
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
-  const SimplexId &edgeId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getEdgeVertexInternal(
+  const ttk::SimplexId &edgeId,
   const int &localVertexId,
-  SimplexId &vertexId) const {
+  ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
   if(localVertexId < 0 or localVertexId >= 2)
     return -2;
 #endif
 
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
   vertexId = -1;
   const auto &p = this->underlying().getEdgeCoords(edgeId);
-  const SimplexId wrapXRight = (p[0] == nbvoxels_[0] ? -wrap_[0] : 0);
-  const SimplexId wrapYBottom = (p[1] == nbvoxels_[1] ? -wrap_[1] : 0);
-  const SimplexId wrapZFront = (p[2] == nbvoxels_[2] ? -wrap_[2] : 0);
+  const ttk::SimplexId wrapXRight = (p[0] == this->nbvoxels_[0] ? -this->wrap_[0] : 0);
+  const ttk::SimplexId wrapYBottom = (p[1] == this->nbvoxels_[1] ? -this->wrap_[1] : 0);
+  const ttk::SimplexId wrapZFront = (p[2] == this->nbvoxels_[2] ? -this->wrap_[2] : 0);
   const auto a = p[0] + this->underlying().getEdgeVertexAccelerated(edgeId);
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
+    case CRTPClass::EdgePosition::L_3D:
       vertexId = a + (localVertexId == 0 ? 0 : (1 + wrapXRight));
       break;
-    case EdgePosition::H_3D:
-      vertexId = a + (localVertexId == 0 ? 0 : (vshift_[0] + wrapYBottom));
+    case CRTPClass::EdgePosition::H_3D:
+      vertexId = a + (localVertexId == 0 ? 0 : (this->vshift_[0] + wrapYBottom));
       break;
-    case EdgePosition::P_3D:
-      vertexId = a + (localVertexId == 0 ? 0 : (vshift_[1] + wrapZFront));
+    case CRTPClass::EdgePosition::P_3D:
+      vertexId = a + (localVertexId == 0 ? 0 : (this->vshift_[1] + wrapZFront));
       break;
-    case EdgePosition::D1_3D:
+    case CRTPClass::EdgePosition::D1_3D:
       vertexId = a
                  + (localVertexId == 0 ? (1 + wrapXRight)
-                                       : (vshift_[0] + wrapYBottom));
+                                       : (this->vshift_[0] + wrapYBottom));
       break;
-    case EdgePosition::D2_3D:
+    case CRTPClass::EdgePosition::D2_3D:
       vertexId = a
                  + (localVertexId == 0
                       ? 0
-                      : (vshift_[0] + wrapYBottom + vshift_[1] + wrapZFront));
+                      : (this->vshift_[0] + wrapYBottom + this->vshift_[1] + wrapZFront));
       break;
-    case EdgePosition::D3_3D:
+    case CRTPClass::EdgePosition::D3_3D:
       vertexId
         = a
-          + (localVertexId == 0 ? (1 + wrapXRight) : (vshift_[1] + wrapZFront));
+          + (localVertexId == 0 ? (1 + wrapXRight) : (this->vshift_[1] + wrapZFront));
       break;
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       vertexId = a
                  + (localVertexId == 0
                       ? (1 + wrapXRight)
-                      : (vshift_[0] + wrapYBottom + vshift_[1] + wrapZFront));
+                      : (this->vshift_[0] + wrapYBottom + this->vshift_[1] + wrapZFront));
       break;
-    case EdgePosition::L_2D:
+    case CRTPClass::EdgePosition::L_2D:
       vertexId = a + (localVertexId == 0 ? 0 : (1 + wrapXRight));
       break;
-    case EdgePosition::H_2D:
-      vertexId = a + (localVertexId == 0 ? 0 : (vshift_[0] + wrapYBottom));
+    case CRTPClass::EdgePosition::H_2D:
+      vertexId = a + (localVertexId == 0 ? 0 : (this->vshift_[0] + wrapYBottom));
       break;
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       vertexId = a
                  + (localVertexId == 0 ? (1 + wrapXRight)
-                                       : (vshift_[0] + wrapYBottom));
+                                       : (this->vshift_[0] + wrapYBottom));
       break;
-    case EdgePosition::FIRST_EDGE_1D:
+    case CRTPClass::EdgePosition::FIRST_EDGE_1D:
       vertexId = localVertexId == 0 ? 0 : 1;
       break;
-    case EdgePosition::LAST_EDGE_1D:
+    case CRTPClass::EdgePosition::LAST_EDGE_1D:
       vertexId = localVertexId == 0 ? edgeId : 0;
       break;
-    case EdgePosition::CENTER_1D:
+    case CRTPClass::EdgePosition::CENTER_1D:
       vertexId = localVertexId == 0 ? edgeId : edgeId + 1;
       break;
     default:
@@ -1004,60 +1029,65 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
   return 0;
 }
 
-const vector<std::array<SimplexId, 2>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdges)() {
+template<size_t card>
+const std::vector<std::array<ttk::SimplexId, 2>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdges)() {
 
-  if(edgeList_.empty()) {
+  if(this->edgeList_.empty()) {
     Timer t;
 
-    edgeList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      SimplexId id0, id1;
-      getEdgeVertexInternal(i, 0, id0);
-      getEdgeVertexInternal(i, 1, id1);
-      edgeList_[i] = {id0, id1};
+    this->edgeList_.resize(this->edgeNumber_);
+    for(ttk::SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      ttk::SimplexId id0, id1;
+      this->getEdgeVertexInternal(i, 0, id0);
+      this->getEdgeVertexInternal(i, 1, id1);
+      this->edgeList_[i] = {id0, id1};
     }
 
-    printMsg(
-      "Built " + to_string(edgeNumber_) + " edges.", 1, t.getElapsedTime(), 1);
+    this->printMsg(
+      "Built " + std::to_string(this->edgeNumber_) + " edges.", 1, t.getElapsedTime(), 1);
   }
 
-  return &edgeList_;
+  return &this->edgeList_;
 }
 
-template <typename Derived>
-SimplexId
-  PeriodicImplicitTriangulationCRTP<Derived>::getEdgeTriangleNumberInternal(
-    const SimplexId &edgeId) const {
+template <size_t card, typename Derived>
+ttk::SimplexId
+  ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getEdgeTriangleNumberInternal(
+    const ttk::SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
 #endif
 
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using EdgePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::EdgePosition;
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
-    case EdgePosition::H_3D:
-    case EdgePosition::P_3D:
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::L_3D:
+    case CRTPClass::EdgePosition::H_3D:
+    case CRTPClass::EdgePosition::P_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       return 6;
-    case EdgePosition::D1_3D:
-    case EdgePosition::D2_3D:
-    case EdgePosition::D3_3D:
+    case CRTPClass::EdgePosition::D1_3D:
+    case CRTPClass::EdgePosition::D2_3D:
+    case CRTPClass::EdgePosition::D3_3D:
       return 4;
-    case EdgePosition::L_2D:
-    case EdgePosition::H_2D:
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::L_2D:
+    case CRTPClass::EdgePosition::H_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       return 2;
     default:
       return 0;
   }
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
-  const SimplexId &edgeId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getEdgeTriangleInternal(
+  const ttk::SimplexId &edgeId,
   const int &localTriangleId,
-  SimplexId &triangleId) const {
+  ttk::SimplexId &triangleId) const {
+
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId < 0
      or localTriangleId >= getEdgeTriangleNumberInternal(edgeId))
@@ -1068,35 +1098,35 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
   const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
-      triangleId = getEdgeTriangle3dL(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_3D:
+      triangleId = this->getEdgeTriangle3dL(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_3D:
-      triangleId = getEdgeTriangle3dH(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_3D:
+      triangleId = this->getEdgeTriangle3dH(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_3D:
-      triangleId = getEdgeTriangle3dP(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_3D:
+      triangleId = this->getEdgeTriangle3dP(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_3D:
-      triangleId = getEdgeTriangle3dD1(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_3D:
+      triangleId = this->getEdgeTriangle3dD1(p.data(), localTriangleId);
       break;
-    case EdgePosition::D2_3D:
-      triangleId = getEdgeTriangle3dD2(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D2_3D:
+      triangleId = this->getEdgeTriangle3dD2(p.data(), localTriangleId);
       break;
-    case EdgePosition::D3_3D:
-      triangleId = getEdgeTriangle3dD3(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D3_3D:
+      triangleId = this->getEdgeTriangle3dD3(p.data(), localTriangleId);
       break;
-    case EdgePosition::D4_3D:
-      triangleId = getEdgeTriangle3dD4(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D4_3D:
+      triangleId = this->getEdgeTriangle3dD4(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_2D:
-      triangleId = getEdgeTriangle2dL(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_2D:
+      triangleId = this->getEdgeTriangle2dL(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_2D:
-      triangleId = getEdgeTriangle2dH(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_2D:
+      triangleId = this->getEdgeTriangle2dH(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_2D:
-      triangleId = getEdgeTriangle2dD1(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_2D:
+      triangleId = this->getEdgeTriangle2dD1(p.data(), localTriangleId);
       break;
     default:
       break;
@@ -1105,36 +1135,41 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getEdgeTrianglesInternal() {
-  if(edgeTriangleList_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTrianglesInternal() {
+  if(this->edgeTriangleList_.empty()) {
     Timer t;
 
-    edgeTriangleList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeTriangleList_[i].resize(getEdgeTriangleNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeTriangleList_[i].size(); ++j)
-        getEdgeTriangleInternal(i, j, edgeTriangleList_[i][j]);
+    this->edgeTriangleList_.resize(this->edgeNumber_);
+    for(ttk::SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeTriangleList_[i].resize(this->getEdgeTriangleNumberInternal(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->edgeTriangleList_[i].size(); ++j)
+        this->getEdgeTriangleInternal(i, j, this->edgeTriangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge triangles.", 1,
+    this->printMsg("Built " + std::to_string(this->edgeNumber_) + " edge triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeTriangleList_;
+  return &this->edgeTriangleList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getEdgeLinkNumber)(const SimplexId &edgeId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getEdgeLinkNumber)(const ttk::SimplexId &edgeId) const {
 
-  return getEdgeStarNumber(edgeId);
+  return this->getEdgeStarNumber(edgeId);
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getEdgeLink)(const SimplexId &edgeId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getEdgeLink)(const ttk::SimplexId &edgeId,
                const int &localLinkId,
-               SimplexId &linkId) const {
+               ttk::SimplexId &linkId) const {
+
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using EdgePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card,ttk::PeriodicImplicitTriangulation<card>>::EdgePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getEdgeLinkNumber(edgeId))
     return -1;
@@ -1144,35 +1179,35 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
-      linkId = getEdgeLinkL(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::L_3D:
+      linkId = this->getEdgeLinkL(p.data(), localLinkId);
       break;
-    case EdgePosition::H_3D:
-      linkId = getEdgeLinkH(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::H_3D:
+      linkId = this->getEdgeLinkH(p.data(), localLinkId);
       break;
-    case EdgePosition::P_3D:
-      linkId = getEdgeLinkP(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::P_3D:
+      linkId = this->getEdgeLinkP(p.data(), localLinkId);
       break;
-    case EdgePosition::D1_3D:
-      linkId = getEdgeLinkD1(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D1_3D:
+      linkId = this->getEdgeLinkD1(p.data(), localLinkId);
       break;
-    case EdgePosition::D2_3D:
-      linkId = getEdgeLinkD2(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D2_3D:
+      linkId = this->getEdgeLinkD2(p.data(), localLinkId);
       break;
-    case EdgePosition::D3_3D:
-      linkId = getEdgeLinkD3(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D3_3D:
+      linkId = this->getEdgeLinkD3(p.data(), localLinkId);
       break;
-    case EdgePosition::D4_3D:
-      linkId = getEdgeLinkD4(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D4_3D:
+      linkId = this->getEdgeLinkD4(p.data(), localLinkId);
       break;
-    case EdgePosition::L_2D:
-      linkId = getEdgeLink2dL(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::L_2D:
+      linkId = this->getEdgeLink2dL(p.data(), localLinkId);
       break;
-    case EdgePosition::H_2D:
-      linkId = getEdgeLink2dH(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::H_2D:
+      linkId = this->getEdgeLink2dH(p.data(), localLinkId);
       break;
-    case EdgePosition::D1_2D:
-      linkId = getEdgeLink2dD1(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D1_2D:
+      linkId = this->getEdgeLink2dD1(p.data(), localLinkId);
       break;
     default:
       break;
@@ -1181,48 +1216,52 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
 
-  if(edgeLinkList_.empty()) {
+  if(this->edgeLinkList_.empty()) {
     Timer t;
 
-    edgeLinkList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeLinkList_[i].resize(getEdgeLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeLinkList_[i].size(); ++j)
-        getEdgeLink(i, j, edgeLinkList_[i][j]);
+    this->edgeLinkList_.resize(this->edgeNumber_);
+    for(ttk::SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeLinkList_[i].resize(this->getEdgeLinkNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->edgeLinkList_[i].size(); ++j)
+        this->getEdgeLink(i, j, this->edgeLinkList_[i][j]); //TODO PAS SÛR cf argument ttk...internal
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge links.", 1,
+    this->printMsg("Built " + std::to_string(this->edgeNumber_) + " edge links.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeLinkList_;
+  return &this->edgeLinkList_;
 }
 
-template <typename Derived>
-SimplexId
-  PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-    getEdgeStarNumber)(const SimplexId &edgeId) const {
+template <size_t card, typename Derived>
+ttk::SimplexId
+  ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+    getEdgeStarNumber)(const ttk::SimplexId &edgeId) const {
+
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using EdgePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card,ttk::PeriodicImplicitTriangulation<card>>::EdgePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
 #endif
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
-    case EdgePosition::H_3D:
-    case EdgePosition::P_3D:
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::L_3D:
+    case CRTPClass::EdgePosition::H_3D:
+    case CRTPClass::EdgePosition::P_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       return 6;
-    case EdgePosition::D1_3D:
-    case EdgePosition::D2_3D:
-    case EdgePosition::D3_3D:
+    case CRTPClass::EdgePosition::D1_3D:
+    case CRTPClass::EdgePosition::D2_3D:
+    case CRTPClass::EdgePosition::D3_3D:
       return 4;
-    case EdgePosition::L_2D:
-    case EdgePosition::H_2D:
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::L_2D:
+    case CRTPClass::EdgePosition::H_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       return 2;
     default:
       return 0;
@@ -1231,11 +1270,13 @@ SimplexId
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getEdgeStar)(const SimplexId &edgeId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getEdgeStar)(const ttk::SimplexId &edgeId,
                const int &localStarId,
-               SimplexId &starId) const {
+               ttk::SimplexId &starId) const {
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using EdgePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card,ttk::PeriodicImplicitTriangulation<card>>::EdgePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId < 0 or localStarId >= getEdgeStarNumber(edgeId))
     return -1;
@@ -1245,36 +1286,36 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_3D:
-      starId = getEdgeStarL(p.data(), localStarId);
+    case CRTPClass::EdgePosition::L_3D:
+      starId = this->getEdgeStarL(p.data(), localStarId);
       break;
-    case EdgePosition::H_3D:
-      starId = getEdgeStarH(p.data(), localStarId);
+    case CRTPClass::EdgePosition::H_3D:
+      starId = this->getEdgeStarH(p.data(), localStarId);
       break;
-    case EdgePosition::P_3D:
-      starId = getEdgeStarP(p.data(), localStarId);
+    case CRTPClass::EdgePosition::P_3D:
+      starId = this->getEdgeStarP(p.data(), localStarId);
       break;
-    case EdgePosition::D1_3D:
-      starId = getEdgeStarD1(p.data(), localStarId);
+    case CRTPClass::EdgePosition::D1_3D:
+      starId = this->getEdgeStarD1(p.data(), localStarId);
       break;
-    case EdgePosition::D2_3D:
-      starId = getEdgeStarD2(p.data(), localStarId);
+    case CRTPClass::EdgePosition::D2_3D:
+      starId = this->getEdgeStarD2(p.data(), localStarId);
       break;
-    case EdgePosition::D3_3D:
-      starId = getEdgeStarD3(p.data(), localStarId);
+    case CRTPClass::EdgePosition::D3_3D:
+      starId = this->getEdgeStarD3(p.data(), localStarId);
       break;
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       starId
-        = p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6 + localStarId;
+        = p[2] * this->tetshift_[1] + p[1] * this->tetshift_[0] + p[0] * 6 + localStarId;
       break;
-    case EdgePosition::L_2D:
-      starId = getEdgeStar2dL(p.data(), localStarId);
+    case CRTPClass::EdgePosition::L_2D:
+      starId = this->getEdgeStar2dL(p.data(), localStarId);
       break;
-    case EdgePosition::H_2D:
-      starId = getEdgeStar2dH(p.data(), localStarId);
+    case CRTPClass::EdgePosition::H_2D:
+      starId = this->getEdgeStar2dH(p.data(), localStarId);
       break;
-    case EdgePosition::D1_2D:
-      starId = p[0] * 2 + p[1] * tshift_[0] + localStarId;
+    case CRTPClass::EdgePosition::D1_2D:
+      starId = p[0] * 2 + p[1] * this->tshift_[0] + localStarId;
       break;
     default:
       break;
@@ -1283,31 +1324,32 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
 
-  if(edgeStarList_.empty()) {
+  if(this->edgeStarList_.empty()) {
     Timer t;
 
-    edgeStarList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeStarList_[i].resize(getEdgeStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeStarList_[i].size(); ++j)
-        getEdgeStar(i, j, edgeStarList_[i][j]);
+    this->edgeStarList_.resize(this->edgeNumber_);
+    for(ttk::SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeStarList_[i].resize(this->getEdgeStarNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->edgeStarList_[i].size(); ++j)
+        this->getEdgeStar(i, j, this->edgeStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge stars.", 1,
+    this->printMsg("Built " + std::to_string(this->edgeNumber_) + " edge stars.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeStarList_;
+  return &this->edgeStarList_;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
-  const SimplexId &triangleId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTriangleVertexInternal(
+  const ttk::SimplexId &triangleId,
   const int &localVertexId,
-  SimplexId &vertexId) const {
+  ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1317,45 +1359,47 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
 
   vertexId = -1;
   const auto &p = this->underlying().getTriangleCoords(triangleId);
-  const SimplexId wrapXRight = (p[0] / 2 == nbvoxels_[Di_]) ? -wrap_[0] : 0;
-  const SimplexId wrapYBottom = (p[1] == nbvoxels_[Dj_]) ? -wrap_[1] : 0;
+  const ttk::SimplexId wrapXRight = (p[0] / 2 == this->nbvoxels_[this->Di_]) ? -this->wrap_[0] : 0;
+  const ttk::SimplexId wrapYBottom = (p[1] == this->nbvoxels_[this->Dj_]) ? -this->wrap_[1] : 0;
 
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using TrianglePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TrianglePosition;
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      vertexId = getTriangleVertexF(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::F_3D:
+      vertexId = this->getTriangleVertexF(p.data(), localVertexId);
       break;
-    case TrianglePosition::H_3D:
-      vertexId = getTriangleVertexH(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::H_3D:
+      vertexId = this->getTriangleVertexH(p.data(), localVertexId);
       break;
-    case TrianglePosition::C_3D:
-      vertexId = getTriangleVertexC(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::C_3D:
+      vertexId = this->getTriangleVertexC(p.data(), localVertexId);
       break;
-    case TrianglePosition::D1_3D:
-      vertexId = getTriangleVertexD1(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      vertexId = this->getTriangleVertexD1(p.data(), localVertexId);
       break;
-    case TrianglePosition::D2_3D:
-      vertexId = getTriangleVertexD2(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      vertexId = this->getTriangleVertexD2(p.data(), localVertexId);
       break;
-    case TrianglePosition::D3_3D:
-      vertexId = getTriangleVertexD3(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      vertexId = this->getTriangleVertexD3(p.data(), localVertexId);
       break;
-    case TrianglePosition::TOP_2D:
+    case CRTPClass::TrianglePosition::TOP_2D:
       if(localVertexId == 0) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0];
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0];
       } else if(localVertexId == 1) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0] + 1 + wrapXRight;
       } else if(localVertexId == 2) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0] + wrapYBottom;
       }
       break;
-    case TrianglePosition::BOTTOM_2D:
+    case CRTPClass::TrianglePosition::BOTTOM_2D:
       if(localVertexId == 0) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0] + 1 + wrapXRight;
       } else if(localVertexId == 1) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1 + wrapXRight
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0] + 1 + wrapXRight
                    + wrapYBottom;
       } else if(localVertexId == 2) {
-        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
+        vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0] + wrapYBottom;
       }
       break;
     default:
@@ -1365,11 +1409,13 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
-  const SimplexId &triangleId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTriangleEdgeInternal(
+  const ttk::SimplexId &triangleId,
   const int &localEdgeId,
-  SimplexId &edgeId) const {
+  ttk::SimplexId &edgeId) const {
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using TrianglePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TrianglePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1379,52 +1425,52 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
 
   edgeId = -1;
   const auto &p = this->underlying().getTriangleCoords(triangleId);
-  const SimplexId wrapXRight = (p[0] / 2 == nbvoxels_[Di_]) ? -wrap_[0] : 0;
-  const SimplexId wrapYBottom = (p[1] == nbvoxels_[Dj_]) ? -wrap_[1] : 0;
-  const SimplexId id = triangleId % 2;
+  const ttk::SimplexId wrapXRight = (p[0] / 2 == this->nbvoxels_[this->Di_]) ? -this->wrap_[0] : 0;
+  const ttk::SimplexId wrapYBottom = (p[1] == this->nbvoxels_[this->Dj_]) ? -this->wrap_[1] : 0;
+  const ttk::SimplexId id = triangleId % 2;
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      edgeId = (id == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
-                         : getTriangleEdgeF_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::F_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeF_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeF_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::H_3D:
-      edgeId = (id == 1) ? getTriangleEdgeH_1(p.data(), localEdgeId)
-                         : getTriangleEdgeH_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::H_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeH_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeH_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::C_3D:
-      edgeId = (id == 1) ? getTriangleEdgeC_1(p.data(), localEdgeId)
-                         : getTriangleEdgeC_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::C_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeC_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeC_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D1_3D:
-      edgeId = (id == 1) ? getTriangleEdgeD1_1(p.data(), localEdgeId)
-                         : getTriangleEdgeD1_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeD1_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeD1_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D2_3D:
-      edgeId = (id == 1) ? getTriangleEdgeD2_1(p.data(), localEdgeId)
-                         : getTriangleEdgeD2_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeD2_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeD2_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D3_3D:
-      edgeId = (id == 1) ? getTriangleEdgeD3_1(p.data(), localEdgeId)
-                         : getTriangleEdgeD3_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      edgeId = (id == 1) ? this->getTriangleEdgeD3_1(p.data(), localEdgeId)
+                         : this->getTriangleEdgeD3_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::TOP_2D:
+    case CRTPClass::TrianglePosition::TOP_2D:
       if(localEdgeId == 0) {
-        edgeId = p[0] / 2 + p[1] * eshift_[0];
+        edgeId = p[0] / 2 + p[1] * this->eshift_[0];
       } else if(localEdgeId == 1) {
-        edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
+        edgeId = this->esetshift_[0] + p[0] / 2 + p[1] * this->eshift_[2];
       } else if(localEdgeId == 2) {
-        edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+        edgeId = this->esetshift_[1] + p[0] / 2 + p[1] * this->eshift_[4];
       }
       break;
-    case TrianglePosition::BOTTOM_2D:
+    case CRTPClass::TrianglePosition::BOTTOM_2D:
       if(localEdgeId == 0) {
-        edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0] + wrapYBottom;
+        edgeId = p[0] / 2 + (p[1] + 1) * this->eshift_[0] + wrapYBottom;
       } else if(localEdgeId == 1) {
         edgeId
-          = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2] + wrapXRight;
+          = this->esetshift_[0] + (p[0] + 1) / 2 + p[1] * this->eshift_[2] + wrapXRight;
       } else if(localEdgeId == 2) {
-        edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+        edgeId = this->esetshift_[1] + p[0] / 2 + p[1] * this->eshift_[4];
       }
       break;
     default:
@@ -1434,55 +1480,59 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getTriangleEdgesInternal(
-  vector<vector<SimplexId>> &edges) const {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgesInternal(
+  std::vector<std::vector<ttk::SimplexId>> &edges) const {
   edges.resize(triangleNumber_);
-  for(SimplexId i = 0; i < triangleNumber_; ++i) {
+  for(ttk::SimplexId i = 0; i < triangleNumber_; ++i) {
     edges[i].resize(3);
     for(int j = 0; j < 3; ++j)
-      getTriangleEdgeInternal(i, j, edges[i][j]);
+      this->getTriangleEdgeInternal(i, j, edges[i][j]);
   }
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getTriangleEdgesInternal() {
-  if(triangleEdgeVector_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgesInternal() {
+  if(this->triangleEdgeVector_.empty()) {
     Timer t;
 
-    getTriangleEdgesInternal(triangleEdgeVector_);
+    getTriangleEdgesInternal(this->triangleEdgeVector_);
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle edges.", 1,
+    this->printMsg("Built " + std::to_string(triangleNumber_) + " triangle edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &triangleEdgeVector_;
+  return &this->triangleEdgeVector_;
 }
 
-const vector<std::array<SimplexId, 3>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
+template<size_t card>
+const std::vector<std::array<ttk::SimplexId, 3>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
 
-  if(triangleList_.empty()) {
+  if(this->triangleList_.empty()) {
     Timer t;
 
-    triangleList_.resize(triangleNumber_);
-    for(SimplexId i = 0; i < triangleNumber_; ++i) {
+    this->triangleList_.resize(triangleNumber_);
+    for(ttk::SimplexId i = 0; i < triangleNumber_; ++i) {
       for(int j = 0; j < 3; ++j)
-        getTriangleVertexInternal(i, j, triangleList_[i][j]);
+        this->getTriangleVertexInternal(i, j, this->triangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangles.", 1,
+    this->printMsg("Built " + std::to_string(triangleNumber_) + " triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &triangleList_;
+  return &this->triangleList_;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getTriangleLink)(const SimplexId &triangleId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getTriangleLink)(const ttk::SimplexId &triangleId,
                    const int &localLinkId,
-                   SimplexId &linkId) const {
+                   ttk::SimplexId &linkId) const {
+  //using TrianglePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TrianglePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getTriangleLinkNumber(triangleId))
     return -1;
@@ -1492,23 +1542,23 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      linkId = getTriangleLinkF(p.data(), localLinkId);
+    case Derived::TrianglePosition::F_3D:
+      linkId = this->getTriangleLinkF(p.data(), localLinkId);
       break;
-    case TrianglePosition::H_3D:
-      linkId = getTriangleLinkH(p.data(), localLinkId);
+    case Derived::TrianglePosition::H_3D:
+      linkId = this->getTriangleLinkH(p.data(), localLinkId);
       break;
-    case TrianglePosition::C_3D:
-      linkId = getTriangleLinkC(p.data(), localLinkId);
+    case Derived::TrianglePosition::C_3D:
+      linkId = this->getTriangleLinkC(p.data(), localLinkId);
       break;
-    case TrianglePosition::D1_3D:
-      linkId = getTriangleLinkD1(p.data(), localLinkId);
+    case Derived::TrianglePosition::D1_3D:
+      linkId = this->getTriangleLinkD1(p.data(), localLinkId);
       break;
-    case TrianglePosition::D2_3D:
-      linkId = getTriangleLinkD2(p.data(), localLinkId);
+    case Derived::TrianglePosition::D2_3D:
+      linkId = this->getTriangleLinkD2(p.data(), localLinkId);
       break;
-    case TrianglePosition::D3_3D:
-      linkId = getTriangleLinkD3(p.data(), localLinkId);
+    case Derived::TrianglePosition::D3_3D:
+      linkId = this->getTriangleLinkD3(p.data(), localLinkId);
       break;
     default:
       break;
@@ -1517,36 +1567,38 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getTriangleLinkNumber)(const SimplexId &triangleId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getTriangleLinkNumber)(const ttk::SimplexId &triangleId) const {
 
-  return getTriangleStarNumber(triangleId);
+  return this->getTriangleStarNumber(triangleId);
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
     getTriangleLinks)() {
 
-  if(triangleLinkList_.empty()) {
+  if(this->triangleLinkList_.empty()) {
     Timer t;
 
-    triangleLinkList_.resize(triangleNumber_);
-    for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      triangleLinkList_[i].resize(getTriangleLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)triangleLinkList_[i].size(); ++j)
-        getTriangleLink(i, j, triangleLinkList_[i][j]);
+    this->triangleLinkList_.resize(triangleNumber_);
+    for(ttk::SimplexId i = 0; i < triangleNumber_; ++i) {
+      this->triangleLinkList_[i].resize(getTriangleLinkNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->triangleLinkList_[i].size(); ++j)
+        this->getTriangleLink(i, j, this->triangleLinkList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle links.", 1,
+    this->printMsg("Built " + std::to_string(triangleNumber_) + " triangle links.", 1,
              t.getElapsedTime(), 1);
   }
-  return &triangleLinkList_;
+  return &this->triangleLinkList_;
 }
 
-template <typename Derived>
-SimplexId
-  PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-    getTriangleStarNumber)(const SimplexId &triangleId) const {
+template <size_t card, typename Derived>
+ttk::SimplexId
+  ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+    getTriangleStarNumber)(const ttk::SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1554,17 +1606,19 @@ SimplexId
   TTK_FORCE_USE(triangleId);
 #endif
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     return 2;
   }
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
-  getTriangleStar)(const SimplexId &triangleId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
+  getTriangleStar)(const ttk::SimplexId &triangleId,
                    const int &localStarId,
-                   SimplexId &starId) const {
+                   ttk::SimplexId &starId) const {
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using TrianglePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TrianglePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId < 0 or localStarId >= getTriangleStarNumber(triangleId))
     return -1;
@@ -1574,23 +1628,23 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      starId = getTriangleStarF(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::F_3D:
+      starId = this->getTriangleStarF(p.data(), localStarId);
       break;
-    case TrianglePosition::H_3D:
-      starId = getTriangleStarH(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::H_3D:
+      starId = this->getTriangleStarH(p.data(), localStarId);
       break;
-    case TrianglePosition::C_3D:
-      starId = getTriangleStarC(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::C_3D:
+      starId = this->getTriangleStarC(p.data(), localStarId);
       break;
-    case TrianglePosition::D1_3D:
-      starId = getTriangleStarD1(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      starId = this->getTriangleStarD1(p.data(), localStarId);
       break;
-    case TrianglePosition::D2_3D:
-      starId = getTriangleStarD2(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      starId = this->getTriangleStarD2(p.data(), localStarId);
       break;
-    case TrianglePosition::D3_3D:
-      starId = getTriangleStarD3(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      starId = this->getTriangleStarD3(p.data(), localStarId);
       break;
     default:
       break;
@@ -1599,46 +1653,50 @@ int PeriodicImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
     getTriangleStars)() {
 
-  if(triangleStarList_.empty()) {
+  if(this->triangleStarList_.empty()) {
     Timer t;
 
-    triangleStarList_.resize(triangleNumber_);
-    for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      triangleStarList_[i].resize(getTriangleStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)triangleStarList_[i].size(); ++j)
-        getTriangleStar(i, j, triangleStarList_[i][j]);
+    this->triangleStarList_.resize(triangleNumber_);
+    for(ttk::SimplexId i = 0; i < triangleNumber_; ++i) {
+      this->triangleStarList_[i].resize(this->getTriangleStarNumber(i));
+      for(ttk::SimplexId j = 0; j < (ttk::SimplexId)this->triangleStarList_[i].size(); ++j)
+        this->getTriangleStar(i, j, this->triangleStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle stars.", 1,
+    this->printMsg("Built " + std::to_string(triangleNumber_) + " triangle stars.", 1,
              t.getElapsedTime(), 1);
   }
-  return &triangleStarList_;
+  return &this->triangleStarList_;
 }
 
-SimplexId PeriodicImplicitTriangulation::getTriangleNeighborNumber(
-  const SimplexId &triangleId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getTriangleNeighborNumber(
+  const ttk::SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
 #endif
 
   TTK_FORCE_USE(triangleId);
-  if(dimensionality_ == 2) {
+  if(this->dimensionality_ == 2) {
     return 3;
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
-  const SimplexId &triangleId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTriangleNeighbor(
+  const ttk::SimplexId &triangleId,
   const int &localNeighborId,
-  SimplexId &neighborId) const {
+  ttk::SimplexId &neighborId) const {
+  using CRTPClass = ttk::PeriodicImplicitTriangulationCRTP<card, Derived>;
+  //using TrianglePosition = typename ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::TrianglePosition;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
      or localNeighborId >= getTriangleNeighborNumber(triangleId))
@@ -1649,33 +1707,33 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::BOTTOM_2D:
+    case CRTPClass::TrianglePosition::BOTTOM_2D:
 
-      if(p[0] / 2 == nbvoxels_[Di_] and p[1] == nbvoxels_[Dj_]) {
+      if(p[0] / 2 == this->nbvoxels_[this->Di_] and p[1] == this->nbvoxels_[this->Dj_]) {
         if(localNeighborId == 0) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 1) {
-          neighborId = triangleId + 1 - wrap_[0] * 2;
+          neighborId = triangleId + 1 - this->wrap_[0] * 2;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
+          neighborId = triangleId + this->tshift_[0] - 1 - this->wrap_[1] * 2;
         }
 
-      } else if(p[0] / 2 == nbvoxels_[Di_]) {
+      } else if(p[0] / 2 == this->nbvoxels_[this->Di_]) {
         if(localNeighborId == 0) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 1) {
-          neighborId = triangleId + 1 - wrap_[0] * 2;
+          neighborId = triangleId + 1 - this->wrap_[0] * 2;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId + tshift_[0] - 1;
+          neighborId = triangleId + this->tshift_[0] - 1;
         }
 
-      } else if(p[1] == nbvoxels_[Dj_]) {
+      } else if(p[1] == this->nbvoxels_[this->Dj_]) {
         if(localNeighborId == 0) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 1) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
+          neighborId = triangleId + this->tshift_[0] - 1 - this->wrap_[1] * 2;
         }
 
       } else {
@@ -1684,29 +1742,29 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
         } else if(localNeighborId == 1) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId + tshift_[0] - 1;
+          neighborId = triangleId + this->tshift_[0] - 1;
         }
       }
       break;
 
-    case TrianglePosition::TOP_2D:
+    case CRTPClass::TrianglePosition::TOP_2D:
 
       if(p[0] / 2 == 0 and p[1] == 0) {
         if(localNeighborId == 0) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 1) {
-          neighborId = triangleId - 1 + wrap_[0] * 2;
+          neighborId = triangleId - 1 + this->wrap_[0] * 2;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
+          neighborId = triangleId - this->tshift_[0] + 1 + this->wrap_[1] * 2;
         }
 
       } else if(p[0] / 2 == 0) {
         if(localNeighborId == 0) {
           neighborId = triangleId + 1;
         } else if(localNeighborId == 1) {
-          neighborId = triangleId - 1 + wrap_[0] * 2;
+          neighborId = triangleId - 1 + this->wrap_[0] * 2;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId - tshift_[0] + 1;
+          neighborId = triangleId - this->tshift_[0] + 1;
         }
 
       } else if(p[1] == 0) {
@@ -1715,7 +1773,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
         } else if(localNeighborId == 1) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
+          neighborId = triangleId - this->tshift_[0] + 1 + this->wrap_[1] * 2;
         }
 
       } else {
@@ -1724,7 +1782,7 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
         } else if(localNeighborId == 1) {
           neighborId = triangleId - 1;
         } else if(localNeighborId == 2) {
-          neighborId = triangleId - tshift_[0] + 1;
+          neighborId = triangleId - this->tshift_[0] + 1;
         }
       }
       break;
@@ -1735,20 +1793,21 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getTriangleNeighbors(
-  vector<vector<SimplexId>> &neighbors) {
+template <size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getTriangleNeighbors(
+  std::vector<std::vector<ttk::SimplexId>> &neighbors) {
   neighbors.resize(triangleNumber_);
-  for(SimplexId i = 0; i < triangleNumber_; ++i) {
+  for(ttk::SimplexId i = 0; i < triangleNumber_; ++i) {
     neighbors[i].resize(getTriangleNeighborNumber(i));
-    for(SimplexId j = 0; j < (SimplexId)neighbors[i].size(); ++j)
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)neighbors[i].size(); ++j)
       getTriangleNeighbor(i, j, neighbors[i][j]);
   }
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronVertex(
-  const SimplexId &tetId, const int &localVertexId, SimplexId &vertexId) const {
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTetrahedronVertex(
+  const ttk::SimplexId &tetId, const int &localVertexId, ttk::SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -1758,37 +1817,37 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronVertex(
 
   vertexId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getTetrahedronCoords(tetId);
-    const SimplexId id = tetId % 6;
+    const ttk::SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        vertexId = getTetrahedronVertexABCG(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexABCG(p.data(), localVertexId);
         break;
       case 1:
-        vertexId = getTetrahedronVertexBCDG(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexBCDG(p.data(), localVertexId);
         break;
       case 2:
-        vertexId = getTetrahedronVertexABEG(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexABEG(p.data(), localVertexId);
         break;
       case 3:
-        vertexId = getTetrahedronVertexBEFG(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexBEFG(p.data(), localVertexId);
         break;
       case 4:
-        vertexId = getTetrahedronVertexBFGH(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexBFGH(p.data(), localVertexId);
         break;
       case 5:
-        vertexId = getTetrahedronVertexBDGH(p.data(), localVertexId);
+        vertexId = this->getTetrahedronVertexBDGH(p.data(), localVertexId);
         break;
     }
   }
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
-  const SimplexId &tetId, const int &localEdgeId, SimplexId &edgeId) const {
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTetrahedronEdge(
+  const ttk::SimplexId &tetId, const int &localEdgeId, ttk::SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -1798,28 +1857,28 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
 
   edgeId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getTetrahedronCoords(tetId);
-    const SimplexId id = tetId % 6;
+    const ttk::SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        edgeId = getTetrahedronEdgeABCG(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeABCG(p.data(), localEdgeId);
         break;
       case 1:
-        edgeId = getTetrahedronEdgeBCDG(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeBCDG(p.data(), localEdgeId);
         break;
       case 2:
-        edgeId = getTetrahedronEdgeABEG(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeABEG(p.data(), localEdgeId);
         break;
       case 3:
-        edgeId = getTetrahedronEdgeBEFG(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeBEFG(p.data(), localEdgeId);
         break;
       case 4:
-        edgeId = getTetrahedronEdgeBFGH(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeBFGH(p.data(), localEdgeId);
         break;
       case 5:
-        edgeId = getTetrahedronEdgeBDGH(p.data(), localEdgeId);
+        edgeId = this->getTetrahedronEdgeBDGH(p.data(), localEdgeId);
         break;
     }
   }
@@ -1827,23 +1886,24 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getTetrahedronEdges(
-  vector<vector<SimplexId>> &edges) const {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdges(
+  std::vector<std::vector<ttk::SimplexId>> &edges) const {
   edges.resize(tetrahedronNumber_);
-  for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+  for(ttk::SimplexId i = 0; i < tetrahedronNumber_; ++i) {
     edges[i].resize(6);
     for(int j = 0; j < 6; ++j)
-      getTetrahedronEdge(i, j, edges[i][j]);
+      this->getTetrahedronEdge(i, j, edges[i][j]);
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
-  const SimplexId &tetId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTetrahedronTriangle(
+  const ttk::SimplexId &tetId,
   const int &localTriangleId,
-  SimplexId &triangleId) const {
+  ttk::SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
@@ -1853,28 +1913,28 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
 
   triangleId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getTetrahedronCoords(tetId);
-    const SimplexId id = tetId % 6;
+    const ttk::SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        triangleId = getTetrahedronTriangleABCG(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleABCG(p.data(), localTriangleId);
         break;
       case 1:
-        triangleId = getTetrahedronTriangleBCDG(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleBCDG(p.data(), localTriangleId);
         break;
       case 2:
-        triangleId = getTetrahedronTriangleABEG(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleABEG(p.data(), localTriangleId);
         break;
       case 3:
-        triangleId = getTetrahedronTriangleBEFG(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleBEFG(p.data(), localTriangleId);
         break;
       case 4:
-        triangleId = getTetrahedronTriangleBFGH(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleBFGH(p.data(), localTriangleId);
         break;
       case 5:
-        triangleId = getTetrahedronTriangleBDGH(p.data(), localTriangleId);
+        triangleId = this->getTetrahedronTriangleBDGH(p.data(), localTriangleId);
         break;
     }
   }
@@ -1882,74 +1942,76 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getTetrahedronTriangles(
-  vector<vector<SimplexId>> &triangles) const {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangles(
+  std::vector<std::vector<ttk::SimplexId>> &triangles) const {
   triangles.resize(tetrahedronNumber_);
-  for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+  for(ttk::SimplexId i = 0; i < tetrahedronNumber_; ++i) {
     triangles[i].resize(4);
     for(int j = 0; j < 4; ++j)
-      getTetrahedronTriangle(i, j, triangles[i][j]);
+      this->getTetrahedronTriangle(i, j, triangles[i][j]);
   }
 
   return 0;
 }
 
-SimplexId PeriodicImplicitTriangulation::getTetrahedronNeighborNumber(
-  const SimplexId &tetId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborNumber(
+  const ttk::SimplexId &tetId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
 #endif
 
   TTK_FORCE_USE(tetId);
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     return 4;
   }
 
   return 0;
 }
 
-template <typename Derived>
-int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronNeighbor(
-  const SimplexId &tetId,
+template <size_t card, typename Derived>
+int ttk::PeriodicImplicitTriangulationCRTP<card, Derived>::getTetrahedronNeighbor(
+  const ttk::SimplexId &tetId,
   const int &localNeighborId,
-  SimplexId &neighborId) const {
+  ttk::SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
-     or localNeighborId >= getTetrahedronNeighborNumber(tetId))
+     or localNeighborId >= this->getTetrahedronNeighborNumber(tetId))
     return -1;
 #endif
 
   neighborId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getTetrahedronCoords(tetId);
-    const SimplexId id = tetId % 6;
+    const ttk::SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
         neighborId
-          = getTetrahedronNeighborABCG(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborABCG(tetId, p.data(), localNeighborId);
         break;
       case 1:
         neighborId
-          = getTetrahedronNeighborBCDG(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborBCDG(tetId, p.data(), localNeighborId);
         break;
       case 2:
         neighborId
-          = getTetrahedronNeighborABEG(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborABEG(tetId, p.data(), localNeighborId);
         break;
       case 3:
         neighborId
-          = getTetrahedronNeighborBEFG(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborBEFG(tetId, p.data(), localNeighborId);
         break;
       case 4:
         neighborId
-          = getTetrahedronNeighborBFGH(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborBFGH(tetId, p.data(), localNeighborId);
         break;
       case 5:
         neighborId
-          = getTetrahedronNeighborBDGH(tetId, p.data(), localNeighborId);
+          = this->getTetrahedronNeighborBDGH(tetId, p.data(), localNeighborId);
         break;
     }
   }
@@ -1957,160 +2019,184 @@ int PeriodicImplicitTriangulationCRTP<Derived>::getTetrahedronNeighbor(
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getTetrahedronNeighbors(
-  vector<vector<SimplexId>> &neighbors) {
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighbors(
+  std::vector<std::vector<ttk::SimplexId>> &neighbors) {
   neighbors.resize(tetrahedronNumber_);
-  for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+  for(ttk::SimplexId i = 0; i < tetrahedronNumber_; ++i) {
     neighbors[i].resize(getTetrahedronNeighborNumber(i));
-    for(SimplexId j = 0; j < (SimplexId)neighbors[i].size(); ++j)
-      getTetrahedronNeighbor(i, j, neighbors[i][j]);
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)neighbors[i].size(); ++j)
+      this->getTetrahedronNeighbor(i, j, neighbors[i][j]);
   }
 
   return 0;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getCellVertexNumber)(const SimplexId &ttkNotUsed(cellId)) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getCellVertexNumber)(const ttk::SimplexId &ttkNotUsed(cellId)) const {
 
-  return dimensionality_ + 1;
+  return this->dimensionality_ + 1;
 }
 
-int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
-  const SimplexId &cellId,
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
+  const ttk::SimplexId &cellId,
   const int &localVertexId,
-  SimplexId &vertexId) const {
+  ttk::SimplexId &vertexId) const {
 
-  if(dimensionality_ == 3)
-    getTetrahedronVertex(cellId, localVertexId, vertexId);
-  else if(dimensionality_ == 2)
-    getTriangleVertexInternal(cellId, localVertexId, vertexId);
-  else if(dimensionality_ == 1)
-    getEdgeVertexInternal(cellId, localVertexId, vertexId);
+  if(this->dimensionality_ == 3)
+    this->getTetrahedronVertex(cellId, localVertexId, vertexId);
+  else if(this->dimensionality_ == 2)
+    this->getTriangleVertexInternal(cellId, localVertexId, vertexId);
+  else if(this->dimensionality_ == 1)
+    this->getEdgeVertexInternal(cellId, localVertexId, vertexId);
 
   return 0;
 }
 
-SimplexId PeriodicImplicitTriangulation::getCellEdgeNumberInternal(
-  const SimplexId &ttkNotUsed(cellId)) const {
-  if(dimensionality_ == 3)
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getCellEdgeNumberInternal(
+  const ttk::SimplexId &ttkNotUsed(cellId)) const {
+  if(this->dimensionality_ == 3)
     return 6;
-  else if(dimensionality_ == 2)
+  else if(this->dimensionality_ == 2)
     return 3;
 
   return 0;
 }
 
-int PeriodicImplicitTriangulation::getCellEdgeInternal(
-  const SimplexId &cellId, const int &localEdgeId, SimplexId &edgeId) const {
-  if(dimensionality_ == 3)
-    getTetrahedronEdge(cellId, localEdgeId, edgeId);
-  else if(dimensionality_ == 2)
-    getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
-  else if(dimensionality_ == 1)
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getCellEdgeInternal(
+  const ttk::SimplexId &cellId, const int &localEdgeId, ttk::SimplexId &edgeId) const {
+  if(this->dimensionality_ == 3)
+    this->getTetrahedronEdge(cellId, localEdgeId, edgeId);
+  else if(this->dimensionality_ == 2)
+    this->getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
+  else if(this->dimensionality_ == 1)
     getCellNeighbor(cellId, localEdgeId, edgeId);
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getCellEdgesInternal() {
-  if(cellEdgeVector_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getCellEdgesInternal() {
+  if(this->cellEdgeVector_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronEdges(cellEdgeVector_);
-    else if(dimensionality_ == 2)
-      getTriangleEdgesInternal(cellEdgeVector_);
+    if(this->dimensionality_ == 3)
+      this->getTetrahedronEdges(this->cellEdgeVector_);
+    else if(this->dimensionality_ == 2)
+      getTriangleEdgesInternal(this->cellEdgeVector_);
 
-    printMsg("Built " + to_string(cellNumber_) + " cell edges.", 1,
+    this->printMsg("Built " + std::to_string(cellNumber_) + " cell edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellEdgeVector_;
+  return &this->cellEdgeVector_;
 }
 
-int PeriodicImplicitTriangulation::getCellTriangleInternal(
-  const SimplexId &cellId,
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::getCellTriangleInternal(
+  const ttk::SimplexId &cellId,
   const int &localTriangleId,
-  SimplexId &triangleId) const {
-  if(dimensionality_ == 3)
-    getTetrahedronTriangle(cellId, localTriangleId, triangleId);
+  ttk::SimplexId &triangleId) const {
+  if(this->dimensionality_ == 3)
+    this->getTetrahedronTriangle(cellId, localTriangleId, triangleId);
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::getCellTrianglesInternal() {
-  if(cellTriangleVector_.empty()) {
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::getCellTrianglesInternal() {
+  if(this->cellTriangleVector_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronTriangles(cellTriangleVector_);
+    if(this->dimensionality_ == 3)
+      this->getTetrahedronTriangles(this->cellTriangleVector_);
 
-    printMsg("Built " + to_string(cellNumber_) + " cell triangles.", 1,
+    this->printMsg("Built " + std::to_string(cellNumber_) + " cell triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellTriangleVector_;
+  return &this->cellTriangleVector_;
 }
 
-SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getCellNeighborNumber)(const SimplexId &cellId) const {
+template<size_t card>
+ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
+  getCellNeighborNumber)(const ttk::SimplexId &cellId) const {
 
-  if(dimensionality_ == 3)
-    return getTetrahedronNeighborNumber(cellId);
-  else if(dimensionality_ == 2)
+  if(this->dimensionality_ == 3)
+    return this->getTetrahedronNeighborNumber(cellId);
+  else if(this->dimensionality_ == 2)
     return getTriangleNeighborNumber(cellId);
-  else if(dimensionality_ == 1) {
-    printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
+  else if(this->dimensionality_ == 1) {
+    this->printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
     return -1;
   }
 
   return 0;
 }
 
-int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
-  const SimplexId &cellId,
+template<size_t card>
+int ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
+  const ttk::SimplexId &cellId,
   const int &localNeighborId,
-  SimplexId &neighborId) const {
+  ttk::SimplexId &neighborId) const {
 
-  if(dimensionality_ == 3)
-    getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
-  else if(dimensionality_ == 2)
+  if(this->dimensionality_ == 3)
+    this->getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
+  else if(this->dimensionality_ == 2)
     getTriangleNeighbor(cellId, localNeighborId, neighborId);
-  else if(dimensionality_ == 1) {
-    printErr("getCellNeighbor() not implemented in 1D! (TODO)");
+  else if(this->dimensionality_ == 1) {
+    this->printErr("getCellNeighbor() not implemented in 1D! (TODO)");
     return -1;
   }
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *
-  PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template<size_t card>
+const std::vector<std::vector<ttk::SimplexId>> *
+  ttk::PeriodicImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
     getCellNeighbors)() {
 
-  if(cellNeighborList_.empty()) {
+  if(this->cellNeighborList_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronNeighbors(cellNeighborList_);
-    else if(dimensionality_ == 2)
-      getTriangleNeighbors(cellNeighborList_);
-    else if(dimensionality_ == 1) {
-      printErr("getCellNeighbors() not implemented in 1D! (TODO)");
+    if(this->dimensionality_ == 3)
+      this->getTetrahedronNeighbors(this->cellNeighborList_);
+    else if(this->dimensionality_ == 2)
+      getTriangleNeighbors(this->cellNeighborList_);
+    else if(this->dimensionality_ == 1) {
+      this->printErr("getCellNeighbors() not implemented in 1D! (TODO)");
       return nullptr;
     }
 
-    printMsg("Built " + to_string(cellNumber_) + " cell neighbors.", 1,
+    this->printMsg("Built " + std::to_string(cellNumber_) + " cell neighbors.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellNeighborList_;
+  return &this->cellNeighborList_;
 }
 
 // explicit instantiations
-template class ttk::PeriodicImplicitTriangulationCRTP<
-  ttk::PeriodicWithPreconditions>;
-template class ttk::PeriodicImplicitTriangulationCRTP<
-  ttk::PeriodicNoPreconditions>;
+
+template class ttk::PeriodicImplicitTriangulation<0>;
+template class ttk::PeriodicImplicitTriangulation<1>;
+template class ttk::PeriodicImplicitTriangulation<2>;
+template class ttk::PeriodicImplicitTriangulation<3>;
+/*
+*/
+template class ttk::PeriodicImplicitTriangulationCRTP<0, ttk::PeriodicWithPreconditions<0>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<0, ttk::PeriodicNoPreconditions<0>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<1, ttk::PeriodicWithPreconditions<1>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<1, ttk::PeriodicNoPreconditions<1>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<2, ttk::PeriodicWithPreconditions<2>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<2, ttk::PeriodicNoPreconditions<2>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<3, ttk::PeriodicWithPreconditions<3>>;
+template class ttk::PeriodicImplicitTriangulationCRTP<3, ttk::PeriodicNoPreconditions<3>>;
+
+/// @endcond

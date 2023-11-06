@@ -6,12 +6,18 @@ namespace ttk {
   /**
    * @brief Implicit Triangulation class with preconditioning
    */
+  template <size_t card>
   class ImplicitWithPreconditions final
-    : public ImplicitTriangulationCRTP<ImplicitWithPreconditions> {
+    : public ImplicitTriangulationCRTP<card, ImplicitWithPreconditions<card>> {
   public:
     ImplicitWithPreconditions() {
       this->setDebugMsgPrefix("ImplicitTriangulationWithPreconditions");
     }
+
+    using VertexPosition = typename ImplicitTriangulation<card>::VertexPosition;
+    using EdgePosition = typename ImplicitTriangulation<card>::EdgePosition;
+    using TrianglePosition = typename ImplicitTriangulation<card>::TrianglePosition;
+
 
     int preconditionVerticesInternal() override;
     int preconditionEdgesInternal() override;
@@ -52,7 +58,7 @@ namespace ttk {
       trianglePositions_ = std::vector<TrianglePosition>{};
       triangleCoords_ = std::vector<std::array<SimplexId, 3>>{};
       tetrahedronCoords_ = std::vector<std::array<SimplexId, 3>>{};
-      hasPreconditionedVerticesAndCells_ = false;
+      this->hasPreconditionedVerticesAndCells_ = false;
       return AbstractTriangulation::clear();
     }
 
@@ -76,12 +82,17 @@ namespace ttk {
   /**
    * @brief Implicit Triangulation class without preconditioning
    */
+  template <size_t card>
   class ImplicitNoPreconditions final
-    : public ImplicitTriangulationCRTP<ImplicitNoPreconditions> {
+    : public ImplicitTriangulationCRTP<card, ImplicitNoPreconditions<card>> {
   public:
     ImplicitNoPreconditions() {
       this->setDebugMsgPrefix("ImplicitTriangulationNoPreconditions");
     }
+    using VertexPosition = typename ImplicitTriangulation<card>::VertexPosition;
+    using EdgePosition = typename ImplicitTriangulation<card>::EdgePosition;
+    using TrianglePosition = typename ImplicitTriangulation<card>::TrianglePosition;
+
 
     inline int preconditionVerticesInternal() override {
       return 0;
@@ -204,6 +215,7 @@ namespace ttk {
       }
       return VertexPosition::CENTER_3D;
     }
+
 
     inline std::array<SimplexId, 3> getVertexCoords(const SimplexId v) const {
       std::array<SimplexId, 3> p{};
@@ -382,6 +394,7 @@ namespace ttk {
       }
       return p;
     }
+    
 
     inline TrianglePosition getTrianglePosition(const SimplexId t) const {
       if(this->dimensionality_ == 2) {
@@ -407,6 +420,7 @@ namespace ttk {
       }
       return TrianglePosition::C_3D;
     }
+
 
     inline std::array<SimplexId, 3> getTriangleCoords(const SimplexId t) const {
       std::array<SimplexId, 3> p{};
@@ -439,3 +453,5 @@ namespace ttk {
   };
 
 } // namespace ttk
+
+

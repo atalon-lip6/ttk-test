@@ -20,7 +20,8 @@
 
 namespace ttk {
 
-  class PeriodicImplicitTriangulation : public RegularGridTriangulation<0> {
+  template<size_t card>
+  class PeriodicImplicitTriangulation : public RegularGridTriangulation<card> {
 
   public:
     PeriodicImplicitTriangulation();
@@ -235,8 +236,8 @@ namespace ttk {
     inline int preconditionCellsInternal() {
       if(dimensionality_ == 3) {
         return this->preconditionTetrahedronsInternal();
-      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
-        hasPreconditionedTriangles_ = true;
+      } else if(dimensionality_ == 2 && !this->hasPreconditionedTriangles_) {
+        this->hasPreconditionedTriangles_ = true;
         return this->preconditionTrianglesInternal();
       }
       return 0;
@@ -525,7 +526,7 @@ namespace ttk {
 
   protected:
     int preconditionDistributedCells() override;
-    // std::shared_ptr<PeriodicImplicitTriangulation> metaGrid_;
+    //std::shared_ptr<PeriodicImplicitTriangulation<card>> metaGrid_;
     std::array<unsigned char, 6> isBoundaryPeriodic{};
 
   public:
@@ -542,9 +543,9 @@ namespace ttk {
 #endif // TTK_ENABLE_MPI
   };
 
-  template <typename Derived>
+  template <size_t card, typename Derived>
   class PeriodicImplicitTriangulationCRTP
-    : public PeriodicImplicitTriangulation {
+    : public PeriodicImplicitTriangulation<card> {
     inline Derived &underlying() {
       return static_cast<Derived &>(*this);
     }
@@ -655,17 +656,17 @@ namespace ttk {
       getEdgeVertexInternal(edgeId, 1, v1);
 
       std::array<float, 3> p0{}, p1{};
-      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
-      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      this->getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      this->getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
 
       const auto &ind0 = this->underlying().getVertexCoords(v0);
       const auto &ind1 = this->underlying().getVertexCoords(v1);
 
-      for(int i = 0; i < dimensionality_; ++i) {
-        if(ind1[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind0[i] == nbvoxels_[i]) {
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+      for(int i = 0; i < this->dimensionality_; ++i) {
+        if(ind1[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind0[i] == this->nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
         }
       }
 
@@ -689,24 +690,24 @@ namespace ttk {
       getTriangleVertexInternal(triangleId, 2, v2);
 
       std::array<float, 3> p0{}, p1{}, p2{};
-      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
-      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
-      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+      this->getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      this->getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      this->getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
 
       const auto &ind0 = this->underlying().getVertexCoords(v0);
       const auto &ind1 = this->underlying().getVertexCoords(v1);
       const auto &ind2 = this->underlying().getVertexCoords(v2);
 
-      for(int i = 0; i < dimensionality_; ++i) {
-        if(ind0[i] == nbvoxels_[i]) {
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
-          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind1[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind2[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+      for(int i = 0; i < this->dimensionality_; ++i) {
+        if(ind0[i] == this->nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p2[i] += (ind2[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind1[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p2[i] += (ind2[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind2[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
         }
       }
 
@@ -728,39 +729,39 @@ namespace ttk {
     virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 
       SimplexId v0{}, v1{}, v2{}, v3{};
-      getCellVertexInternal(tetraId, 0, v0);
-      getCellVertexInternal(tetraId, 1, v1);
-      getCellVertexInternal(tetraId, 2, v2);
-      getCellVertexInternal(tetraId, 3, v3);
+      this->getCellVertexInternal(tetraId, 0, v0);
+      this->getCellVertexInternal(tetraId, 1, v1);
+      this->getCellVertexInternal(tetraId, 2, v2);
+      this->getCellVertexInternal(tetraId, 3, v3);
 
       std::array<float, 3> p0{}, p1{}, p2{}, p3{};
-      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
-      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
-      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
-      getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
+      this->getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      this->getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      this->getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+      this->getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
 
       const auto &ind0 = this->underlying().getVertexCoords(v0);
       const auto &ind1 = this->underlying().getVertexCoords(v1);
       const auto &ind2 = this->underlying().getVertexCoords(v2);
       const auto &ind3 = this->underlying().getVertexCoords(v3);
 
-      for(int i = 0; i < dimensionality_; ++i) {
-        if(ind0[i] == nbvoxels_[i]) {
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
-          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
-          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind1[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
-          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind2[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
-          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind3[i] == nbvoxels_[i]) {
-          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
-          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
-          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+      for(int i = 0; i < this->dimensionality_; ++i) {
+        if(ind0[i] == this->nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p2[i] += (ind2[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p3[i] += (ind3[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind1[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p2[i] += (ind2[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p3[i] += (ind3[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind2[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p3[i] += (ind3[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+        } else if(ind3[i] == this->nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p1[i] += (ind1[i] == 0) * this->dimensions_[i] * this->spacing_[i];
+          p2[i] += (ind2[i] == 0) * this->dimensions_[i] * this->spacing_[i];
         }
       }
 
@@ -774,9 +775,9 @@ namespace ttk {
 } // namespace ttk
 
 /// @cond
-
+template <size_t card>
 inline void
-  ttk::PeriodicImplicitTriangulation::vertexToPosition2d(const SimplexId vertex,
+  ttk::PeriodicImplicitTriangulation<card>::vertexToPosition2d(const SimplexId vertex,
                                                          SimplexId p[2]) const {
   if(isAccelerated_) {
     p[0] = vertex & mod_[0];
@@ -787,20 +788,23 @@ inline void
   }
 }
 
-inline void ttk::PeriodicImplicitTriangulation::edgeToPosition2d(
+template <size_t card>
+inline void ttk::PeriodicImplicitTriangulation<card>::edgeToPosition2d(
   const SimplexId edge, const int k, SimplexId p[2]) const {
   const int e = (k) ? edge - esetshift_[k - 1] : edge;
   p[0] = e % eshift_[2 * k];
   p[1] = e / eshift_[2 * k];
 }
 
-inline void ttk::PeriodicImplicitTriangulation::triangleToPosition2d(
+template <size_t card>
+inline void ttk::PeriodicImplicitTriangulation<card>::triangleToPosition2d(
   const SimplexId triangle, SimplexId p[2]) const {
   p[0] = triangle % tshift_[0];
   p[1] = triangle / tshift_[0];
 }
 
-inline ttk::SimplexId ttk::PeriodicImplicitTriangulation::getVertexNeighbor2d(
+template <size_t card>
+inline ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getVertexNeighbor2d(
   const SimplexId p[2], const SimplexId v, const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -831,8 +835,9 @@ inline ttk::SimplexId ttk::PeriodicImplicitTriangulation::getVertexNeighbor2d(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexEdge2d(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexEdge2d(const SimplexId p[2],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -857,8 +862,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexStar2d(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexStar2d(const SimplexId p[2],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -884,8 +890,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexLink2d(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexLink2d(const SimplexId p[2],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -918,8 +925,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle2dL(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle2dL(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapYTop = 0;
   if(p[1] == 0)
@@ -933,8 +941,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle2dH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle2dH(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXLeft = 0;
   if(p[0] == 0)
@@ -948,8 +957,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle2dD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle2dD1(const SimplexId p[3],
                                                           const int id) const {
   switch(id) {
     case 0:
@@ -960,8 +970,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLink2dL(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLink2dL(const SimplexId p[2],
                                                      const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[Dj_]) {
     switch(id) {
@@ -997,8 +1008,9 @@ inline ttk::SimplexId
   }
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLink2dH(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLink2dH(const SimplexId p[2],
                                                      const int id) const {
   if(p[0] > 0 and p[0] < nbvoxels_[Di_]) {
     switch(id) {
@@ -1034,8 +1046,9 @@ inline ttk::SimplexId
   }
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLink2dD1(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLink2dD1(const SimplexId p[2],
                                                       const int id) const {
   const SimplexId wrapX = (p[0] < nbvoxels_[Di_]) ? 0 : wrap_[0];
   const SimplexId wrapY = (p[1] < nbvoxels_[Dj_]) ? 0 : wrap_[1];
@@ -1048,8 +1061,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStar2dL(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStar2dL(const SimplexId p[2],
                                                      const int id) const {
   if(p[1] == 0) {
     switch(id) {
@@ -1070,8 +1084,9 @@ inline ttk::SimplexId
   }
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStar2dH(const SimplexId p[2],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStar2dH(const SimplexId p[2],
                                                      const int id) const {
   if(p[0] == 0) {
     switch(id) {
@@ -1092,8 +1107,9 @@ inline ttk::SimplexId
   }
 }
 
+template <size_t card>
 inline void
-  ttk::PeriodicImplicitTriangulation::vertexToPosition(const SimplexId vertex,
+  ttk::PeriodicImplicitTriangulation<card>::vertexToPosition(const SimplexId vertex,
                                                        SimplexId p[3]) const {
   if(isAccelerated_) {
     p[0] = vertex & mod_[0];
@@ -1106,7 +1122,8 @@ inline void
   }
 }
 
-inline void ttk::PeriodicImplicitTriangulation::edgeToPosition(
+template <size_t card>
+inline void ttk::PeriodicImplicitTriangulation<card>::edgeToPosition(
   const SimplexId edge, const int k, SimplexId p[3]) const {
   const int e = (k) ? edge - esetshift_[k - 1] : edge;
   p[0] = e % eshift_[2 * k];
@@ -1114,7 +1131,8 @@ inline void ttk::PeriodicImplicitTriangulation::edgeToPosition(
   p[2] = e / eshift_[2 * k + 1];
 }
 
-inline void ttk::PeriodicImplicitTriangulation::triangleToPosition(
+template <size_t card>
+inline void ttk::PeriodicImplicitTriangulation<card>::triangleToPosition(
   const SimplexId triangle, const int k, SimplexId p[3]) const {
   const SimplexId t = (k) ? triangle - tsetshift_[k - 1] : triangle;
   p[0] = t % tshift_[2 * k];
@@ -1122,14 +1140,16 @@ inline void ttk::PeriodicImplicitTriangulation::triangleToPosition(
   p[2] = t / tshift_[2 * k + 1];
 }
 
-inline void ttk::PeriodicImplicitTriangulation::tetrahedronToPosition(
+template <size_t card>
+inline void ttk::PeriodicImplicitTriangulation<card>::tetrahedronToPosition(
   const SimplexId tetrahedron, SimplexId p[3]) const {
   p[0] = (tetrahedron % tetshift_[0]) / 6;
   p[1] = (tetrahedron % tetshift_[1]) / tetshift_[0];
   p[2] = tetrahedron / tetshift_[1];
 }
 
-inline ttk::SimplexId ttk::PeriodicImplicitTriangulation::getVertexNeighbor3d(
+template <size_t card>
+inline ttk::SimplexId ttk::PeriodicImplicitTriangulation<card>::getVertexNeighbor3d(
   const SimplexId p[3], const SimplexId v, const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -1184,8 +1204,9 @@ inline ttk::SimplexId ttk::PeriodicImplicitTriangulation::getVertexNeighbor3d(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexEdge3d(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexEdge3d(const SimplexId p[3],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -1238,8 +1259,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexLink3d(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexLink3d(const SimplexId p[3],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -1335,8 +1357,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexTriangle3d(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexTriangle3d(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -1454,8 +1477,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getVertexStar3d(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getVertexStar3d(const SimplexId p[3],
                                                       const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -1541,8 +1565,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dL(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dL(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapYTop = 0;
   SimplexId wrapZBack = 0;
@@ -1570,8 +1595,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dH(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapZBack = 0;
@@ -1600,8 +1626,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dP(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dP(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -1631,8 +1658,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dD1(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapZBack = 0;
   if(p[2] == 0)
@@ -1651,8 +1679,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dD2(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXLeft = 0;
   if(p[0] == 0)
@@ -1672,8 +1701,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dD3(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapYTop = 0;
   if(p[1] == 0)
@@ -1694,8 +1724,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeTriangle3dD4(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeTriangle3dD4(const SimplexId p[3],
                                                           const int id) const {
   switch(id) {
     case 0:
@@ -1717,8 +1748,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkL(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkL(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYTop = 0;
@@ -1758,8 +1790,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkH(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -1797,8 +1830,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkP(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkP(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -1836,8 +1870,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkD1(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -1864,8 +1899,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkD2(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYBottom = 0;
@@ -1891,8 +1927,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkD3(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYTop = 0;
@@ -1919,8 +1956,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeLinkD4(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeLinkD4(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -1950,8 +1988,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarL(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarL(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapYTop = 0;
   SimplexId wrapZBack = 0;
@@ -1980,8 +2019,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarH(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapZBack = 0;
@@ -2011,8 +2051,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarP(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarP(const SimplexId p[3],
                                                    const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapYTop = 0;
@@ -2042,8 +2083,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarD1(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapZBack = 0;
   if(p[2] == 0)
@@ -2063,8 +2105,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarD2(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapXLeft = 0;
   if(p[0] == 0)
@@ -2084,8 +2127,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getEdgeStarD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getEdgeStarD3(const SimplexId p[3],
                                                     const int id) const {
   SimplexId wrapYTop = 0;
   if(p[1] == 0)
@@ -2105,8 +2149,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexF(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexF(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2141,8 +2186,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexH(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapZFront = 0;
@@ -2177,8 +2223,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexC(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexC(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapYBottom = 0;
   SimplexId wrapZFront = 0;
@@ -2212,8 +2259,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexD1(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2252,8 +2300,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexD2(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2291,8 +2340,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleVertexD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleVertexD3(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2331,8 +2381,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeF_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeF_0(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -2345,8 +2396,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeF_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeF_1(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXRight = 0;
   if(p[0] / 2 == nbvoxels_[0])
@@ -2367,8 +2419,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeH_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeH_0(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -2381,8 +2434,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeH_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeH_1(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapXRight = 0;
   if(p[0] / 2 == nbvoxels_[0])
@@ -2403,8 +2457,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeC_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeC_0(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapYBottom = 0;
   if(p[1] == nbvoxels_[1])
@@ -2421,8 +2476,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeC_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeC_1(const SimplexId p[3],
                                                          const int id) const {
   SimplexId wrapZFront = 0;
   if(p[2] == nbvoxels_[2])
@@ -2439,8 +2495,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD1_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD1_0(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   if(p[0] / 2 == nbvoxels_[0])
@@ -2461,8 +2518,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD1_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD1_1(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapZFront = 0;
   if(p[2] == nbvoxels_[2])
@@ -2479,8 +2537,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD2_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD2_0(const SimplexId p[3],
                                                           const int id) const {
   switch(id) {
     case 0:
@@ -2493,8 +2552,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD2_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD2_1(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2518,8 +2578,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD3_0(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD3_0(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapYBottom = 0;
   if(p[1] == nbvoxels_[1])
@@ -2536,8 +2597,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleEdgeD3_1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleEdgeD3_1(const SimplexId p[3],
                                                           const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapZFront = 0;
@@ -2558,8 +2620,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkF(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkF(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2584,8 +2647,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkH(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYTop = 0;
@@ -2610,8 +2674,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkC(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkC(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapXLeft = 0;
   SimplexId wrapXRight = 0;
@@ -2635,8 +2700,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkD1(const SimplexId p[3],
                                                         const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2668,8 +2734,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkD2(const SimplexId p[3],
                                                         const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2702,8 +2769,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleLinkD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleLinkD3(const SimplexId p[3],
                                                         const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2735,8 +2803,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarF(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarF(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapZBack = 0;
   if(p[2] == 0)
@@ -2761,8 +2830,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarH(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarH(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapYTop = 0;
   if(p[1] == 0)
@@ -2787,8 +2857,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarC(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarC(const SimplexId p[3],
                                                        const int id) const {
   SimplexId wrapXLeft = 0;
   if(p[0] < 2)
@@ -2813,8 +2884,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarD1(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarD1(const SimplexId p[3],
                                                         const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -2834,8 +2906,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarD2(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarD2(const SimplexId p[3],
                                                         const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -2855,8 +2928,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTriangleStarD3(const SimplexId p[3],
+  ttk::PeriodicImplicitTriangulation<card>::getTriangleStarD3(const SimplexId p[3],
                                                         const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -2876,8 +2950,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexABCG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexABCG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2903,8 +2978,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexBCDG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexBCDG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2931,8 +3007,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexABEG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexABEG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2958,8 +3035,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexBEFG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexBEFG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -2986,8 +3064,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexBFGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexBFGH(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -3014,8 +3093,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronVertexBDGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronVertexBDGH(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -3042,8 +3122,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeABCG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeABCG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapYBottom = 0;
   if(p[1] == nbvoxels_[1])
@@ -3066,8 +3147,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeBCDG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeBCDG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -3095,8 +3177,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeABEG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeABEG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapZFront = 0;
   if(p[2] == nbvoxels_[2])
@@ -3119,8 +3202,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeBEFG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeBEFG(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapZFront = 0;
@@ -3148,8 +3232,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeBFGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeBFGH(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -3182,8 +3267,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronEdgeBDGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronEdgeBDGH(
     const SimplexId p[3], const int id) const {
   SimplexId wrapXRight = 0;
   SimplexId wrapYBottom = 0;
@@ -3216,8 +3302,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleABCG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleABCG(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3232,8 +3319,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleBCDG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleBCDG(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3252,8 +3340,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleABEG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleABEG(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3270,8 +3359,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleBEFG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleBEFG(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3292,8 +3382,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleBFGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleBFGH(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3317,8 +3408,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronTriangleBDGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronTriangleBDGH(
     const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3342,8 +3434,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborABCG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborABCG(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3359,8 +3452,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborBCDG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborBCDG(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3377,8 +3471,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborABEG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborABEG(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3394,8 +3489,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborBEFG(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborBEFG(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3412,8 +3508,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborBFGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborBFGH(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3429,8 +3526,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  ttk::PeriodicImplicitTriangulation::getTetrahedronNeighborBDGH(
+  ttk::PeriodicImplicitTriangulation<card>::getTetrahedronNeighborBDGH(
     const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -3446,6 +3544,5 @@ inline ttk::SimplexId
   return -1;
 }
 
-#include <PeriodicPreconditions.h>
 
-/// @endcond
+#include <PeriodicPreconditions.h>

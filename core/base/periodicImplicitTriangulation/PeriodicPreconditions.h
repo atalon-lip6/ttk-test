@@ -6,13 +6,16 @@ namespace ttk {
   /**
    * @brief Periodic implicit Triangulation class with preconditioning
    */
+  template<size_t card>
   class PeriodicWithPreconditions final
-    : public PeriodicImplicitTriangulationCRTP<PeriodicWithPreconditions> {
+    : public PeriodicImplicitTriangulationCRTP<card, PeriodicWithPreconditions<card>> {
   public:
     PeriodicWithPreconditions() {
       this->setDebugMsgPrefix("PeriodicTriangulationWithPreconditions");
     }
 
+    using EdgePosition = typename PeriodicWithPreconditions<card>::EdgePosition; 
+    using TrianglePosition = typename PeriodicWithPreconditions<card>::TrianglePosition; 
     int preconditionVerticesInternal() override;
     int preconditionEdgesInternal() override;
     int preconditionTrianglesInternal() override;
@@ -52,7 +55,7 @@ namespace ttk {
       triangleCoords_ = std::vector<std::array<SimplexId, 3>>{};
       tetrahedronCoords_ = std::vector<std::array<SimplexId, 3>>{};
       edgeVertexAccelerated_ = std::vector<SimplexId>{};
-      hasPreconditionedVerticesAndCells_ = false;
+      this->hasPreconditionedVerticesAndCells_ = false;
       return AbstractTriangulation::clear();
     }
 
@@ -77,13 +80,16 @@ namespace ttk {
   /**
    * @brief Periodic implicit Triangulation class without preconditioning
    */
+  template <size_t card>
   class PeriodicNoPreconditions final
-    : public PeriodicImplicitTriangulationCRTP<PeriodicNoPreconditions> {
+    : public PeriodicImplicitTriangulationCRTP<card, PeriodicNoPreconditions<card>> {
   public:
     PeriodicNoPreconditions() {
       this->setDebugMsgPrefix("PeriodicTriangulationNoPreconditions");
     }
 
+    using EdgePosition = typename PeriodicNoPreconditions<card>::EdgePosition; 
+    using TrianglePosition = typename PeriodicNoPreconditions<card>::TrianglePosition; 
     inline int preconditionVerticesInternal() override {
       return 0;
     }
@@ -130,3 +136,4 @@ namespace ttk {
   };
 
 } // namespace ttk
+

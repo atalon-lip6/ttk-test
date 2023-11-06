@@ -67,8 +67,8 @@ int ttkPersistenceDiagramApproximation::dispatch(
   this->setOutputOffsets(outputOffsets);
   this->setOutputMonotonyOffsets(outputMonotonyOffsets);
 
-  if(!std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
-     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
+  if(!std::is_same<ttk::ImplicitWithPreconditions<0>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value) {
     this->printErr("Explicit, Compact or Periodic triangulation detected.");
     this->printErr("Approximation only works on regular grids.");
     return 0;

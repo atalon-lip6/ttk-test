@@ -1,6 +1,7 @@
 #include <ImplicitPreconditions.h>
 
-int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionVerticesInternal() {
 
   vertexPositions_.resize(this->vertexNumber_);
   vertexCoords_.resize(this->vertexNumber_);
@@ -136,7 +137,8 @@ int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionEdgesInternal() {
   edgePositions_.resize(this->edgeNumber_);
   edgeCoords_.resize(this->edgeNumber_);
 
@@ -300,7 +302,8 @@ int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionTrianglesInternal() {
 
   trianglePositions_.resize(this->triangleNumber_);
   triangleCoords_.resize(this->triangleNumber_);
@@ -347,7 +350,8 @@ int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionTetrahedronsInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionTetrahedronsInternal() {
 
   if(this->dimensionality_ != 3) {
     return 1;
@@ -363,3 +367,14 @@ int ttk::ImplicitWithPreconditions::preconditionTetrahedronsInternal() {
 
   return 0;
 }
+
+
+// explicit instantiations
+template class ttk::ImplicitWithPreconditions<0>;
+template class ttk::ImplicitWithPreconditions<1>;
+template class ttk::ImplicitWithPreconditions<2>;
+template class ttk::ImplicitWithPreconditions<3>;
+template class ttk::ImplicitNoPreconditions<0>;
+template class ttk::ImplicitNoPreconditions<1>;
+template class ttk::ImplicitNoPreconditions<2>;
+template class ttk::ImplicitNoPreconditions<3>;

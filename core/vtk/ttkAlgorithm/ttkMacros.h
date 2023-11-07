@@ -71,10 +71,10 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
                             ttk::ExplicitTriangulation<0>, call);            \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
-                            ttk::ImplicitNoPreconditions, call);          \
+                            ttk::ImplicitNoPreconditions<0>, call);          \
     ttkVtkTemplateMacroCase(dataType,                                     \
                             ttk::Triangulation::Type::HYBRID_IMPLICIT,    \
-                            ttk::ImplicitWithPreconditions, call);        \
+                            ttk::ImplicitWithPreconditions<0>, call);        \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
                             ttk::PeriodicNoPreconditions<0>, call);          \
     ttkVtkTemplateMacroCase(dataType,                                     \
@@ -144,9 +144,9 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     ttkTypeMacroCase(                                                         \
       ttk::Triangulation::Type::COMPACT, ttk::CompactTriangulation<0>, 0, call); \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,                      \
-                     ttk::ImplicitNoPreconditions, 0, call);                  \
+                     ttk::ImplicitNoPreconditions<0>, 0, call);                  \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT,               \
-                     ttk::ImplicitWithPreconditions, 0, call);                \
+                     ttk::ImplicitWithPreconditions<0>, 0, call);                \
     ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,                      \
                      ttk::PeriodicNoPreconditions<0>, 0, call);                  \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC,               \
@@ -223,10 +223,10 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
-                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttk::ImplicitNoPreconditions<0>, 1,           \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
-                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttk::ImplicitWithPreconditions<0>, 1,         \
                      ttkTypeMacroA(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
                      ttk::PeriodicNoPreconditions<0>, 1,           \
@@ -246,16 +246,16 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
-                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttk::ImplicitNoPreconditions<0>, 1,           \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
-                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttk::ImplicitWithPreconditions<0>, 1,         \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
-                     ttk::PeriodicNoPreconditions, 1,           \
+                     ttk::PeriodicNoPreconditions<0>, 1,           \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC, \
-                     ttk::PeriodicWithPreconditions, 1,         \
+                     ttk::PeriodicWithPreconditions<0>, 1,         \
                      ttkTypeMacroR(group0, call));              \
     ttkTypeMacroErrorCase(1, group1);                           \
   }
@@ -269,16 +269,16 @@ using ttkSimplexIdTypeArray = vtkIntArray;
                      ttk::CompactTriangulation<0>, 1,              \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::IMPLICIT,        \
-                     ttk::ImplicitNoPreconditions, 1,           \
+                     ttk::ImplicitNoPreconditions<0>, 1,           \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_IMPLICIT, \
-                     ttk::ImplicitWithPreconditions, 1,         \
+                     ttk::ImplicitWithPreconditions<0>, 1,         \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::PERIODIC,        \
-                     ttk::PeriodicNoPreconditions, 1,           \
+                     ttk::PeriodicNoPreconditions<0>, 1,           \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroCase(ttk::Triangulation::Type::HYBRID_PERIODIC, \
-                     ttk::PeriodicWithPreconditions, 1,         \
+                     ttk::PeriodicWithPreconditions<0>, 1,         \
                      ttkTypeMacroI(group0, call));              \
     ttkTypeMacroErrorCase(1, group1);                           \
   }

@@ -1911,7 +1911,7 @@ size_t ttk::ExplicitTriangulation<card>::computeCellRangeOffsets(
   return nSimplices;
 }
 
-template <typename Func0, typename Func1, typename Func2, size_t card>
+template <size_t card> template <typename Func0, typename Func1, typename Func2>
 int ttk::ExplicitTriangulation<card>::exchangeDistributedInternal(
   const Func0 &getGlobalSimplexId,
   const Func1 &storeGlobalSimplexId,

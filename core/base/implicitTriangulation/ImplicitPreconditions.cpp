@@ -1,6 +1,7 @@
 #include <ImplicitPreconditions.h>
 
-int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionVerticesInternal() {
 
   vertexPositions_.resize(this->vertexNumber_);
   vertexCoords_.resize(this->vertexNumber_);
@@ -136,7 +137,8 @@ int ttk::ImplicitWithPreconditions::preconditionVerticesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionEdgesInternal() {
   edgePositions_.resize(this->edgeNumber_);
   edgeCoords_.resize(this->edgeNumber_);
 
@@ -300,7 +302,8 @@ int ttk::ImplicitWithPreconditions::preconditionEdgesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionTrianglesInternal() {
 
   trianglePositions_.resize(this->triangleNumber_);
   triangleCoords_.resize(this->triangleNumber_);
@@ -347,7 +350,8 @@ int ttk::ImplicitWithPreconditions::preconditionTrianglesInternal() {
   return 0;
 }
 
-int ttk::ImplicitWithPreconditions::preconditionTetrahedronsInternal() {
+template<size_t card>
+int ttk::ImplicitWithPreconditions<card>::preconditionTetrahedronsInternal() {
 
   if(this->dimensionality_ != 3) {
     return 1;
@@ -364,8 +368,9 @@ int ttk::ImplicitWithPreconditions::preconditionTetrahedronsInternal() {
   return 0;
 }
 
-ttk::ImplicitTriangulation::VertexPosition
-  ttk::ImplicitNoPreconditions::getVertexPosition(const SimplexId v) const {
+template<size_t card>
+typename ttk::ImplicitTriangulation<card>::VertexPosition
+  ttk::ImplicitNoPreconditions<card>::getVertexPosition(const SimplexId v) const {
 
   if(this->dimensionality_ == 1) {
     if(v == 0) {
@@ -475,8 +480,9 @@ ttk::ImplicitTriangulation::VertexPosition
   return VertexPosition::CENTER_3D;
 }
 
-ttk::ImplicitTriangulation::EdgePosition
-  ttk::ImplicitNoPreconditions::getEdgePosition(const SimplexId e) const {
+template<size_t card>
+typename ttk::ImplicitTriangulation<card>::EdgePosition
+  ttk::ImplicitNoPreconditions<card>::getEdgePosition(const SimplexId e) const {
   std::array<SimplexId, 3> p{};
   if(this->dimensionality_ == 3) {
 
@@ -613,8 +619,9 @@ ttk::ImplicitTriangulation::EdgePosition
   return EdgePosition::CENTER_1D;
 }
 
+template<size_t card>
 std::array<ttk::SimplexId, 3>
-  ttk::ImplicitNoPreconditions::getEdgeCoords(const SimplexId e) const {
+  ttk::ImplicitNoPreconditions<card>::getEdgeCoords(const SimplexId e) const {
   std::array<SimplexId, 3> p{};
   if(this->dimensionality_ == 3) {
     if(e < this->esetshift_[0]) {
@@ -645,8 +652,9 @@ std::array<ttk::SimplexId, 3>
   return p;
 }
 
-ttk::ImplicitTriangulation::TrianglePosition
-  ttk::ImplicitNoPreconditions::getTrianglePosition(const SimplexId t) const {
+template<size_t card>
+typename ttk::ImplicitTriangulation<card>::TrianglePosition
+  ttk::ImplicitNoPreconditions<card>::getTrianglePosition(const SimplexId t) const {
   if(this->dimensionality_ == 2) {
     if(t % 2 == 0) {
       return TrianglePosition::TOP_2D;
@@ -671,8 +679,9 @@ ttk::ImplicitTriangulation::TrianglePosition
   return TrianglePosition::C_3D;
 }
 
+template<size_t card>
 std::array<ttk::SimplexId, 3>
-  ttk::ImplicitNoPreconditions::getTriangleCoords(const SimplexId t) const {
+  ttk::ImplicitNoPreconditions<card>::getTriangleCoords(const SimplexId t) const {
   std::array<SimplexId, 3> p{};
   if(this->dimensionality_ == 2) {
     this->triangleToPosition2d(t, p.data());
@@ -693,3 +702,14 @@ std::array<ttk::SimplexId, 3>
   }
   return p;
 }
+
+
+// explicit instantiations
+template class ttk::ImplicitWithPreconditions<0>;
+template class ttk::ImplicitWithPreconditions<1>;
+template class ttk::ImplicitWithPreconditions<2>;
+template class ttk::ImplicitWithPreconditions<3>;
+template class ttk::ImplicitNoPreconditions<0>;
+template class ttk::ImplicitNoPreconditions<1>;
+template class ttk::ImplicitNoPreconditions<2>;
+template class ttk::ImplicitNoPreconditions<3>;

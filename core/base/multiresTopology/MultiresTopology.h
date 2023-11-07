@@ -70,7 +70,8 @@ namespace ttk {
       this->setDebugMsgPrefix("MultiresTopology");
     }
 
-    inline void setupTriangulation(ImplicitTriangulation *const data) {
+    template <size_t card>
+    inline void setupTriangulation(ImplicitTriangulation<card> *const data) {
       triangulation_ = data;
       multiresTriangulation_.setTriangulation(triangulation_);
     }
@@ -129,7 +130,7 @@ namespace ttk {
 
     std::string resolutionInfoString();
 
-    ImplicitTriangulation *triangulation_{};
+    ImplicitTriangulation<0> *triangulation_{};
 
     MultiresTriangulation multiresTriangulation_{};
 

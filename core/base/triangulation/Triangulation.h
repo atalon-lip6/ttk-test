@@ -1400,7 +1400,22 @@ namespace ttk {
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if successful, -1 else.
     inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
-      return this->explicitTriangulation_.getVertexGlobalIdMap();
+      if (this->getDimensionality() == 0) {
+        return this->explicitTriangulation0_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 1) {
+        return this->explicitTriangulation1_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 2) {
+        return this->explicitTriangulation2_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 3) {
+        return this->explicitTriangulation3_.getVertexGlobalIdMap();
+      }
+      else {
+        this->printErr("Error, dimensionality should be between 0 and 3.");
+        return explicitTriangulation0_.getVertexGlobalIdMap();
+      }
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1481,8 +1496,14 @@ namespace ttk {
     }
 
     inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
-      this->periodicImplicitTriangulation_.setIsBoundaryPeriodic(boundary);
-      this->periodicPreconditionsTriangulation_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation0_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation0_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation1_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation1_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation2_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation2_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation3_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation3_.setIsBoundaryPeriodic(boundary);
     }
 
     /**
@@ -2990,8 +3011,8 @@ namespace ttk {
 
     AbstractTriangulation *abstractTriangulation_;
     ExplicitTriangulation<0> explicitTriangulation_;
-    ImplicitNoPreconditions implicitTriangulation_;
-    ImplicitWithPreconditions implicitPreconditionsTriangulation_;
+    ImplicitNoPreconditions<0> implicitTriangulation_;
+    ImplicitWithPreconditions<0> implicitPreconditionsTriangulation_;
     PeriodicNoPreconditions<0> periodicImplicitTriangulation_;
     PeriodicWithPreconditions<0> periodicPreconditionsTriangulation_;
     CompactTriangulation<0> compactTriangulation_;

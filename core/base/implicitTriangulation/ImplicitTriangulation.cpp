@@ -1,74 +1,78 @@
 #include <ImplicitTriangulation.h>
 
+
 #include <numeric>
 
 using namespace std;
 using namespace ttk;
 
 #define CASE_EDGE_POSITION_L_3D \
-  case EdgePosition::L_xnn_3D:  \
-  case EdgePosition::L_xn0_3D:  \
-  case EdgePosition::L_xnN_3D:  \
-  case EdgePosition::L_x0n_3D:  \
-  case EdgePosition::L_x00_3D:  \
-  case EdgePosition::L_x0N_3D:  \
-  case EdgePosition::L_xNn_3D:  \
-  case EdgePosition::L_xN0_3D:  \
-  case EdgePosition::L_xNN_3D
+  case CRTPClass::EdgePosition::L_xnn_3D:  \
+  case CRTPClass::EdgePosition::L_xn0_3D:  \
+  case CRTPClass::EdgePosition::L_xnN_3D:  \
+  case CRTPClass::EdgePosition::L_x0n_3D:  \
+  case CRTPClass::EdgePosition::L_x00_3D:  \
+  case CRTPClass::EdgePosition::L_x0N_3D:  \
+  case CRTPClass::EdgePosition::L_xNn_3D:  \
+  case CRTPClass::EdgePosition::L_xN0_3D:  \
+  case CRTPClass::EdgePosition::L_xNN_3D
 #define CASE_EDGE_POSITION_H_3D \
-  case EdgePosition::H_nyn_3D:  \
-  case EdgePosition::H_ny0_3D:  \
-  case EdgePosition::H_nyN_3D:  \
-  case EdgePosition::H_0yn_3D:  \
-  case EdgePosition::H_0y0_3D:  \
-  case EdgePosition::H_0yN_3D:  \
-  case EdgePosition::H_Nyn_3D:  \
-  case EdgePosition::H_Ny0_3D:  \
-  case EdgePosition::H_NyN_3D
+  case CRTPClass::EdgePosition::H_nyn_3D:  \
+  case CRTPClass::EdgePosition::H_ny0_3D:  \
+  case CRTPClass::EdgePosition::H_nyN_3D:  \
+  case CRTPClass::EdgePosition::H_0yn_3D:  \
+  case CRTPClass::EdgePosition::H_0y0_3D:  \
+  case CRTPClass::EdgePosition::H_0yN_3D:  \
+  case CRTPClass::EdgePosition::H_Nyn_3D:  \
+  case CRTPClass::EdgePosition::H_Ny0_3D:  \
+  case CRTPClass::EdgePosition::H_NyN_3D
 #define CASE_EDGE_POSITION_P_3D \
-  case EdgePosition::P_nnz_3D:  \
-  case EdgePosition::P_n0z_3D:  \
-  case EdgePosition::P_nNz_3D:  \
-  case EdgePosition::P_0nz_3D:  \
-  case EdgePosition::P_00z_3D:  \
-  case EdgePosition::P_0Nz_3D:  \
-  case EdgePosition::P_Nnz_3D:  \
-  case EdgePosition::P_N0z_3D:  \
-  case EdgePosition::P_NNz_3D
+  case CRTPClass::EdgePosition::P_nnz_3D:  \
+  case CRTPClass::EdgePosition::P_n0z_3D:  \
+  case CRTPClass::EdgePosition::P_nNz_3D:  \
+  case CRTPClass::EdgePosition::P_0nz_3D:  \
+  case CRTPClass::EdgePosition::P_00z_3D:  \
+  case CRTPClass::EdgePosition::P_0Nz_3D:  \
+  case CRTPClass::EdgePosition::P_Nnz_3D:  \
+  case CRTPClass::EdgePosition::P_N0z_3D:  \
+  case CRTPClass::EdgePosition::P_NNz_3D
 #define CASE_EDGE_POSITION_D1_3D \
-  case EdgePosition::D1_xyn_3D:  \
-  case EdgePosition::D1_xy0_3D:  \
-  case EdgePosition::D1_xyN_3D
+  case CRTPClass::EdgePosition::D1_xyn_3D:  \
+  case CRTPClass::EdgePosition::D1_xy0_3D:  \
+  case CRTPClass::EdgePosition::D1_xyN_3D
 #define CASE_EDGE_POSITION_D2_3D \
-  case EdgePosition::D2_nyz_3D:  \
-  case EdgePosition::D2_0yz_3D:  \
-  case EdgePosition::D2_Nyz_3D
+  case CRTPClass::EdgePosition::D2_nyz_3D:  \
+  case CRTPClass::EdgePosition::D2_0yz_3D:  \
+  case CRTPClass::EdgePosition::D2_Nyz_3D
 #define CASE_EDGE_POSITION_D3_3D \
-  case EdgePosition::D3_xnz_3D:  \
-  case EdgePosition::D3_x0z_3D:  \
-  case EdgePosition::D3_xNz_3D
+  case CRTPClass::EdgePosition::D3_xnz_3D:  \
+  case CRTPClass::EdgePosition::D3_x0z_3D:  \
+  case CRTPClass::EdgePosition::D3_xNz_3D
 #define CASE_EDGE_POSITION_L_2D \
-  case EdgePosition::L_xn_2D:   \
-  case EdgePosition::L_x0_2D:   \
-  case EdgePosition::L_xN_2D
+  case CRTPClass::EdgePosition::L_xn_2D:   \
+  case CRTPClass::EdgePosition::L_x0_2D:   \
+  case CRTPClass::EdgePosition::L_xN_2D
 #define CASE_EDGE_POSITION_H_2D \
-  case EdgePosition::H_ny_2D:   \
-  case EdgePosition::H_0y_2D:   \
-  case EdgePosition::H_Ny_2D
+  case CRTPClass::EdgePosition::H_ny_2D:   \
+  case CRTPClass::EdgePosition::H_0y_2D:   \
+  case CRTPClass::EdgePosition::H_Ny_2D
 
-ImplicitTriangulation::ImplicitTriangulation()
+template<size_t card>
+ImplicitTriangulation<card>::ImplicitTriangulation()
   : cellNumber_{}, vertexNumber_{}, edgeNumber_{}, triangleNumber_{},
     tetrahedronNumber_{}, isAccelerated_{} {
-  setDebugMsgPrefix("ImplicitTriangulation");
+  this->setDebugMsgPrefix("ImplicitTriangulation");
 #ifdef TTK_ENABLE_MPI
   this->hasPreconditionedDistributedEdges_ = true;
   this->hasPreconditionedDistributedTriangles_ = true;
 #endif // TTK_ENABLE_MPI
 }
 
-ImplicitTriangulation::~ImplicitTriangulation() = default;
+template<size_t card>
+ImplicitTriangulation<card>::~ImplicitTriangulation() = default;
 
-int ImplicitTriangulation::setInputGrid(const float &xOrigin,
+template<size_t card>
+int ImplicitTriangulation<card>::setInputGrid(const float &xOrigin,
                                         const float &yOrigin,
                                         const float &zOrigin,
                                         const float &xSpacing,
@@ -80,35 +84,35 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
 
   // Dimensionality //
   if(xDim < 1 or yDim < 1 or zDim < 1)
-    dimensionality_ = -1;
+    this->dimensionality_ = -1;
   else if(xDim > 1 and yDim > 1 and zDim > 1)
-    dimensionality_ = 3;
+    this->dimensionality_ = 3;
   else if((xDim > 1 and yDim > 1) or (yDim > 1 and zDim > 1)
           or (xDim > 1 and zDim > 1))
-    dimensionality_ = 2;
+    this->dimensionality_ = 2;
   else if(xDim > 1 or yDim > 1 or zDim > 1)
-    dimensionality_ = 1;
+    this->dimensionality_ = 1;
   else
-    dimensionality_ = 0;
+    this->dimensionality_ = 0;
 
   // Essentials //
-  origin_[0] = xOrigin;
-  origin_[1] = yOrigin;
-  origin_[2] = zOrigin;
-  spacing_[0] = xSpacing;
-  spacing_[1] = ySpacing;
-  spacing_[2] = zSpacing;
-  dimensions_[0] = xDim;
-  dimensions_[1] = yDim;
-  dimensions_[2] = zDim;
-  nbvoxels_[0] = xDim - 1;
-  nbvoxels_[1] = yDim - 1;
-  nbvoxels_[2] = zDim - 1;
+  this->origin_[0] = xOrigin;
+  this->origin_[1] = yOrigin;
+  this->origin_[2] = zOrigin;
+  this->spacing_[0] = xSpacing;
+  this->spacing_[1] = ySpacing;
+  this->spacing_[2] = zSpacing;
+  this->dimensions_[0] = xDim;
+  this->dimensions_[1] = yDim;
+  this->dimensions_[2] = zDim;
+  this->nbvoxels_[0] = xDim - 1;
+  this->nbvoxels_[1] = yDim - 1;
+  this->nbvoxels_[2] = zDim - 1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     // VertexShift
-    vshift_[0] = xDim;
-    vshift_[1] = xDim * yDim;
+    this->vshift_[0] = xDim;
+    this->vshift_[1] = xDim * yDim;
     // EdgeSetDimensions
     esetdims_[0] = (xDim - 1) * yDim * zDim;
     esetdims_[1] = xDim * (yDim - 1) * zDim;
@@ -118,24 +122,24 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
     esetdims_[5] = (xDim - 1) * yDim * (zDim - 1);
     esetdims_[6] = (xDim - 1) * (yDim - 1) * (zDim - 1);
     // EdgeSetShift
-    esetshift_[0] = esetdims_[0];
+    this->esetshift_[0] = esetdims_[0];
     for(int k = 1; k < 7; ++k)
-      esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
+      this->esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
     // EdgeShift
-    eshift_[0] = xDim - 1;
-    eshift_[1] = (xDim - 1) * yDim;
-    eshift_[2] = xDim;
-    eshift_[3] = xDim * (yDim - 1);
-    eshift_[4] = xDim;
-    eshift_[5] = xDim * yDim;
-    eshift_[6] = xDim - 1;
-    eshift_[7] = (xDim - 1) * (yDim - 1);
-    eshift_[8] = xDim;
-    eshift_[9] = xDim * (yDim - 1);
-    eshift_[10] = xDim - 1;
-    eshift_[11] = (xDim - 1) * yDim;
-    eshift_[12] = xDim - 1;
-    eshift_[13] = (xDim - 1) * (yDim - 1);
+    this->eshift_[0] = xDim - 1;
+    this->eshift_[1] = (xDim - 1) * yDim;
+    this->eshift_[2] = xDim;
+    this->eshift_[3] = xDim * (yDim - 1);
+    this->eshift_[4] = xDim;
+    this->eshift_[5] = xDim * yDim;
+    this->eshift_[6] = xDim - 1;
+    this->eshift_[7] = (xDim - 1) * (yDim - 1);
+    this->eshift_[8] = xDim;
+    this->eshift_[9] = xDim * (yDim - 1);
+    this->eshift_[10] = xDim - 1;
+    this->eshift_[11] = (xDim - 1) * yDim;
+    this->eshift_[12] = xDim - 1;
+    this->eshift_[13] = (xDim - 1) * (yDim - 1);
     // TriangleSetDimensions
     tsetdims_[0] = (xDim - 1) * (yDim - 1) * zDim * 2;
     tsetdims_[1] = (xDim - 1) * yDim * (zDim - 1) * 2;
@@ -144,31 +148,31 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
     tsetdims_[4] = (xDim - 1) * (yDim - 1) * (zDim - 1) * 2;
     tsetdims_[5] = (xDim - 1) * (yDim - 1) * (zDim - 1) * 2;
     // TriangleSetShift
-    tsetshift_[0] = tsetdims_[0];
+    this->tsetshift_[0] = tsetdims_[0];
     for(int k = 1; k < 6; ++k)
-      tsetshift_[k] = tsetshift_[k - 1] + tsetdims_[k];
+      this->tsetshift_[k] = this->tsetshift_[k - 1] + tsetdims_[k];
     // TriangleShift
-    tshift_[0] = (xDim - 1) * 2;
-    tshift_[1] = (xDim - 1) * (yDim - 1) * 2;
-    tshift_[2] = (xDim - 1) * 2;
-    tshift_[3] = (xDim - 1) * yDim * 2;
-    tshift_[4] = xDim * 2;
-    tshift_[5] = xDim * (yDim - 1) * 2;
-    tshift_[6] = (xDim - 1) * 2;
-    tshift_[7] = (xDim - 1) * (yDim - 1) * 2;
-    tshift_[8] = (xDim - 1) * 2;
-    tshift_[9] = (xDim - 1) * (yDim - 1) * 2;
-    tshift_[10] = (xDim - 1) * 2;
-    tshift_[11] = (xDim - 1) * (yDim - 1) * 2;
+    this->tshift_[0] = (xDim - 1) * 2;
+    this->tshift_[1] = (xDim - 1) * (yDim - 1) * 2;
+    this->tshift_[2] = (xDim - 1) * 2;
+    this->tshift_[3] = (xDim - 1) * yDim * 2;
+    this->tshift_[4] = xDim * 2;
+    this->tshift_[5] = xDim * (yDim - 1) * 2;
+    this->tshift_[6] = (xDim - 1) * 2;
+    this->tshift_[7] = (xDim - 1) * (yDim - 1) * 2;
+    this->tshift_[8] = (xDim - 1) * 2;
+    this->tshift_[9] = (xDim - 1) * (yDim - 1) * 2;
+    this->tshift_[10] = (xDim - 1) * 2;
+    this->tshift_[11] = (xDim - 1) * (yDim - 1) * 2;
     // TetrahedronShift
-    tetshift_[0] = (xDim - 1) * 6;
-    tetshift_[1] = (xDim - 1) * (yDim - 1) * 6;
+    this->tetshift_[0] = (xDim - 1) * 6;
+    this->tetshift_[1] = (xDim - 1) * (yDim - 1) * 6;
 
     // Numbers
     vertexNumber_ = xDim * yDim * zDim;
-    edgeNumber_ = 0;
+    this->edgeNumber_ = 0;
     for(int k = 0; k < 7; ++k)
-      edgeNumber_ += esetdims_[k];
+      this->edgeNumber_ += esetdims_[k];
     triangleNumber_ = 0;
     for(int k = 0; k < 6; ++k)
       triangleNumber_ += tsetdims_[k];
@@ -176,99 +180,101 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
     cellNumber_ = tetrahedronNumber_;
 
     checkAcceleration();
-  } else if(dimensionality_ == 2) {
+  } else if(this->dimensionality_ == 2) {
     // dimensions selectors
     if(xDim == 1) {
-      Di_ = 1;
-      Dj_ = 2;
+      this->Di_ = 1;
+      this->Dj_ = 2;
     } else if(yDim == 1) {
-      Di_ = 0;
-      Dj_ = 2;
+      this->Di_ = 0;
+      this->Dj_ = 2;
     } else {
-      Di_ = 0;
-      Dj_ = 1;
+      this->Di_ = 0;
+      this->Dj_ = 1;
     }
     // VertexShift
-    vshift_[0] = dimensions_[Di_];
+    this->vshift_[0] = this->dimensions_[this->Di_];
     // EdgeSetDimensions
-    esetdims_[0] = (dimensions_[Di_] - 1) * dimensions_[Dj_];
-    esetdims_[1] = dimensions_[Di_] * (dimensions_[Dj_] - 1);
-    esetdims_[2] = (dimensions_[Di_] - 1) * (dimensions_[Dj_] - 1);
+    esetdims_[0] = (this->dimensions_[this->Di_] - 1) * this->dimensions_[this->Dj_];
+    esetdims_[1] = this->dimensions_[this->Di_] * (this->dimensions_[this->Dj_] - 1);
+    esetdims_[2] = (this->dimensions_[this->Di_] - 1) * (this->dimensions_[this->Dj_] - 1);
     // EdgeSetShift
-    esetshift_[0] = esetdims_[0];
+    this->esetshift_[0] = esetdims_[0];
     for(int k = 1; k < 3; ++k)
-      esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
+      this->esetshift_[k] = esetshift_[k - 1] + esetdims_[k];
     // EdgeShift
-    eshift_[0] = dimensions_[Di_] - 1;
-    eshift_[2] = dimensions_[Di_];
-    eshift_[4] = dimensions_[Di_] - 1;
+    this->eshift_[0] = this->dimensions_[this->Di_] - 1;
+    this->eshift_[2] = this->dimensions_[this->Di_];
+    this->eshift_[4] = this->dimensions_[this->Di_] - 1;
     // TriangleShift
-    tshift_[0] = (dimensions_[Di_] - 1) * 2;
+    this->tshift_[0] = (this->dimensions_[this->Di_] - 1) * 2;
 
     // Numbers
-    vertexNumber_ = dimensions_[Di_] * dimensions_[Dj_];
-    edgeNumber_ = 0;
+    vertexNumber_ = this->dimensions_[this->Di_] * this->dimensions_[this->Dj_];
+    this->edgeNumber_ = 0;
     for(int k = 0; k < 3; ++k)
-      edgeNumber_ += esetdims_[k];
-    triangleNumber_ = (dimensions_[Di_] - 1) * (dimensions_[Dj_] - 1) * 2;
+      this->edgeNumber_ += esetdims_[k];
+    triangleNumber_ = (this->dimensions_[this->Di_] - 1) * (this->dimensions_[this->Dj_] - 1) * 2;
     cellNumber_ = triangleNumber_;
 
     checkAcceleration();
-  } else if(dimensionality_ == 1) {
+  } else if(this->dimensionality_ == 1) {
     // dimensions selectors
     for(int k = 0; k < 3; ++k) {
-      if(dimensions_[k] > 1) {
-        Di_ = k;
+      if(this->dimensions_[k] > 1) {
+        this->Di_ = k;
         break;
       }
     }
 
     // Numbers
-    vertexNumber_ = dimensions_[Di_];
-    edgeNumber_ = vertexNumber_ - 1;
-    cellNumber_ = edgeNumber_;
+    vertexNumber_ = this->dimensions_[this->Di_];
+    this->edgeNumber_ = vertexNumber_ - 1;
+    cellNumber_ = this->edgeNumber_;
   }
 
   return 0;
 }
 
-int ImplicitTriangulation::checkAcceleration() {
+template<size_t card>
+int ImplicitTriangulation<card>::checkAcceleration() {
   isAccelerated_ = false;
 
   unsigned long long int msb[3];
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     bool allDimensionsArePowerOfTwo = true;
     for(int k = 0; k < 3; ++k)
-      if(!isPowerOfTwo(dimensions_[k], msb[k]))
+      if(!isPowerOfTwo(this->dimensions_[k], msb[k]))
         allDimensionsArePowerOfTwo = false;
 
     if(allDimensionsArePowerOfTwo) {
-      mod_[0] = dimensions_[0] - 1;
-      mod_[1] = dimensions_[0] * dimensions_[1] - 1;
-      div_[0] = msb[0];
-      div_[1] = msb[0] + msb[1];
+      mod_[0] = this->dimensions_[0] - 1;
+      mod_[1] = this->dimensions_[0] * this->dimensions_[1] - 1;
+      this->div_[0] = msb[0];
+      this->div_[1] = msb[0] + msb[1];
       isAccelerated_ = true;
     }
-  } else if(dimensionality_ == 2) {
-    bool const isDi = isPowerOfTwo(dimensions_[Di_], msb[Di_]);
-    bool const isDj = isPowerOfTwo(dimensions_[Dj_], msb[Dj_]);
+  } else if(this->dimensionality_ == 2) {
+    bool const isDi = isPowerOfTwo(this->dimensions_[this->Di_], msb[this->Di_]);
+    bool const isDj = isPowerOfTwo(this->dimensions_[this->Dj_], msb[this->Dj_]);
     bool const allDimensionsArePowerOfTwo = (isDi and isDj);
 
     if(allDimensionsArePowerOfTwo) {
-      mod_[0] = dimensions_[Di_] - 1;
-      div_[0] = msb[Di_];
+      mod_[0] = this->dimensions_[this->Di_] - 1;
+      this->div_[0] = msb[this->Di_];
       isAccelerated_ = true;
     }
   }
 
   if(isAccelerated_) {
-    printMsg("Accelerated getVertex*() requests.", debug::Priority::INFO);
+    this->printMsg("Accelerated getVertex*() requests.", debug::Priority::INFO);
   }
 
   return 0;
 }
 
-bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
+template<size_t card>
+bool ImplicitTriangulation<card>::isPowerOfTwo(unsigned long long int v,
                                          unsigned long long int &r) {
   if(v && !(v & (v - 1))) {
     r = 0;
@@ -279,10 +285,11 @@ bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
   return false;
 }
 
-template <typename Derived>
-bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+bool ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   isVertexOnBoundary)(const SimplexId &vertexId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifdef TTK_ENABLE_MPI
   if(this->metaGrid_ != nullptr) {
     return this->isVertexOnGlobalBoundaryInternal(vertexId);
@@ -295,19 +302,20 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
 #endif // !TTK_ENABLE_KAMIKAZE
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-    case VertexPosition::CENTER_2D:
-    case VertexPosition::CENTER_1D:
+    case CRTPClass::VertexPosition::CENTER_3D:
+    case CRTPClass::VertexPosition::CENTER_2D:
+    case CRTPClass::VertexPosition::CENTER_1D:
       return false;
     default:
       return true;
   }
 }
 
-template <typename Derived>
-bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+bool ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   isEdgeOnBoundary)(const SimplexId &edgeId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifdef TTK_ENABLE_MPI
   if(this->metaGrid_ != nullptr) {
     return this->isEdgeOnGlobalBoundaryInternal(edgeId);
@@ -315,21 +323,21 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
 #endif // TTK_ENABLE_MPI
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_xnn_3D:
-    case EdgePosition::H_nyn_3D:
-    case EdgePosition::P_nnz_3D:
-    case EdgePosition::D1_xyn_3D:
-    case EdgePosition::D2_nyz_3D:
-    case EdgePosition::D3_xnz_3D:
-    case EdgePosition::D4_3D:
-    case EdgePosition::L_xn_2D:
-    case EdgePosition::H_ny_2D:
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::L_xnn_3D:
+    case CRTPClass::EdgePosition::H_nyn_3D:
+    case CRTPClass::EdgePosition::P_nnz_3D:
+    case CRTPClass::EdgePosition::D1_xyn_3D:
+    case CRTPClass::EdgePosition::D2_nyz_3D:
+    case CRTPClass::EdgePosition::D3_xnz_3D:
+    case CRTPClass::EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::L_xn_2D:
+    case CRTPClass::EdgePosition::H_ny_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       return false;
     default:
       break;
@@ -337,7 +345,8 @@ bool ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return true;
 }
 
-bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
+template<size_t card>
+bool ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
   const SimplexId &triangleId) const {
 
 #ifdef TTK_ENABLE_MPI
@@ -351,140 +360,141 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3)
-    return (TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId) == 1);
+  if(this->dimensionality_ == 3)
+    return (TTK_TRIANGULATION_INTERNAL(this->getTriangleStarNumber)(triangleId) == 1);
 
   return false;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexNeighbor)(const SimplexId &vertexId,
                      const int &localNeighborId,
                      SimplexId &neighborId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumber(vertexId))
+     or localNeighborId >= this->getVertexNeighborNumber(vertexId))
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
+    case CRTPClass::VertexPosition::CENTER_3D:
       neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
       break;
-    case VertexPosition::FRONT_FACE_3D:
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
       neighborId = vertexId + this->vertexNeighborABCD_[localNeighborId];
       break;
-    case VertexPosition::BACK_FACE_3D:
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
       neighborId = vertexId + this->vertexNeighborEFGH_[localNeighborId];
       break;
-    case VertexPosition::TOP_FACE_3D:
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
       neighborId = vertexId + this->vertexNeighborAEFB_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_FACE_3D:
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
       neighborId = vertexId + this->vertexNeighborGHDC_[localNeighborId];
       break;
-    case VertexPosition::LEFT_FACE_3D:
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
       neighborId = vertexId + this->vertexNeighborAEGC_[localNeighborId];
       break;
-    case VertexPosition::RIGHT_FACE_3D:
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
       neighborId = vertexId + this->vertexNeighborBFHD_[localNeighborId];
       break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
       neighborId = vertexId + this->vertexNeighborAB_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
       neighborId = vertexId + this->vertexNeighborCD_[localNeighborId];
       break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
       neighborId = vertexId + this->vertexNeighborAC_[localNeighborId];
       break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
       neighborId = vertexId + this->vertexNeighborBD_[localNeighborId];
       break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
       neighborId = vertexId + this->vertexNeighborEF_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
       neighborId = vertexId + this->vertexNeighborGH_[localNeighborId];
       break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
       neighborId = vertexId + this->vertexNeighborEG_[localNeighborId];
       break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
       neighborId = vertexId + this->vertexNeighborFH_[localNeighborId];
       break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
       neighborId = vertexId + this->vertexNeighborAE_[localNeighborId];
       break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
       neighborId = vertexId + this->vertexNeighborBF_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
       neighborId = vertexId + this->vertexNeighborCG_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
       neighborId = vertexId + this->vertexNeighborDH_[localNeighborId];
       break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
       neighborId = vertexId + this->vertexNeighborA_[localNeighborId];
       break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
       neighborId = vertexId + this->vertexNeighborB_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
       neighborId = vertexId + this->vertexNeighborC_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
       neighborId = vertexId + this->vertexNeighborD_[localNeighborId];
       break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
       neighborId = vertexId + this->vertexNeighborE_[localNeighborId];
       break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
       neighborId = vertexId + this->vertexNeighborF_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
       neighborId = vertexId + this->vertexNeighborG_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
       neighborId = vertexId + this->vertexNeighborH_[localNeighborId];
       break;
-    case VertexPosition::CENTER_2D:
+    case CRTPClass::VertexPosition::CENTER_2D:
       neighborId = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
       break;
-    case VertexPosition::TOP_EDGE_2D:
+    case CRTPClass::VertexPosition::TOP_EDGE_2D:
       neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_EDGE_2D:
+    case CRTPClass::VertexPosition::BOTTOM_EDGE_2D:
       neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
       break;
-    case VertexPosition::LEFT_EDGE_2D:
+    case CRTPClass::VertexPosition::LEFT_EDGE_2D:
       neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
       break;
-    case VertexPosition::RIGHT_EDGE_2D:
+    case CRTPClass::VertexPosition::RIGHT_EDGE_2D:
       neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
       break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+    case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
       neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
       break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+    case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
       neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
       neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
       break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
       neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
       break;
-    case VertexPosition::CENTER_1D:
+    case CRTPClass::VertexPosition::CENTER_1D:
       neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
       break;
-    case VertexPosition::LEFT_CORNER_1D:
+    case CRTPClass::VertexPosition::LEFT_CORNER_1D:
       neighborId = vertexId + 1;
       break;
-    case VertexPosition::RIGHT_CORNER_1D:
+    case CRTPClass::VertexPosition::RIGHT_CORNER_1D:
       neighborId = vertexId - 1;
       break;
     default:
@@ -495,34 +505,37 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() {
-  if(vertexNeighborList_.empty()) {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() {
+  if(this->vertexNeighborList_.empty()) {
     Timer t;
-    vertexNeighborList_.resize(vertexNumber_);
+    this->vertexNeighborList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexNeighborList_[i].resize(getVertexNeighborNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexNeighborList_[i].size(); ++j)
-        getVertexNeighbor(i, j, vertexNeighborList_[i][j]);
+      this->vertexNeighborList_[i].resize(this->getVertexNeighborNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->vertexNeighborList_[i].size(); ++j)
+        this->getVertexNeighbor(i, j, this->vertexNeighborList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex neighbors.", 1,
+    this->printMsg("Built " + to_string(vertexNumber_) + " vertex neighbors.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexNeighborList_;
+  return &this->vertexNeighborList_;
 }
 
-SimplexId ImplicitTriangulation::getVertexEdgeNumberInternal(
+template<size_t card>
+SimplexId ImplicitTriangulation<card>::getVertexEdgeNumberInternal(
   const SimplexId &vertexId) const {
-  return TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(vertexId);
+  return TTK_TRIANGULATION_INTERNAL(this->getVertexNeighborNumber)(vertexId);
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getVertexEdgeInternal(
   const SimplexId &vertexId, const int &localEdgeId, SimplexId &edgeId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(localEdgeId < 0 or localEdgeId >= getVertexEdgeNumberInternal(vertexId))
+  if(localEdgeId < 0 or localEdgeId >= this->getVertexEdgeNumberInternal(vertexId))
     return -1;
 #endif
   //    e--------f
@@ -545,121 +558,121 @@ int ImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      edgeId = getVertexEdgeABCDEFGH(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::CENTER_3D:
+      edgeId = this->getVertexEdgeABCDEFGH(p.data(), localEdgeId);
       break;
-    case VertexPosition::FRONT_FACE_3D:
-      edgeId = getVertexEdgeABDC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+      edgeId = this->getVertexEdgeABDC(p.data(), localEdgeId);
       break;
-    case VertexPosition::BACK_FACE_3D:
-      edgeId = getVertexEdgeEFHG(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+      edgeId = this->getVertexEdgeEFHG(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_FACE_3D:
-      edgeId = getVertexEdgeAEFB(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+      edgeId = this->getVertexEdgeAEFB(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      edgeId = getVertexEdgeGHDC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+      edgeId = this->getVertexEdgeGHDC(p.data(), localEdgeId);
       break;
-    case VertexPosition::LEFT_FACE_3D:
-      edgeId = getVertexEdgeAEGC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+      edgeId = this->getVertexEdgeAEGC(p.data(), localEdgeId);
       break;
-    case VertexPosition::RIGHT_FACE_3D:
-      edgeId = getVertexEdgeBFHD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
+      edgeId = this->getVertexEdgeBFHD(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      edgeId = getVertexEdgeAB(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      edgeId = this->getVertexEdgeAB(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      edgeId = getVertexEdgeCD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      edgeId = this->getVertexEdgeCD(p.data(), localEdgeId);
       break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      edgeId = getVertexEdgeAC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      edgeId = this->getVertexEdgeAC(p.data(), localEdgeId);
       break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      edgeId = getVertexEdgeBD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      edgeId = this->getVertexEdgeBD(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      edgeId = getVertexEdgeEF(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+      edgeId = this->getVertexEdgeEF(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      edgeId = getVertexEdgeGH(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      edgeId = this->getVertexEdgeGH(p.data(), localEdgeId);
       break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      edgeId = getVertexEdgeEG(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      edgeId = this->getVertexEdgeEG(p.data(), localEdgeId);
       break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      edgeId = getVertexEdgeFH(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      edgeId = this->getVertexEdgeFH(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      edgeId = getVertexEdgeAE(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      edgeId = this->getVertexEdgeAE(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      edgeId = getVertexEdgeBF(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      edgeId = this->getVertexEdgeBF(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      edgeId = getVertexEdgeCG(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      edgeId = this->getVertexEdgeCG(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      edgeId = getVertexEdgeDH(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      edgeId = this->getVertexEdgeDH(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      edgeId = getVertexEdgeA(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      edgeId = this->getVertexEdgeA(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      edgeId = getVertexEdgeB(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      edgeId = this->getVertexEdgeB(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      edgeId = getVertexEdgeC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      edgeId = this->getVertexEdgeC(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      edgeId = getVertexEdgeD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      edgeId = this->getVertexEdgeD(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      edgeId = getVertexEdgeE(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      edgeId = this->getVertexEdgeE(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      edgeId = getVertexEdgeF(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      edgeId = this->getVertexEdgeF(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      edgeId = getVertexEdgeG(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      edgeId = this->getVertexEdgeG(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      edgeId = getVertexEdgeH(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      edgeId = this->getVertexEdgeH(p.data(), localEdgeId);
       break;
-    case VertexPosition::CENTER_2D:
-      edgeId = getVertexEdge2dABCD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::CENTER_2D:
+      edgeId = this->getVertexEdge2dABCD(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_EDGE_2D:
-      edgeId = getVertexEdge2dAB(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_EDGE_2D:
+      edgeId = this->getVertexEdge2dAB(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      edgeId = getVertexEdge2dCD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_EDGE_2D:
+      edgeId = this->getVertexEdge2dCD(p.data(), localEdgeId);
       break;
-    case VertexPosition::LEFT_EDGE_2D:
-      edgeId = getVertexEdge2dAC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::LEFT_EDGE_2D:
+      edgeId = this->getVertexEdge2dAC(p.data(), localEdgeId);
       break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      edgeId = getVertexEdge2dBD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::RIGHT_EDGE_2D:
+      edgeId = this->getVertexEdge2dBD(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      edgeId = getVertexEdge2dA(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
+      edgeId = this->getVertexEdge2dA(p.data(), localEdgeId);
       break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      edgeId = getVertexEdge2dB(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      edgeId = this->getVertexEdge2dB(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      edgeId = getVertexEdge2dC(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      edgeId = this->getVertexEdge2dC(p.data(), localEdgeId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      edgeId = getVertexEdge2dD(p.data(), localEdgeId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      edgeId = this->getVertexEdge2dD(p.data(), localEdgeId);
       break;
-    case VertexPosition::CENTER_1D:
+    case CRTPClass::VertexPosition::CENTER_1D:
       edgeId = (localEdgeId == 0 ? vertexId : vertexId - 1);
       break;
-    case VertexPosition::LEFT_CORNER_1D:
+    case CRTPClass::VertexPosition::LEFT_CORNER_1D:
       edgeId = vertexId;
       break;
-    case VertexPosition::RIGHT_CORNER_1D:
+    case CRTPClass::VertexPosition::RIGHT_CORNER_1D:
       edgeId = vertexId - 1;
       break;
     default:
@@ -669,66 +682,68 @@ int ImplicitTriangulationCRTP<Derived>::getVertexEdgeInternal(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::getVertexEdgesInternal() {
-  if(vertexEdgeList_.empty()) {
+  ImplicitTriangulation<card>::getVertexEdgesInternal() {
+  if(this->vertexEdgeList_.empty()) {
     Timer t;
 
-    vertexEdgeList_.resize(vertexNumber_);
+    this->vertexEdgeList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexEdgeList_[i].resize(getVertexEdgeNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexEdgeList_[i].size(); ++j)
-        getVertexEdgeInternal(i, j, vertexEdgeList_[i][j]);
+      this->vertexEdgeList_[i].resize(getVertexEdgeNumberInternal(i));
+      for(SimplexId j = 0; j < (SimplexId)this->vertexEdgeList_[i].size(); ++j)
+        this->getVertexEdgeInternal(i, j, this->vertexEdgeList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex edges.", 1,
+    this->printMsg("Built " + to_string(vertexNumber_) + " vertex edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexEdgeList_;
+  return &this->vertexEdgeList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::getVertexTriangleNumberInternal(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::getVertexTriangleNumberInternal(
   const SimplexId &vertexId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
 #endif
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
+    case CRTPClass::VertexPosition::CENTER_3D:
       return 36;
-    case VertexPosition::FRONT_FACE_3D:
-    case VertexPosition::BACK_FACE_3D:
-    case VertexPosition::TOP_FACE_3D:
-    case VertexPosition::BOTTOM_FACE_3D:
-    case VertexPosition::LEFT_FACE_3D:
-    case VertexPosition::RIGHT_FACE_3D:
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
       return 21;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
       return 15;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
       return 12;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
       return 9;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
       return 5;
     default: // 1D + 2D
       break;
@@ -737,100 +752,101 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getVertexTriangleNumberInternal(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getVertexTriangleInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getVertexTriangleInternal(
   const SimplexId &vertexId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId < 0
-     or localTriangleId >= getVertexTriangleNumberInternal(vertexId))
+     or localTriangleId >= this->getVertexTriangleNumberInternal(vertexId))
     return -1;
 #endif
 
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      triangleId = getVertexTriangleABCDEFGH(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::CENTER_3D:
+      triangleId = this->getVertexTriangleABCDEFGH(p.data(), localTriangleId);
       break;
-    case VertexPosition::FRONT_FACE_3D:
-      triangleId = getVertexTriangleABDC(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+      triangleId = this->getVertexTriangleABDC(p.data(), localTriangleId);
       break;
-    case VertexPosition::BACK_FACE_3D:
-      triangleId = getVertexTriangleEFHG(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+      triangleId = this->getVertexTriangleEFHG(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_FACE_3D:
-      triangleId = getVertexTriangleAEFB(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+      triangleId = this->getVertexTriangleAEFB(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      triangleId = getVertexTriangleGHDC(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+      triangleId = this->getVertexTriangleGHDC(p.data(), localTriangleId);
       break;
-    case VertexPosition::LEFT_FACE_3D:
-      triangleId = getVertexTriangleAEGC(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+      triangleId = this->getVertexTriangleAEGC(p.data(), localTriangleId);
       break;
-    case VertexPosition::RIGHT_FACE_3D:
-      triangleId = getVertexTriangleBFHD(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
+      triangleId = this->getVertexTriangleBFHD(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      triangleId = getVertexTriangleAB(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      triangleId = this->getVertexTriangleAB(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      triangleId = getVertexTriangleCD(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      triangleId = this->getVertexTriangleCD(p.data(), localTriangleId);
       break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      triangleId = getVertexTriangleAC(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      triangleId = this->getVertexTriangleAC(p.data(), localTriangleId);
       break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      triangleId = getVertexTriangleBD(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      triangleId = this->getVertexTriangleBD(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      triangleId = getVertexTriangleEF(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+      triangleId = this->getVertexTriangleEF(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      triangleId = getVertexTriangleGH(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      triangleId = this->getVertexTriangleGH(p.data(), localTriangleId);
       break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      triangleId = getVertexTriangleEG(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      triangleId = this->getVertexTriangleEG(p.data(), localTriangleId);
       break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      triangleId = getVertexTriangleFH(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      triangleId = this->getVertexTriangleFH(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      triangleId = getVertexTriangleAE(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      triangleId = this->getVertexTriangleAE(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      triangleId = getVertexTriangleBF(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      triangleId = this->getVertexTriangleBF(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      triangleId = getVertexTriangleCG(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      triangleId = this->getVertexTriangleCG(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      triangleId = getVertexTriangleDH(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      triangleId = this->getVertexTriangleDH(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      triangleId = getVertexTriangleA(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      triangleId = this->getVertexTriangleA(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      triangleId = getVertexTriangleB(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      triangleId = this->getVertexTriangleB(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      triangleId = getVertexTriangleC(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      triangleId = this->getVertexTriangleC(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      triangleId = getVertexTriangleD(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      triangleId = this->getVertexTriangleD(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      triangleId = getVertexTriangleE(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      triangleId = this->getVertexTriangleE(p.data(), localTriangleId);
       break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      triangleId = getVertexTriangleF(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      triangleId = this->getVertexTriangleF(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      triangleId = getVertexTriangleG(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      triangleId = this->getVertexTriangleG(p.data(), localTriangleId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      triangleId = getVertexTriangleH(p.data(), localTriangleId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      triangleId = this->getVertexTriangleH(p.data(), localTriangleId);
       break;
     default: // 1D + 2D
       triangleId = -1;
@@ -840,151 +856,154 @@ int ImplicitTriangulationCRTP<Derived>::getVertexTriangleInternal(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::getVertexTrianglesInternal() {
-  if(vertexTriangleList_.empty()) {
+  ImplicitTriangulation<card>::getVertexTrianglesInternal() {
+  if(this->vertexTriangleList_.empty()) {
     Timer t;
 
-    vertexTriangleList_.resize(vertexNumber_);
+    this->vertexTriangleList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexTriangleList_[i].resize(getVertexTriangleNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexTriangleList_[i].size(); ++j)
-        getVertexTriangleInternal(i, j, vertexTriangleList_[i][j]);
+      this->vertexTriangleList_[i].resize(this->getVertexTriangleNumberInternal(i));
+      for(SimplexId j = 0; j < (SimplexId)this->vertexTriangleList_[i].size(); ++j)
+        this->getVertexTriangleInternal(i, j, this->vertexTriangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex triangles.", 1,
+    this->printMsg("Built " + to_string(vertexNumber_) + " vertex triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexTriangleList_;
+  return &this->vertexTriangleList_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template<size_t card>
+SimplexId ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
   getVertexLinkNumber)(const SimplexId &vertexId) const {
-  return TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(vertexId);
+  return TTK_TRIANGULATION_INTERNAL(this->getVertexStarNumber)(vertexId);
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexLink)(const SimplexId &vertexId,
                  const int &localLinkId,
                  SimplexId &linkId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(localLinkId < 0 or localLinkId >= getVertexLinkNumber(vertexId))
+  if(localLinkId < 0 or localLinkId >= this->getVertexLinkNumber(vertexId))
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      linkId = getVertexLinkABCDEFGH(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::CENTER_3D:
+      linkId = this->getVertexLinkABCDEFGH(p.data(), localLinkId);
       break;
-    case VertexPosition::FRONT_FACE_3D:
-      linkId = getVertexLinkABDC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+      linkId = this->getVertexLinkABDC(p.data(), localLinkId);
       break;
-    case VertexPosition::BACK_FACE_3D:
-      linkId = getVertexLinkEFHG(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+      linkId = this->getVertexLinkEFHG(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_FACE_3D:
-      linkId = getVertexLinkAEFB(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+      linkId = this->getVertexLinkAEFB(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      linkId = getVertexLinkGHDC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+      linkId = this->getVertexLinkGHDC(p.data(), localLinkId);
       break;
-    case VertexPosition::LEFT_FACE_3D:
-      linkId = getVertexLinkAEGC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+      linkId = this->getVertexLinkAEGC(p.data(), localLinkId);
       break;
-    case VertexPosition::RIGHT_FACE_3D:
-      linkId = getVertexLinkBFHD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
+      linkId = this->getVertexLinkBFHD(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      linkId = getVertexLinkAB(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      linkId = this->getVertexLinkAB(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      linkId = getVertexLinkCD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      linkId = this->getVertexLinkCD(p.data(), localLinkId);
       break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      linkId = getVertexLinkAC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      linkId = this->getVertexLinkAC(p.data(), localLinkId);
       break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      linkId = getVertexLinkBD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      linkId = this->getVertexLinkBD(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      linkId = getVertexLinkEF(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+      linkId = this->getVertexLinkEF(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      linkId = getVertexLinkGH(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      linkId = this->getVertexLinkGH(p.data(), localLinkId);
       break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      linkId = getVertexLinkEG(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      linkId = this->getVertexLinkEG(p.data(), localLinkId);
       break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      linkId = getVertexLinkFH(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      linkId = this->getVertexLinkFH(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      linkId = getVertexLinkAE(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      linkId = this->getVertexLinkAE(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      linkId = getVertexLinkBF(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      linkId = this->getVertexLinkBF(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      linkId = getVertexLinkCG(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      linkId = this->getVertexLinkCG(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      linkId = getVertexLinkDH(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      linkId = this->getVertexLinkDH(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      linkId = getVertexLinkA(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      linkId = this->getVertexLinkA(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      linkId = getVertexLinkB(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      linkId = this->getVertexLinkB(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      linkId = getVertexLinkC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      linkId = this->getVertexLinkC(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      linkId = getVertexLinkD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      linkId = this->getVertexLinkD(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      linkId = getVertexLinkE(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      linkId = this->getVertexLinkE(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      linkId = getVertexLinkF(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      linkId = this->getVertexLinkF(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      linkId = getVertexLinkG(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      linkId = this->getVertexLinkG(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      linkId = getVertexLinkH(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      linkId = this->getVertexLinkH(p.data(), localLinkId);
       break;
-    case VertexPosition::CENTER_2D:
-      linkId = getVertexLink2dABCD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::CENTER_2D:
+      linkId = this->getVertexLink2dABCD(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_EDGE_2D:
-      linkId = getVertexLink2dAB(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_EDGE_2D:
+      linkId = this->getVertexLink2dAB(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      linkId = getVertexLink2dCD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_EDGE_2D:
+      linkId = this->getVertexLink2dCD(p.data(), localLinkId);
       break;
-    case VertexPosition::LEFT_EDGE_2D:
-      linkId = getVertexLink2dAC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::LEFT_EDGE_2D:
+      linkId = this->getVertexLink2dAC(p.data(), localLinkId);
       break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      linkId = getVertexLink2dBD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::RIGHT_EDGE_2D:
+      linkId = this->getVertexLink2dBD(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      linkId = getVertexLink2dA(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
+      linkId = this->getVertexLink2dA(p.data(), localLinkId);
       break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      linkId = getVertexLink2dB(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      linkId = this->getVertexLink2dB(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      linkId = getVertexLink2dC(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      linkId = this->getVertexLink2dC(p.data(), localLinkId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      linkId = getVertexLink2dD(p.data(), localLinkId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      linkId = this->getVertexLink2dD(p.data(), localLinkId);
       break;
     default: // 1D
       linkId = -1;
@@ -994,78 +1013,80 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
-  if(vertexLinkList_.empty()) {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getVertexLinks)() {
+  if(this->vertexLinkList_.empty()) {
     Timer t;
 
-    vertexLinkList_.resize(vertexNumber_);
+    this->vertexLinkList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexLinkList_[i].resize(getVertexLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexLinkList_[i].size(); ++j)
-        getVertexLink(i, j, vertexLinkList_[i][j]);
+      this->vertexLinkList_[i].resize(getVertexLinkNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->vertexLinkList_[i].size(); ++j)
+        this->getVertexLink(i, j, this->vertexLinkList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex links.", 1,
+    this->printMsg("Built " + to_string(vertexNumber_) + " vertex links.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexLinkList_;
+  return &this->vertexLinkList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexStarNumber)(const SimplexId &vertexId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
+    case CRTPClass::VertexPosition::CENTER_3D:
       return 24;
-    case VertexPosition::FRONT_FACE_3D:
-    case VertexPosition::BACK_FACE_3D:
-    case VertexPosition::TOP_FACE_3D:
-    case VertexPosition::BOTTOM_FACE_3D:
-    case VertexPosition::LEFT_FACE_3D:
-    case VertexPosition::RIGHT_FACE_3D:
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
       return 12;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
       return 8;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-    case VertexPosition::CENTER_2D:
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+    case CRTPClass::VertexPosition::CENTER_2D:
       return 6;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
       return 4;
-    case VertexPosition::TOP_EDGE_2D: // ab
-    case VertexPosition::BOTTOM_EDGE_2D: // cd
-    case VertexPosition::LEFT_EDGE_2D: // ac
-    case VertexPosition::RIGHT_EDGE_2D: // bd
+    case CRTPClass::VertexPosition::TOP_EDGE_2D: // ab
+    case CRTPClass::VertexPosition::BOTTOM_EDGE_2D: // cd
+    case CRTPClass::VertexPosition::LEFT_EDGE_2D: // ac
+    case CRTPClass::VertexPosition::RIGHT_EDGE_2D: // bd
       return 3;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+    case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
       return 2;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+    case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
       return 1;
     default: // 1D
       break;
@@ -1074,127 +1095,128 @@ SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexStar)(const SimplexId &vertexId,
                  const int &localStarId,
                  SimplexId &starId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(localStarId < 0 or localStarId >= getVertexStarNumber(vertexId))
+  if(localStarId < 0 or localStarId >= this->getVertexStarNumber(vertexId))
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
   const auto &p = this->underlying().getVertexCoords(vertexId);
 
   switch(this->underlying().getVertexPosition(vertexId)) {
-    case VertexPosition::CENTER_3D:
-      starId = getVertexStarABCDEFGH(p.data(), localStarId);
+    case CRTPClass::VertexPosition::CENTER_3D:
+      starId = this->getVertexStarABCDEFGH(p.data(), localStarId);
       break;
-    case VertexPosition::FRONT_FACE_3D:
-      starId = getVertexStarABDC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::FRONT_FACE_3D:
+      starId = this->getVertexStarABDC(p.data(), localStarId);
       break;
-    case VertexPosition::BACK_FACE_3D:
-      starId = getVertexStarEFHG(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BACK_FACE_3D:
+      starId = this->getVertexStarEFHG(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_FACE_3D:
-      starId = getVertexStarAEFB(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_FACE_3D:
+      starId = this->getVertexStarAEFB(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_FACE_3D:
-      starId = getVertexStarGHDC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+      starId = this->getVertexStarGHDC(p.data(), localStarId);
       break;
-    case VertexPosition::LEFT_FACE_3D:
-      starId = getVertexStarAEGC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::LEFT_FACE_3D:
+      starId = this->getVertexStarAEGC(p.data(), localStarId);
       break;
-    case VertexPosition::RIGHT_FACE_3D:
-      starId = getVertexStarBFHD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::RIGHT_FACE_3D:
+      starId = this->getVertexStarBFHD(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      starId = getVertexStarAB(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      starId = this->getVertexStarAB(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      starId = getVertexStarCD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      starId = this->getVertexStarCD(p.data(), localStarId);
       break;
-    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      starId = getVertexStarAC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      starId = this->getVertexStarAC(p.data(), localStarId);
       break;
-    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      starId = getVertexStarBD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      starId = this->getVertexStarBD(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      starId = getVertexStarEF(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+      starId = this->getVertexStarEF(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      starId = getVertexStarGH(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      starId = this->getVertexStarGH(p.data(), localStarId);
       break;
-    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      starId = getVertexStarEG(p.data(), localStarId);
+    case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      starId = this->getVertexStarEG(p.data(), localStarId);
       break;
-    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      starId = getVertexStarFH(p.data(), localStarId);
+    case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      starId = this->getVertexStarFH(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      starId = getVertexStarAE(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      starId = this->getVertexStarAE(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      starId = getVertexStarBF(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      starId = this->getVertexStarBF(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      starId = getVertexStarCG(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      starId = this->getVertexStarCG(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      starId = getVertexStarDH(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      starId = this->getVertexStarDH(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      starId = getVertexStarA(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      starId = this->getVertexStarA(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      starId = getVertexStarB(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      starId = this->getVertexStarB(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      starId = getVertexStarC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      starId = this->getVertexStarC(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      starId = getVertexStarD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      starId = this->getVertexStarD(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      starId = getVertexStarE(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      starId = this->getVertexStarE(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      starId = getVertexStarF(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      starId = this->getVertexStarF(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      starId = getVertexStarG(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      starId = this->getVertexStarG(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      starId = getVertexStarH(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      starId = this->getVertexStarH(p.data(), localStarId);
       break;
-    case VertexPosition::CENTER_2D:
-      starId = getVertexStar2dABCD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::CENTER_2D:
+      starId = this->getVertexStar2dABCD(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_EDGE_2D:
-      starId = getVertexStar2dAB(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_EDGE_2D:
+      starId = this->getVertexStar2dAB(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_EDGE_2D:
-      starId = getVertexStar2dCD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_EDGE_2D:
+      starId = this->getVertexStar2dCD(p.data(), localStarId);
       break;
-    case VertexPosition::LEFT_EDGE_2D:
-      starId = getVertexStar2dAC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::LEFT_EDGE_2D:
+      starId = this->getVertexStar2dAC(p.data(), localStarId);
       break;
-    case VertexPosition::RIGHT_EDGE_2D:
-      starId = getVertexStar2dBD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::RIGHT_EDGE_2D:
+      starId = this->getVertexStar2dBD(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      starId = getVertexStar2dA(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
+      starId = this->getVertexStar2dA(p.data(), localStarId);
       break;
-    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      starId = getVertexStar2dB(p.data(), localStarId);
+    case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      starId = this->getVertexStar2dB(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      starId = getVertexStar2dC(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      starId = this->getVertexStar2dC(p.data(), localStarId);
       break;
-    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      starId = getVertexStar2dD(p.data(), localStarId);
+    case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      starId = this->getVertexStar2dD(p.data(), localStarId);
       break;
     default: // 1D
       starId = -1;
@@ -1204,80 +1226,82 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getVertexStars)() {
 
-  if(vertexStarList_.empty()) {
+  if(this->vertexStarList_.empty()) {
     Timer t;
-    vertexStarList_.resize(vertexNumber_);
+    this->vertexStarList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexStarList_[i].resize(getVertexStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)vertexStarList_[i].size(); ++j)
-        getVertexStar(i, j, vertexStarList_[i][j]);
+      this->vertexStarList_[i].resize(this->getVertexStarNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->vertexStarList_[i].size(); ++j)
+        this->getVertexStar(i, j, this->vertexStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(vertexNumber_) + " vertex stars.", 1,
+    this->printMsg("Built " + to_string(vertexNumber_) + " vertex stars.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &vertexStarList_;
+  return &this->vertexStarList_;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getVertexPoint)(const SimplexId &vertexId,
                   float &x,
                   float &y,
                   float &z) const {
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const auto &p = this->underlying().getVertexCoords(vertexId);
 
-    x = origin_[0] + spacing_[0] * p[0];
-    y = origin_[1] + spacing_[1] * p[1];
-    z = origin_[2] + spacing_[2] * p[2];
-  } else if(dimensionality_ == 2) {
+    x = this->origin_[0] + this->spacing_[0] * p[0];
+    y = this->origin_[1] + this->spacing_[1] * p[1];
+    z = this->origin_[2] + this->spacing_[2] * p[2];
+  } else if(this->dimensionality_ == 2) {
     const auto &p = this->underlying().getVertexCoords(vertexId);
 
-    if(dimensions_[0] > 1 and dimensions_[1] > 1) {
-      x = origin_[0] + spacing_[0] * p[0];
-      y = origin_[1] + spacing_[1] * p[1];
-      z = origin_[2];
-    } else if(dimensions_[1] > 1 and dimensions_[2] > 1) {
-      x = origin_[0];
-      y = origin_[1] + spacing_[1] * p[0];
-      z = origin_[2] + spacing_[2] * p[1];
-    } else if(dimensions_[0] > 1 and dimensions_[2] > 1) {
-      x = origin_[0] + spacing_[0] * p[0];
-      y = origin_[1];
-      z = origin_[2] + spacing_[2] * p[1];
+    if(this->dimensions_[0] > 1 and this->dimensions_[1] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * p[0];
+      y = this->origin_[1] + this->spacing_[1] * p[1];
+      z = this->origin_[2];
+    } else if(this->dimensions_[1] > 1 and this->dimensions_[2] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1] + this->spacing_[1] * p[0];
+      z = this->origin_[2] + this->spacing_[2] * p[1];
+    } else if(this->dimensions_[0] > 1 and this->dimensions_[2] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * p[0];
+      y = this->origin_[1];
+      z = this->origin_[2] + this->spacing_[2] * p[1];
     }
-  } else if(dimensionality_ == 1) {
-    if(dimensions_[0] > 1) {
-      x = origin_[0] + spacing_[0] * vertexId;
-      y = origin_[1];
-      z = origin_[2];
-    } else if(dimensions_[1] > 1) {
-      x = origin_[0];
-      y = origin_[1] + spacing_[1] * vertexId;
-      z = origin_[2];
-    } else if(dimensions_[2] > 1) {
-      x = origin_[0];
-      y = origin_[1];
-      z = origin_[2] + spacing_[2] * vertexId;
+  } else if(this->dimensionality_ == 1) {
+    if(this->dimensions_[0] > 1) {
+      x = this->origin_[0] + this->spacing_[0] * vertexId;
+      y = this->origin_[1];
+      z = this->origin_[2];
+    } else if(this->dimensions_[1] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1] + this->spacing_[1] * vertexId;
+      z = this->origin_[2];
+    } else if(this->dimensions_[2] > 1) {
+      x = this->origin_[0];
+      y = this->origin_[1];
+      z = this->origin_[2] + this->spacing_[2] * vertexId;
     }
   }
 
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getEdgeVertexInternal(
   const SimplexId &edgeId,
   const int &localVertexId,
   SimplexId &vertexId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
   if(localVertexId < 0 or localVertexId >= 2)
     return -2;
@@ -1286,21 +1310,21 @@ int ImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
   const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   const auto helper3d = [&](const SimplexId a, const SimplexId b) -> SimplexId {
-    if(isAccelerated_) {
-      const auto tmp = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
+    if(this->isAccelerated_) {
+      const auto tmp = p[0] + (p[1] << this->div_[0]) + (p[2] << this->div_[1]);
       return (localVertexId == 0) ? tmp + a : tmp + b;
     } else {
-      const auto tmp = p[0] + (p[1] * vshift_[0]) + (p[2] * vshift_[1]);
+      const auto tmp = p[0] + (p[1] * this->vshift_[0]) + (p[2] * this->vshift_[1]);
       return (localVertexId == 0) ? tmp + a : tmp + b;
     }
   };
 
   const auto helper2d = [&](const SimplexId a, const SimplexId b) -> SimplexId {
-    if(isAccelerated_) {
-      const auto tmp = p[0] + (p[1] << div_[0]);
+    if(this->isAccelerated_) {
+      const auto tmp = p[0] + (p[1] << this->div_[0]);
       return localVertexId == 0 ? tmp + a : tmp + b;
     } else {
-      const auto tmp = p[0] + (p[1] * vshift_[0]);
+      const auto tmp = p[0] + (p[1] * this->vshift_[0]);
       return localVertexId == 0 ? tmp + a : tmp + b;
     }
   };
@@ -1310,41 +1334,41 @@ int ImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
     vertexId = helper3d(0, 1);
     break;
   CASE_EDGE_POSITION_H_3D:
-    vertexId = helper3d(0, vshift_[0]);
+    vertexId = helper3d(0, this->vshift_[0]);
     break;
   CASE_EDGE_POSITION_P_3D:
-    vertexId = helper3d(0, vshift_[1]);
+    vertexId = helper3d(0, this->vshift_[1]);
     break;
   CASE_EDGE_POSITION_D1_3D:
-    vertexId = helper3d(1, vshift_[0]);
+    vertexId = helper3d(1, this->vshift_[0]);
     break;
   CASE_EDGE_POSITION_D2_3D:
-    vertexId = helper3d(0, vshift_[0] + vshift_[1]);
+    vertexId = helper3d(0, this->vshift_[0] + this->vshift_[1]);
     break;
   CASE_EDGE_POSITION_D3_3D:
-    vertexId = helper3d(1, vshift_[1]);
+    vertexId = helper3d(1, this->vshift_[1]);
     break;
-    case EdgePosition::D4_3D:
-      vertexId = helper3d(1, vshift_[0] + vshift_[1]);
+    case CRTPClass::EdgePosition::D4_3D:
+      vertexId = helper3d(1, this->vshift_[0] + this->vshift_[1]);
       break;
 
     CASE_EDGE_POSITION_L_2D:
       vertexId = helper2d(0, 1);
       break;
     CASE_EDGE_POSITION_H_2D:
-      vertexId = helper2d(0, vshift_[0]);
+      vertexId = helper2d(0, this->vshift_[0]);
       break;
-    case EdgePosition::D1_2D:
-      vertexId = helper2d(1, vshift_[0]);
+    case CRTPClass::EdgePosition::D1_2D:
+      vertexId = helper2d(1, this->vshift_[0]);
       break;
 
-    case EdgePosition::FIRST_EDGE_1D:
+    case CRTPClass::EdgePosition::FIRST_EDGE_1D:
       vertexId = localVertexId == 0 ? 0 : 1;
       break;
-    case EdgePosition::LAST_EDGE_1D:
-      vertexId = localVertexId == 0 ? edgeNumber_ - 1 : edgeNumber_;
+    case CRTPClass::EdgePosition::LAST_EDGE_1D:
+      vertexId = localVertexId == 0 ? this->edgeNumber_ - 1 : this->edgeNumber_;
       break;
-    case EdgePosition::CENTER_1D:
+    case CRTPClass::EdgePosition::CENTER_1D:
       vertexId = localVertexId == 0 ? edgeId : edgeId + 1;
       break;
   }
@@ -1352,84 +1376,86 @@ int ImplicitTriangulationCRTP<Derived>::getEdgeVertexInternal(
   return 0;
 }
 
+template<size_t card>
 const vector<std::array<SimplexId, 2>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdges)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdges)() {
 
-  if(edgeList_.empty()) {
+  if(this->edgeList_.empty()) {
     Timer t;
 
-    edgeList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+    this->edgeList_.resize(this->edgeNumber_);
+    for(SimplexId i = 0; i < this->edgeNumber_; ++i) {
       SimplexId id0, id1;
-      getEdgeVertexInternal(i, 0, id0);
-      getEdgeVertexInternal(i, 1, id1);
-      edgeList_[i] = {id0, id1};
+      this->getEdgeVertexInternal(i, 0, id0);
+      this->getEdgeVertexInternal(i, 1, id1);
+      this->edgeList_[i] = {id0, id1};
     }
 
-    printMsg(
-      "Built " + to_string(edgeNumber_) + " edges.", 1, t.getElapsedTime(), 1);
+    this->printMsg(
+      "Built " + to_string(this->edgeNumber_) + " edges.", 1, t.getElapsedTime(), 1);
   }
 
-  return &edgeList_;
+  return &this->edgeList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::getEdgeTriangleNumberInternal(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::getEdgeTriangleNumberInternal(
   const SimplexId &edgeId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
 #endif
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_xnn_3D:
-    case EdgePosition::H_nyn_3D:
-    case EdgePosition::P_nnz_3D:
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::L_xnn_3D:
+    case CRTPClass::EdgePosition::H_nyn_3D:
+    case CRTPClass::EdgePosition::P_nnz_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       return 6;
-    case EdgePosition::L_x0n_3D:
-    case EdgePosition::L_xNn_3D:
-    case EdgePosition::L_xn0_3D:
-    case EdgePosition::L_xnN_3D:
-    case EdgePosition::H_ny0_3D:
-    case EdgePosition::H_nyN_3D:
-    case EdgePosition::H_0yn_3D:
-    case EdgePosition::H_Nyn_3D:
-    case EdgePosition::P_n0z_3D:
-    case EdgePosition::P_nNz_3D:
-    case EdgePosition::P_0nz_3D:
-    case EdgePosition::P_Nnz_3D:
-    case EdgePosition::D1_xyn_3D:
-    case EdgePosition::D2_nyz_3D:
-    case EdgePosition::D3_xnz_3D:
+    case CRTPClass::EdgePosition::L_x0n_3D:
+    case CRTPClass::EdgePosition::L_xNn_3D:
+    case CRTPClass::EdgePosition::L_xn0_3D:
+    case CRTPClass::EdgePosition::L_xnN_3D:
+    case CRTPClass::EdgePosition::H_ny0_3D:
+    case CRTPClass::EdgePosition::H_nyN_3D:
+    case CRTPClass::EdgePosition::H_0yn_3D:
+    case CRTPClass::EdgePosition::H_Nyn_3D:
+    case CRTPClass::EdgePosition::P_n0z_3D:
+    case CRTPClass::EdgePosition::P_nNz_3D:
+    case CRTPClass::EdgePosition::P_0nz_3D:
+    case CRTPClass::EdgePosition::P_Nnz_3D:
+    case CRTPClass::EdgePosition::D1_xyn_3D:
+    case CRTPClass::EdgePosition::D2_nyz_3D:
+    case CRTPClass::EdgePosition::D3_xnz_3D:
       return 4;
-    case EdgePosition::L_x00_3D:
-    case EdgePosition::L_xNN_3D:
-    case EdgePosition::H_0yN_3D:
-    case EdgePosition::H_Ny0_3D:
-    case EdgePosition::P_0Nz_3D:
-    case EdgePosition::P_N0z_3D:
-    case EdgePosition::D1_xy0_3D:
-    case EdgePosition::D1_xyN_3D:
-    case EdgePosition::D2_0yz_3D:
-    case EdgePosition::D2_Nyz_3D:
-    case EdgePosition::D3_x0z_3D:
-    case EdgePosition::D3_xNz_3D:
+    case CRTPClass::EdgePosition::L_x00_3D:
+    case CRTPClass::EdgePosition::L_xNN_3D:
+    case CRTPClass::EdgePosition::H_0yN_3D:
+    case CRTPClass::EdgePosition::H_Ny0_3D:
+    case CRTPClass::EdgePosition::P_0Nz_3D:
+    case CRTPClass::EdgePosition::P_N0z_3D:
+    case CRTPClass::EdgePosition::D1_xy0_3D:
+    case CRTPClass::EdgePosition::D1_xyN_3D:
+    case CRTPClass::EdgePosition::D2_0yz_3D:
+    case CRTPClass::EdgePosition::D2_Nyz_3D:
+    case CRTPClass::EdgePosition::D3_x0z_3D:
+    case CRTPClass::EdgePosition::D3_xNz_3D:
       return 3;
-    case EdgePosition::L_xN0_3D:
-    case EdgePosition::L_x0N_3D:
-    case EdgePosition::H_0y0_3D:
-    case EdgePosition::H_NyN_3D:
-    case EdgePosition::P_00z_3D:
-    case EdgePosition::P_NNz_3D:
-    case EdgePosition::L_xn_2D:
-    case EdgePosition::H_ny_2D:
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::L_xN0_3D:
+    case CRTPClass::EdgePosition::L_x0N_3D:
+    case CRTPClass::EdgePosition::H_0y0_3D:
+    case CRTPClass::EdgePosition::H_NyN_3D:
+    case CRTPClass::EdgePosition::P_00z_3D:
+    case CRTPClass::EdgePosition::P_NNz_3D:
+    case CRTPClass::EdgePosition::L_xn_2D:
+    case CRTPClass::EdgePosition::H_ny_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       return 2;
-    case EdgePosition::L_x0_2D:
-    case EdgePosition::L_xN_2D:
-    case EdgePosition::H_0y_2D:
-    case EdgePosition::H_Ny_2D:
+    case CRTPClass::EdgePosition::L_x0_2D:
+    case CRTPClass::EdgePosition::L_xN_2D:
+    case CRTPClass::EdgePosition::H_0y_2D:
+    case CRTPClass::EdgePosition::H_Ny_2D:
       return 1;
 
     default: // 1D
@@ -1439,11 +1465,12 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getEdgeTriangleNumberInternal(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getEdgeTriangleInternal(
   const SimplexId &edgeId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId < 0
      or localTriangleId >= getEdgeTriangleNumberInternal(edgeId))
@@ -1453,138 +1480,138 @@ int ImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
   const auto &p = this->underlying().getEdgeCoords(edgeId);
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_xnn_3D:
-      triangleId = getEdgeTriangleL_xnn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xnn_3D:
+      triangleId = this->getEdgeTriangleL_xnn(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xn0_3D:
-      triangleId = getEdgeTriangleL_xn0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xn0_3D:
+      triangleId = this->getEdgeTriangleL_xn0(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xnN_3D:
-      triangleId = getEdgeTriangleL_xnN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xnN_3D:
+      triangleId = this->getEdgeTriangleL_xnN(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_x0n_3D:
-      triangleId = getEdgeTriangleL_x0n(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_x0n_3D:
+      triangleId = this->getEdgeTriangleL_x0n(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_x00_3D:
-      triangleId = getEdgeTriangleL_x00(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_x00_3D:
+      triangleId = this->getEdgeTriangleL_x00(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_x0N_3D:
-      triangleId = getEdgeTriangleL_x0N(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_x0N_3D:
+      triangleId = this->getEdgeTriangleL_x0N(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xNn_3D:
-      triangleId = getEdgeTriangleL_xNn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xNn_3D:
+      triangleId = this->getEdgeTriangleL_xNn(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xN0_3D:
-      triangleId = getEdgeTriangleL_xN0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xN0_3D:
+      triangleId = this->getEdgeTriangleL_xN0(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xNN_3D:
-      triangleId = getEdgeTriangleL_xNN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xNN_3D:
+      triangleId = this->getEdgeTriangleL_xNN(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_nyn_3D:
-      triangleId = getEdgeTriangleH_nyn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_nyn_3D:
+      triangleId = this->getEdgeTriangleH_nyn(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_ny0_3D:
-      triangleId = getEdgeTriangleH_ny0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_ny0_3D:
+      triangleId = this->getEdgeTriangleH_ny0(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_nyN_3D:
-      triangleId = getEdgeTriangleH_nyN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_nyN_3D:
+      triangleId = this->getEdgeTriangleH_nyN(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_0yn_3D:
-      triangleId = getEdgeTriangleH_0yn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_0yn_3D:
+      triangleId = this->getEdgeTriangleH_0yn(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_0y0_3D:
-      triangleId = getEdgeTriangleH_0y0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_0y0_3D:
+      triangleId = this->getEdgeTriangleH_0y0(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_0yN_3D:
-      triangleId = getEdgeTriangleH_0yN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_0yN_3D:
+      triangleId = this->getEdgeTriangleH_0yN(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_Nyn_3D:
-      triangleId = getEdgeTriangleH_Nyn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_Nyn_3D:
+      triangleId = this->getEdgeTriangleH_Nyn(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_Ny0_3D:
-      triangleId = getEdgeTriangleH_Ny0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_Ny0_3D:
+      triangleId = this->getEdgeTriangleH_Ny0(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_NyN_3D:
-      triangleId = getEdgeTriangleH_NyN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_NyN_3D:
+      triangleId = this->getEdgeTriangleH_NyN(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_nnz_3D:
-      triangleId = getEdgeTriangleP_nnz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_nnz_3D:
+      triangleId = this->getEdgeTriangleP_nnz(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_n0z_3D:
-      triangleId = getEdgeTriangleP_n0z(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_n0z_3D:
+      triangleId = this->getEdgeTriangleP_n0z(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_nNz_3D:
-      triangleId = getEdgeTriangleP_nNz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_nNz_3D:
+      triangleId = this->getEdgeTriangleP_nNz(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_0nz_3D:
-      triangleId = getEdgeTriangleP_0nz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_0nz_3D:
+      triangleId = this->getEdgeTriangleP_0nz(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_00z_3D:
-      triangleId = getEdgeTriangleP_00z(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_00z_3D:
+      triangleId = this->getEdgeTriangleP_00z(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_0Nz_3D:
-      triangleId = getEdgeTriangleP_0Nz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_0Nz_3D:
+      triangleId = this->getEdgeTriangleP_0Nz(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_Nnz_3D:
-      triangleId = getEdgeTriangleP_Nnz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_Nnz_3D:
+      triangleId = this->getEdgeTriangleP_Nnz(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_N0z_3D:
-      triangleId = getEdgeTriangleP_N0z(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_N0z_3D:
+      triangleId = this->getEdgeTriangleP_N0z(p.data(), localTriangleId);
       break;
-    case EdgePosition::P_NNz_3D:
-      triangleId = getEdgeTriangleP_NNz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::P_NNz_3D:
+      triangleId = this->getEdgeTriangleP_NNz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_xyn_3D:
-      triangleId = getEdgeTriangleD1_xyn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_xyn_3D:
+      triangleId = this->getEdgeTriangleD1_xyn(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_xy0_3D:
-      triangleId = getEdgeTriangleD1_xy0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_xy0_3D:
+      triangleId = this->getEdgeTriangleD1_xy0(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_xyN_3D:
-      triangleId = getEdgeTriangleD1_xyN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_xyN_3D:
+      triangleId = this->getEdgeTriangleD1_xyN(p.data(), localTriangleId);
       break;
-    case EdgePosition::D2_nyz_3D:
-      triangleId = getEdgeTriangleD2_nyz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D2_nyz_3D:
+      triangleId = this->getEdgeTriangleD2_nyz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D2_0yz_3D:
-      triangleId = getEdgeTriangleD2_0yz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D2_0yz_3D:
+      triangleId = this->getEdgeTriangleD2_0yz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D2_Nyz_3D:
-      triangleId = getEdgeTriangleD2_Nyz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D2_Nyz_3D:
+      triangleId = this->getEdgeTriangleD2_Nyz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D3_xnz_3D:
-      triangleId = getEdgeTriangleD3_xnz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D3_xnz_3D:
+      triangleId = this->getEdgeTriangleD3_xnz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D3_x0z_3D:
-      triangleId = getEdgeTriangleD3_x0z(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D3_x0z_3D:
+      triangleId = this->getEdgeTriangleD3_x0z(p.data(), localTriangleId);
       break;
-    case EdgePosition::D3_xNz_3D:
-      triangleId = getEdgeTriangleD3_xNz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D3_xNz_3D:
+      triangleId = this->getEdgeTriangleD3_xNz(p.data(), localTriangleId);
       break;
-    case EdgePosition::D4_3D:
-      triangleId = getEdgeTriangleD4_xyz(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D4_3D:
+      triangleId = this->getEdgeTriangleD4_xyz(p.data(), localTriangleId);
       break;
 
-    case EdgePosition::L_xn_2D:
-      triangleId = getEdgeTriangleL_xn(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xn_2D:
+      triangleId = this->getEdgeTriangleL_xn(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_x0_2D:
-      triangleId = getEdgeTriangleL_x0(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_x0_2D:
+      triangleId = this->getEdgeTriangleL_x0(p.data(), localTriangleId);
       break;
-    case EdgePosition::L_xN_2D:
-      triangleId = getEdgeTriangleL_xN(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::L_xN_2D:
+      triangleId = this->getEdgeTriangleL_xN(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_ny_2D:
-      triangleId = getEdgeTriangleH_ny(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_ny_2D:
+      triangleId = this->getEdgeTriangleH_ny(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_0y_2D:
-      triangleId = getEdgeTriangleH_0y(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_0y_2D:
+      triangleId = this->getEdgeTriangleH_0y(p.data(), localTriangleId);
       break;
-    case EdgePosition::H_Ny_2D:
-      triangleId = getEdgeTriangleH_Ny(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::H_Ny_2D:
+      triangleId = this->getEdgeTriangleH_Ny(p.data(), localTriangleId);
       break;
-    case EdgePosition::D1_2D:
-      triangleId = getEdgeTriangleD1_xy(p.data(), localTriangleId);
+    case CRTPClass::EdgePosition::D1_2D:
+      triangleId = this->getEdgeTriangleD1_xy(p.data(), localTriangleId);
       break;
 
     default: // 1D
@@ -1595,34 +1622,37 @@ int ImplicitTriangulationCRTP<Derived>::getEdgeTriangleInternal(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::getEdgeTrianglesInternal() {
-  if(edgeTriangleList_.empty()) {
+  ImplicitTriangulation<card>::getEdgeTrianglesInternal() {
+  if(this->edgeTriangleList_.empty()) {
     Timer t;
 
-    edgeTriangleList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeTriangleList_[i].resize(getEdgeTriangleNumberInternal(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeTriangleList_[i].size(); ++j)
-        getEdgeTriangleInternal(i, j, edgeTriangleList_[i][j]);
+    this->edgeTriangleList_.resize(this->edgeNumber_);
+    for(SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeTriangleList_[i].resize(this->getEdgeTriangleNumberInternal(i));
+      for(SimplexId j = 0; j < (SimplexId)this->edgeTriangleList_[i].size(); ++j)
+        this->getEdgeTriangleInternal(i, j, this->edgeTriangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge triangles.", 1,
+    this->printMsg("Built " + to_string(this->edgeNumber_) + " edge triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeTriangleList_;
+  return &this->edgeTriangleList_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
+template<size_t card>
+SimplexId ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
   const SimplexId &edgeId) const {
-  return TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(edgeId);
+  return TTK_TRIANGULATION_INTERNAL(this->getEdgeStarNumber)(edgeId);
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
   const SimplexId &edgeId, const int &localLinkId, SimplexId &linkId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getEdgeLinkNumber(edgeId))
     return -1;
@@ -1632,35 +1662,35 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 
   switch(this->underlying().getEdgePosition(edgeId)) {
   CASE_EDGE_POSITION_L_3D:
-    linkId = getEdgeLinkL(p.data(), localLinkId);
+    linkId = this->getEdgeLinkL(p.data(), localLinkId);
     break;
   CASE_EDGE_POSITION_H_3D:
-    linkId = getEdgeLinkH(p.data(), localLinkId);
+    linkId = this->getEdgeLinkH(p.data(), localLinkId);
     break;
   CASE_EDGE_POSITION_P_3D:
-    linkId = getEdgeLinkP(p.data(), localLinkId);
+    linkId = this->getEdgeLinkP(p.data(), localLinkId);
     break;
   CASE_EDGE_POSITION_D1_3D:
-    linkId = getEdgeLinkD1(p.data(), localLinkId);
+    linkId = this->getEdgeLinkD1(p.data(), localLinkId);
     break;
   CASE_EDGE_POSITION_D2_3D:
-    linkId = getEdgeLinkD2(p.data(), localLinkId);
+    linkId = this->getEdgeLinkD2(p.data(), localLinkId);
     break;
   CASE_EDGE_POSITION_D3_3D:
-    linkId = getEdgeLinkD3(p.data(), localLinkId);
+    linkId = this->getEdgeLinkD3(p.data(), localLinkId);
     break;
-    case EdgePosition::D4_3D:
-      linkId = getEdgeLinkD4(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D4_3D:
+      linkId = this->getEdgeLinkD4(p.data(), localLinkId);
       break;
 
     CASE_EDGE_POSITION_L_2D:
-      linkId = getEdgeLink2dL(p.data(), localLinkId);
+      linkId = this->getEdgeLink2dL(p.data(), localLinkId);
       break;
     CASE_EDGE_POSITION_H_2D:
-      linkId = getEdgeLink2dH(p.data(), localLinkId);
+      linkId = this->getEdgeLink2dH(p.data(), localLinkId);
       break;
-    case EdgePosition::D1_2D:
-      linkId = getEdgeLink2dD1(p.data(), localLinkId);
+    case CRTPClass::EdgePosition::D1_2D:
+      linkId = this->getEdgeLink2dD1(p.data(), localLinkId);
       break;
 
     default: // 1D
@@ -1671,84 +1701,86 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() {
 
-  if(edgeLinkList_.empty()) {
+  if(this->edgeLinkList_.empty()) {
     Timer t;
 
-    edgeLinkList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeLinkList_[i].resize(getEdgeLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeLinkList_[i].size(); ++j)
-        getEdgeLink(i, j, edgeLinkList_[i][j]);
+    this->edgeLinkList_.resize(this->edgeNumber_);
+    for(SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeLinkList_[i].resize(getEdgeLinkNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->edgeLinkList_[i].size(); ++j)
+        this->getEdgeLink(i, j, this->edgeLinkList_[i][j]);
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge links.", 1,
+    this->printMsg("Built " + to_string(this->edgeNumber_) + " edge links.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeLinkList_;
+  return &this->edgeLinkList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getEdgeStarNumber)(const SimplexId &edgeId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(edgeId < 0 or edgeId >= edgeNumber_)
+  if(edgeId < 0 or edgeId >= this->edgeNumber_)
     return -1;
 #endif
 
   switch(this->underlying().getEdgePosition(edgeId)) {
-    case EdgePosition::L_xnn_3D:
-    case EdgePosition::H_nyn_3D:
-    case EdgePosition::P_nnz_3D:
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::L_xnn_3D:
+    case CRTPClass::EdgePosition::H_nyn_3D:
+    case CRTPClass::EdgePosition::P_nnz_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       return 6;
-    case EdgePosition::D1_xyn_3D:
-    case EdgePosition::D2_nyz_3D:
-    case EdgePosition::D3_xnz_3D:
+    case CRTPClass::EdgePosition::D1_xyn_3D:
+    case CRTPClass::EdgePosition::D2_nyz_3D:
+    case CRTPClass::EdgePosition::D3_xnz_3D:
       return 4;
-    case EdgePosition::L_x0n_3D:
-    case EdgePosition::L_xNn_3D:
-    case EdgePosition::L_xn0_3D:
-    case EdgePosition::L_xnN_3D:
-    case EdgePosition::H_ny0_3D:
-    case EdgePosition::H_nyN_3D:
-    case EdgePosition::H_0yn_3D:
-    case EdgePosition::H_Nyn_3D:
-    case EdgePosition::P_n0z_3D:
-    case EdgePosition::P_nNz_3D:
-    case EdgePosition::P_0nz_3D:
-    case EdgePosition::P_Nnz_3D:
+    case CRTPClass::EdgePosition::L_x0n_3D:
+    case CRTPClass::EdgePosition::L_xNn_3D:
+    case CRTPClass::EdgePosition::L_xn0_3D:
+    case CRTPClass::EdgePosition::L_xnN_3D:
+    case CRTPClass::EdgePosition::H_ny0_3D:
+    case CRTPClass::EdgePosition::H_nyN_3D:
+    case CRTPClass::EdgePosition::H_0yn_3D:
+    case CRTPClass::EdgePosition::H_Nyn_3D:
+    case CRTPClass::EdgePosition::P_n0z_3D:
+    case CRTPClass::EdgePosition::P_nNz_3D:
+    case CRTPClass::EdgePosition::P_0nz_3D:
+    case CRTPClass::EdgePosition::P_Nnz_3D:
       return 3;
-    case EdgePosition::L_x00_3D:
-    case EdgePosition::L_xNN_3D:
-    case EdgePosition::H_0yN_3D:
-    case EdgePosition::H_Ny0_3D:
-    case EdgePosition::P_0Nz_3D:
-    case EdgePosition::P_N0z_3D:
-    case EdgePosition::D1_xy0_3D:
-    case EdgePosition::D1_xyN_3D:
-    case EdgePosition::D2_0yz_3D:
-    case EdgePosition::D2_Nyz_3D:
-    case EdgePosition::D3_x0z_3D:
-    case EdgePosition::D3_xNz_3D:
-    case EdgePosition::L_xn_2D:
-    case EdgePosition::H_ny_2D:
-    case EdgePosition::D1_2D:
+    case CRTPClass::EdgePosition::L_x00_3D:
+    case CRTPClass::EdgePosition::L_xNN_3D:
+    case CRTPClass::EdgePosition::H_0yN_3D:
+    case CRTPClass::EdgePosition::H_Ny0_3D:
+    case CRTPClass::EdgePosition::P_0Nz_3D:
+    case CRTPClass::EdgePosition::P_N0z_3D:
+    case CRTPClass::EdgePosition::D1_xy0_3D:
+    case CRTPClass::EdgePosition::D1_xyN_3D:
+    case CRTPClass::EdgePosition::D2_0yz_3D:
+    case CRTPClass::EdgePosition::D2_Nyz_3D:
+    case CRTPClass::EdgePosition::D3_x0z_3D:
+    case CRTPClass::EdgePosition::D3_xNz_3D:
+    case CRTPClass::EdgePosition::L_xn_2D:
+    case CRTPClass::EdgePosition::H_ny_2D:
+    case CRTPClass::EdgePosition::D1_2D:
       return 2;
-    case EdgePosition::L_xN0_3D:
-    case EdgePosition::L_x0N_3D:
-    case EdgePosition::H_0y0_3D:
-    case EdgePosition::H_NyN_3D:
-    case EdgePosition::P_00z_3D:
-    case EdgePosition::P_NNz_3D:
-    case EdgePosition::L_x0_2D:
-    case EdgePosition::L_xN_2D:
-    case EdgePosition::H_0y_2D:
-    case EdgePosition::H_Ny_2D:
+    case CRTPClass::EdgePosition::L_xN0_3D:
+    case CRTPClass::EdgePosition::L_x0N_3D:
+    case CRTPClass::EdgePosition::H_0y0_3D:
+    case CRTPClass::EdgePosition::H_NyN_3D:
+    case CRTPClass::EdgePosition::P_00z_3D:
+    case CRTPClass::EdgePosition::P_NNz_3D:
+    case CRTPClass::EdgePosition::L_x0_2D:
+    case CRTPClass::EdgePosition::L_xN_2D:
+    case CRTPClass::EdgePosition::H_0y_2D:
+    case CRTPClass::EdgePosition::H_Ny_2D:
       return 1;
 
     default: // 1D
@@ -1758,12 +1790,13 @@ SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
   const SimplexId &edgeId, const int &localStarId, SimplexId &starId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(localStarId < 0 or localStarId >= getEdgeStarNumber(edgeId))
+  if(localStarId < 0 or localStarId >= this->getEdgeStarNumber(edgeId))
     return -1;
 #endif
 
@@ -1771,36 +1804,36 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
 
   switch(this->underlying().getEdgePosition(edgeId)) {
   CASE_EDGE_POSITION_L_3D:
-    starId = getEdgeStarL(p.data(), localStarId);
+    starId = this->getEdgeStarL(p.data(), localStarId);
     break;
   CASE_EDGE_POSITION_H_3D:
-    starId = getEdgeStarH(p.data(), localStarId);
+    starId = this->getEdgeStarH(p.data(), localStarId);
     break;
   CASE_EDGE_POSITION_P_3D:
-    starId = getEdgeStarP(p.data(), localStarId);
+    starId = this->getEdgeStarP(p.data(), localStarId);
     break;
   CASE_EDGE_POSITION_D1_3D:
-    starId = getEdgeStarD1(p.data(), localStarId);
+    starId = this->getEdgeStarD1(p.data(), localStarId);
     break;
   CASE_EDGE_POSITION_D2_3D:
-    starId = getEdgeStarD2(p.data(), localStarId);
+    starId = this->getEdgeStarD2(p.data(), localStarId);
     break;
   CASE_EDGE_POSITION_D3_3D:
-    starId = getEdgeStarD3(p.data(), localStarId);
+    starId = this->getEdgeStarD3(p.data(), localStarId);
     break;
-    case EdgePosition::D4_3D:
+    case CRTPClass::EdgePosition::D4_3D:
       starId
-        = p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6 + localStarId;
+        = p[2] * this->tetshift_[1] + p[1] * this->tetshift_[0] + p[0] * 6 + localStarId;
       break;
 
     CASE_EDGE_POSITION_L_2D:
-      starId = getEdgeStar2dL(p.data(), localStarId);
+      starId = this->getEdgeStar2dL(p.data(), localStarId);
       break;
     CASE_EDGE_POSITION_H_2D:
-      starId = getEdgeStar2dH(p.data(), localStarId);
+      starId = this->getEdgeStar2dH(p.data(), localStarId);
       break;
-    case EdgePosition::D1_2D:
-      starId = p[0] * 2 + p[1] * tshift_[0] + localStarId;
+    case CRTPClass::EdgePosition::D1_2D:
+      starId = p[0] * 2 + p[1] * this->tshift_[0] + localStarId;
       break;
 
     default: // 1D
@@ -1811,31 +1844,33 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getEdgeStars)() {
 
-  if(edgeStarList_.empty()) {
+  if(this->edgeStarList_.empty()) {
     Timer t;
 
-    edgeStarList_.resize(edgeNumber_);
-    for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      edgeStarList_[i].resize(getEdgeStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)edgeStarList_[i].size(); ++j)
-        getEdgeStar(i, j, edgeStarList_[i][j]);
+    this->edgeStarList_.resize(this->edgeNumber_);
+    for(SimplexId i = 0; i < this->edgeNumber_; ++i) {
+      this->edgeStarList_[i].resize(this->getEdgeStarNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->edgeStarList_[i].size(); ++j)
+        this->getEdgeStar(i, j, this->edgeStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(edgeNumber_) + " edge stars.", 1,
+    this->printMsg("Built " + to_string(this->edgeNumber_) + " edge stars.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &edgeStarList_;
+  return &this->edgeStarList_;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTriangleVertexInternal(
   const SimplexId &triangleId,
   const int &localVertexId,
   SimplexId &vertexId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1863,49 +1898,49 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
   vertexId = -1;
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      vertexId = getTriangleVertexF(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::F_3D:
+      vertexId = this->getTriangleVertexF(p.data(), localVertexId);
       break;
-    case TrianglePosition::H_3D:
-      vertexId = getTriangleVertexH(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::H_3D:
+      vertexId = this->getTriangleVertexH(p.data(), localVertexId);
       break;
-    case TrianglePosition::C_3D:
-      vertexId = getTriangleVertexC(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::C_3D:
+      vertexId = this->getTriangleVertexC(p.data(), localVertexId);
       break;
-    case TrianglePosition::D1_3D:
-      vertexId = getTriangleVertexD1(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      vertexId = this->getTriangleVertexD1(p.data(), localVertexId);
       break;
-    case TrianglePosition::D2_3D:
-      vertexId = getTriangleVertexD2(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      vertexId = this->getTriangleVertexD2(p.data(), localVertexId);
       break;
-    case TrianglePosition::D3_3D:
-      vertexId = getTriangleVertexD3(p.data(), localVertexId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      vertexId = this->getTriangleVertexD3(p.data(), localVertexId);
       break;
-    case TrianglePosition::TOP_2D:
+    case CRTPClass::TrianglePosition::TOP_2D:
       switch(localVertexId) {
         break;
         case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0];
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0];
           break;
         case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0] + 1;
           break;
         case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0];
           break;
       }
       break;
-    case TrianglePosition::BOTTOM_2D:
+    case CRTPClass::TrianglePosition::BOTTOM_2D:
       switch(localVertexId) {
         break;
         case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0] + 1;
           break;
         case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1;
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0] + 1;
           break;
         case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          vertexId = p[0] / 2 + p[1] * this->vshift_[0] + this->vshift_[0];
           break;
       }
   }
@@ -1913,11 +1948,12 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleVertexInternal(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTriangleEdgeInternal(
   const SimplexId &triangleId,
   const int &localEdgeId,
   SimplexId &edgeId) const {
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -1930,55 +1966,55 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
   edgeId = -1;
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      edgeId = (par == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
-                          : getTriangleEdgeF_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::F_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeF_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeF_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::H_3D:
-      edgeId = (par == 1) ? getTriangleEdgeH_1(p.data(), localEdgeId)
-                          : getTriangleEdgeH_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::H_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeH_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeH_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::C_3D:
-      edgeId = (par == 1) ? getTriangleEdgeC_1(p.data(), localEdgeId)
-                          : getTriangleEdgeC_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::C_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeC_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeC_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D1_3D:
-      edgeId = (par == 1) ? getTriangleEdgeD1_1(p.data(), localEdgeId)
-                          : getTriangleEdgeD1_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeD1_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeD1_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D2_3D:
-      edgeId = (par == 1) ? getTriangleEdgeD2_1(p.data(), localEdgeId)
-                          : getTriangleEdgeD2_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeD2_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeD2_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::D3_3D:
-      edgeId = (par == 1) ? getTriangleEdgeD3_1(p.data(), localEdgeId)
-                          : getTriangleEdgeD3_0(p.data(), localEdgeId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      edgeId = (par == 1) ? this->getTriangleEdgeD3_1(p.data(), localEdgeId)
+                          : this->getTriangleEdgeD3_0(p.data(), localEdgeId);
       break;
-    case TrianglePosition::TOP_2D:
+    case CRTPClass::TrianglePosition::TOP_2D:
       switch(localEdgeId) {
         break;
         case 0:
-          edgeId = p[0] / 2 + p[1] * eshift_[0];
+          edgeId = p[0] / 2 + p[1] * this->eshift_[0];
           break;
         case 1:
-          edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
+          edgeId = this->esetshift_[0] + p[0] / 2 + p[1] * this->eshift_[2];
           break;
         case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          edgeId = this->esetshift_[1] + p[0] / 2 + p[1] * this->eshift_[4];
           break;
       }
       break;
-    case TrianglePosition::BOTTOM_2D:
+    case CRTPClass::TrianglePosition::BOTTOM_2D:
       switch(localEdgeId) {
         break;
         case 0:
-          edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0];
+          edgeId = p[0] / 2 + (p[1] + 1) * this->eshift_[0];
           break;
         case 1:
-          edgeId = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2];
+          edgeId = this->esetshift_[0] + (p[0] + 1) / 2 + p[1] * this->eshift_[2];
           break;
         case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          edgeId = this->esetshift_[1] + p[0] / 2 + p[1] * this->eshift_[4];
           break;
       }
   }
@@ -1986,56 +2022,60 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleEdgeInternal(
   return 0;
 }
 
-int ImplicitTriangulation::getTriangleEdgesInternal(
+template<size_t card>
+int ImplicitTriangulation<card>::getTriangleEdgesInternal(
   vector<vector<SimplexId>> &edges) const {
   edges.resize(triangleNumber_);
   for(SimplexId i = 0; i < triangleNumber_; ++i) {
     edges[i].resize(3);
     for(int j = 0; j < 3; ++j)
-      getTriangleEdgeInternal(i, j, edges[i][j]);
+      this->getTriangleEdgeInternal(i, j, edges[i][j]);
   }
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::getTriangleEdgesInternal() {
-  if(triangleEdgeVector_.empty()) {
+  ImplicitTriangulation<card>::getTriangleEdgesInternal() {
+  if(this->triangleEdgeVector_.empty()) {
     Timer t;
 
-    getTriangleEdgesInternal(triangleEdgeVector_);
+    getTriangleEdgesInternal(this->triangleEdgeVector_);
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle edges.", 1,
+    this->printMsg("Built " + to_string(triangleNumber_) + " triangle edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &triangleEdgeVector_;
+  return &this->triangleEdgeVector_;
 }
 
+template<size_t card>
 const vector<std::array<SimplexId, 3>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
 
-  if(triangleList_.empty()) {
+  if(this->triangleList_.empty()) {
     Timer t;
 
-    triangleList_.resize(triangleNumber_);
+    this->triangleList_.resize(triangleNumber_);
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
       for(int j = 0; j < 3; ++j)
-        getTriangleVertexInternal(i, j, triangleList_[i][j]);
+        this->getTriangleVertexInternal(i, j, this->triangleList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangles.", 1,
+    this->printMsg("Built " + to_string(triangleNumber_) + " triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &triangleList_;
+  return &this->triangleList_;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getTriangleLink)(const SimplexId &triangleId,
                    const int &localLinkId,
                    SimplexId &linkId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId < 0 or localLinkId >= getTriangleLinkNumber(triangleId))
     return -1;
@@ -2044,23 +2084,23 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      linkId = getTriangleLinkF(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::F_3D:
+      linkId = this->getTriangleLinkF(p.data(), localLinkId);
       break;
-    case TrianglePosition::H_3D:
-      linkId = getTriangleLinkH(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::H_3D:
+      linkId = this->getTriangleLinkH(p.data(), localLinkId);
       break;
-    case TrianglePosition::C_3D:
-      linkId = getTriangleLinkC(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::C_3D:
+      linkId = this->getTriangleLinkC(p.data(), localLinkId);
       break;
-    case TrianglePosition::D1_3D:
-      linkId = getTriangleLinkD1(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      linkId = this->getTriangleLinkD1(p.data(), localLinkId);
       break;
-    case TrianglePosition::D2_3D:
-      linkId = getTriangleLinkD2(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      linkId = this->getTriangleLinkD2(p.data(), localLinkId);
       break;
-    case TrianglePosition::D3_3D:
-      linkId = getTriangleLinkD3(p.data(), localLinkId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      linkId = this->getTriangleLinkD3(p.data(), localLinkId);
       break;
     default: // 2D
       linkId = -1;
@@ -2070,33 +2110,36 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template <size_t card>
+SimplexId ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
   getTriangleLinkNumber)(const SimplexId &triangleId) const {
-  return TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(triangleId);
+  return TTK_TRIANGULATION_INTERNAL(this->getTriangleStarNumber)(triangleId);
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() {
-  if(triangleLinkList_.empty()) {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() {
+  if(this->triangleLinkList_.empty()) {
     Timer t;
 
-    triangleLinkList_.resize(triangleNumber_);
+    this->triangleLinkList_.resize(triangleNumber_);
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      triangleLinkList_[i].resize(getTriangleLinkNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)triangleLinkList_[i].size(); ++j)
-        getTriangleLink(i, j, triangleLinkList_[i][j]);
+      this->triangleLinkList_[i].resize(getTriangleLinkNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->triangleLinkList_[i].size(); ++j)
+        this->getTriangleLink(i, j, this->triangleLinkList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle links.", 1,
+    this->printMsg("Built " + to_string(triangleNumber_) + " triangle links.", 1,
              t.getElapsedTime(), 1);
   }
-  return &triangleLinkList_;
+  return &this->triangleLinkList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getTriangleStarNumber)(const SimplexId &triangleId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
@@ -2105,16 +2148,16 @@ SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      return (p[2] > 0 and p[2] < nbvoxels_[2]) ? 2 : 1;
-    case TrianglePosition::H_3D:
-      return (p[1] > 0 and p[1] < nbvoxels_[1]) ? 2 : 1;
-    case TrianglePosition::C_3D:
-      return (p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2)) ? 1 : 2;
+    case CRTPClass::TrianglePosition::F_3D:
+      return (p[2] > 0 and p[2] < this->nbvoxels_[2]) ? 2 : 1;
+    case CRTPClass::TrianglePosition::H_3D:
+      return (p[1] > 0 and p[1] < this->nbvoxels_[1]) ? 2 : 1;
+    case CRTPClass::TrianglePosition::C_3D:
+      return (p[0] < 2 or p[0] >= (this->dimensions_[0] * 2 - 2)) ? 1 : 2;
 
-    case TrianglePosition::D1_3D:
-    case TrianglePosition::D2_3D:
-    case TrianglePosition::D3_3D:
+    case CRTPClass::TrianglePosition::D1_3D:
+    case CRTPClass::TrianglePosition::D2_3D:
+    case CRTPClass::TrianglePosition::D3_3D:
       return 2;
     default: // 2D
       break;
@@ -2122,37 +2165,38 @@ SimplexId ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::TTK_TRIANGULATION_INTERNAL(
   getTriangleStar)(const SimplexId &triangleId,
                    const int &localStarId,
                    SimplexId &starId) const {
 
+  using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(localStarId < 0 or localStarId >= getTriangleStarNumber(triangleId))
+  if(localStarId < 0 or localStarId >= this->getTriangleStarNumber(triangleId))
     return -1;
 #endif
 
   const auto &p = this->underlying().getTriangleCoords(triangleId);
 
   switch(this->underlying().getTrianglePosition(triangleId)) {
-    case TrianglePosition::F_3D:
-      starId = getTriangleStarF(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::F_3D:
+      starId = this->getTriangleStarF(p.data(), localStarId);
       break;
-    case TrianglePosition::H_3D:
-      starId = getTriangleStarH(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::H_3D:
+      starId = this->getTriangleStarH(p.data(), localStarId);
       break;
-    case TrianglePosition::C_3D:
-      starId = getTriangleStarC(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::C_3D:
+      starId = this->getTriangleStarC(p.data(), localStarId);
       break;
-    case TrianglePosition::D1_3D:
-      starId = getTriangleStarD1(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D1_3D:
+      starId = this->getTriangleStarD1(p.data(), localStarId);
       break;
-    case TrianglePosition::D2_3D:
-      starId = getTriangleStarD2(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D2_3D:
+      starId = this->getTriangleStarD2(p.data(), localStarId);
       break;
-    case TrianglePosition::D3_3D:
-      starId = getTriangleStarD3(p.data(), localStarId);
+    case CRTPClass::TrianglePosition::D3_3D:
+      starId = this->getTriangleStarD3(p.data(), localStarId);
       break;
     default: // 2D
       starId = -1;
@@ -2162,41 +2206,42 @@ int ImplicitTriangulationCRTP<Derived>::TTK_TRIANGULATION_INTERNAL(
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStars)() {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getTriangleStars)() {
 
-  if(triangleStarList_.empty()) {
+  if(this->triangleStarList_.empty()) {
     Timer t;
 
-    triangleStarList_.resize(triangleNumber_);
+    this->triangleStarList_.resize(triangleNumber_);
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      triangleStarList_[i].resize(getTriangleStarNumber(i));
-      for(SimplexId j = 0; j < (SimplexId)triangleStarList_[i].size(); ++j)
-        getTriangleStar(i, j, triangleStarList_[i][j]);
+      this->triangleStarList_[i].resize(this->getTriangleStarNumber(i));
+      for(SimplexId j = 0; j < (SimplexId)this->triangleStarList_[i].size(); ++j)
+        this->getTriangleStar(i, j, this->triangleStarList_[i][j]);
     }
 
-    printMsg("Built " + to_string(triangleNumber_) + " triangle stars.", 1,
+    this->printMsg("Built " + to_string(triangleNumber_) + " triangle stars.", 1,
              t.getElapsedTime(), 1);
   }
-  return &triangleStarList_;
+  return &this->triangleStarList_;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::getTriangleNeighborNumber(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::getTriangleNeighborNumber(
   const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
     return -1;
 #endif
 
-  if(dimensionality_ == 2) {
+  if(this->dimensionality_ == 2) {
     const auto &p = this->underlying().getTriangleCoords(triangleId);
     const SimplexId id = triangleId % 2;
 
     if(id) {
-      if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
+      if(p[0] / 2 == this->nbvoxels_[this->Di_] - 1 and p[1] == this->nbvoxels_[this->Dj_] - 1)
         return 1;
-      else if(p[0] / 2 == nbvoxels_[Di_] - 1 or p[1] == nbvoxels_[Dj_] - 1)
+      else if(p[0] / 2 == this->nbvoxels_[this->Di_] - 1 or p[1] == this->nbvoxels_[this->Dj_] - 1)
         return 2;
       else
         return 3;
@@ -2213,8 +2258,8 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getTriangleNeighborNumber(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTriangleNeighbor(
   const SimplexId &triangleId,
   const int &localNeighborId,
   SimplexId &neighborId) const {
@@ -2226,23 +2271,23 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
 
   neighborId = -1;
 
-  if(dimensionality_ == 2) {
+  if(this->dimensionality_ == 2) {
     const auto &p = this->underlying().getTriangleCoords(triangleId);
     const SimplexId id = triangleId % 2;
 
     if(id) {
-      if(p[0] / 2 == nbvoxels_[Di_] - 1 and p[1] == nbvoxels_[Dj_] - 1)
+      if(p[0] / 2 == this->nbvoxels_[this->Di_] - 1 and p[1] == this->nbvoxels_[this->Dj_] - 1)
         neighborId = triangleId - 1;
-      else if(p[0] / 2 == nbvoxels_[Di_] - 1) {
+      else if(p[0] / 2 == this->nbvoxels_[this->Di_] - 1) {
         switch(localNeighborId) {
           case 0:
             neighborId = triangleId - 1;
             break;
           case 1:
-            neighborId = triangleId + tshift_[0] - 1;
+            neighborId = triangleId + this->tshift_[0] - 1;
             break;
         }
-      } else if(p[1] == nbvoxels_[Dj_] - 1) {
+      } else if(p[1] == this->nbvoxels_[this->Dj_] - 1) {
         switch(localNeighborId) {
           case 0:
             neighborId = triangleId - 1;
@@ -2260,7 +2305,7 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
             neighborId = triangleId + 1;
             break;
           case 2:
-            neighborId = triangleId + tshift_[0] - 1;
+            neighborId = triangleId + this->tshift_[0] - 1;
             break;
         }
       }
@@ -2273,7 +2318,7 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
             neighborId = triangleId + 1;
             break;
           case 1:
-            neighborId = triangleId - tshift_[0] + 1;
+            neighborId = triangleId - this->tshift_[0] + 1;
             break;
         }
       } else if(p[1] == 0) {
@@ -2294,7 +2339,7 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
             neighborId = triangleId - 1;
             break;
           case 2:
-            neighborId = triangleId - tshift_[0] + 1;
+            neighborId = triangleId - this->tshift_[0] + 1;
             break;
         }
       }
@@ -2304,7 +2349,8 @@ int ImplicitTriangulationCRTP<Derived>::getTriangleNeighbor(
   return 0;
 }
 
-int ImplicitTriangulation::getTriangleNeighbors(
+template<size_t card>
+int ImplicitTriangulation<card>::getTriangleNeighbors(
   vector<vector<SimplexId>> &neighbors) {
   neighbors.resize(triangleNumber_);
   for(SimplexId i = 0; i < triangleNumber_; ++i) {
@@ -2315,8 +2361,8 @@ int ImplicitTriangulation::getTriangleNeighbors(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTetrahedronVertex(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTetrahedronVertex(
   const SimplexId &tetId, const int &localVertexId, SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -2327,37 +2373,37 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronVertex(
 
   vertexId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
     const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
       case 0:
-        vertexId = getTetrahedronVertexABCG(p, localVertexId);
+        vertexId = this->getTetrahedronVertexABCG(p, localVertexId);
         break;
       case 1:
-        vertexId = getTetrahedronVertexBCDG(p, localVertexId);
+        vertexId = this->getTetrahedronVertexBCDG(p, localVertexId);
         break;
       case 2:
-        vertexId = getTetrahedronVertexABEG(p, localVertexId);
+        vertexId = this->getTetrahedronVertexABEG(p, localVertexId);
         break;
       case 3:
-        vertexId = getTetrahedronVertexBEFG(p, localVertexId);
+        vertexId = this->getTetrahedronVertexBEFG(p, localVertexId);
         break;
       case 4:
-        vertexId = getTetrahedronVertexBFGH(p, localVertexId);
+        vertexId = this->getTetrahedronVertexBFGH(p, localVertexId);
         break;
       case 5:
-        vertexId = getTetrahedronVertexBDGH(p, localVertexId);
+        vertexId = this->getTetrahedronVertexBDGH(p, localVertexId);
         break;
     }
   }
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTetrahedronEdge(
   const SimplexId &tetId, const int &localEdgeId, SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
@@ -2368,29 +2414,29 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
 
   edgeId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
     const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
       case 0:
-        edgeId = getTetrahedronEdgeABCG(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeABCG(p, localEdgeId);
         break;
       case 1:
-        edgeId = getTetrahedronEdgeBCDG(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeBCDG(p, localEdgeId);
         break;
       case 2:
-        edgeId = getTetrahedronEdgeABEG(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeABEG(p, localEdgeId);
         break;
       case 3:
-        edgeId = getTetrahedronEdgeBEFG(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeBEFG(p, localEdgeId);
         break;
       case 4:
-        edgeId = getTetrahedronEdgeBFGH(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeBFGH(p, localEdgeId);
         break;
       case 5:
-        edgeId = getTetrahedronEdgeBDGH(p, localEdgeId);
+        edgeId = this->getTetrahedronEdgeBDGH(p, localEdgeId);
         break;
     }
   }
@@ -2398,7 +2444,8 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronEdge(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronEdges(
+template<size_t card>
+int ImplicitTriangulation<card>::getTetrahedronEdges(
   vector<vector<SimplexId>> &edges) const {
   edges.resize(tetrahedronNumber_);
   for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
@@ -2410,8 +2457,8 @@ int ImplicitTriangulation::getTetrahedronEdges(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTetrahedronTriangle(
   const SimplexId &tetId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
@@ -2424,29 +2471,29 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
 
   triangleId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
     const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
       case 0:
-        triangleId = getTetrahedronTriangleABCG(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleABCG(p, localTriangleId);
         break;
       case 1:
-        triangleId = getTetrahedronTriangleBCDG(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleBCDG(p, localTriangleId);
         break;
       case 2:
-        triangleId = getTetrahedronTriangleABEG(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleABEG(p, localTriangleId);
         break;
       case 3:
-        triangleId = getTetrahedronTriangleBEFG(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleBEFG(p, localTriangleId);
         break;
       case 4:
-        triangleId = getTetrahedronTriangleBFGH(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleBFGH(p, localTriangleId);
         break;
       case 5:
-        triangleId = getTetrahedronTriangleBDGH(p, localTriangleId);
+        triangleId = this->getTetrahedronTriangleBDGH(p, localTriangleId);
         break;
     }
   }
@@ -2454,7 +2501,8 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronTriangle(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronTriangles(
+template<size_t card>
+int ImplicitTriangulation<card>::getTetrahedronTriangles(
   vector<vector<SimplexId>> &triangles) const {
   triangles.resize(tetrahedronNumber_);
   for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
@@ -2466,15 +2514,15 @@ int ImplicitTriangulation::getTetrahedronTriangles(
   return 0;
 }
 
-template <typename Derived>
-SimplexId ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighborNumber(
+template <size_t card, typename Derived>
+SimplexId ImplicitTriangulationCRTP<card, Derived>::getTetrahedronNeighborNumber(
   const SimplexId &tetId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(tetId < 0 or tetId >= tetrahedronNumber_)
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
     const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
@@ -2489,9 +2537,9 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighborNumber(
           return 4;
         break;
       case 1: // BCDG
-        if(p[1] == nbvoxels_[1] - 1 and p[2] == 0)
+        if(p[1] == this->nbvoxels_[1] - 1 and p[2] == 0)
           return 2;
-        else if(p[1] == nbvoxels_[1] - 1 or p[2] == 0)
+        else if(p[1] == this->nbvoxels_[1] - 1 or p[2] == 0)
           return 3;
         else
           return 4;
@@ -2505,25 +2553,25 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighborNumber(
           return 4;
         break;
       case 3: // BEFG
-        if(p[1] == 0 and p[2] == nbvoxels_[2] - 1)
+        if(p[1] == 0 and p[2] == this->nbvoxels_[2] - 1)
           return 2;
-        else if(p[1] == 0 or p[2] == nbvoxels_[2] - 1)
+        else if(p[1] == 0 or p[2] == this->nbvoxels_[2] - 1)
           return 3;
         else
           return 4;
         break;
       case 4: // BFGH
-        if(p[0] == nbvoxels_[0] - 1 and p[2] == nbvoxels_[2] - 1)
+        if(p[0] == this->nbvoxels_[0] - 1 and p[2] == this->nbvoxels_[2] - 1)
           return 2;
-        else if(p[0] == nbvoxels_[0] - 1 or p[2] == nbvoxels_[2] - 1)
+        else if(p[0] == this->nbvoxels_[0] - 1 or p[2] == this->nbvoxels_[2] - 1)
           return 3;
         else
           return 4;
         break;
       case 5: // BDGH
-        if(p[0] == nbvoxels_[0] - 1 and p[1] == nbvoxels_[1] - 1)
+        if(p[0] == this->nbvoxels_[0] - 1 and p[1] == this->nbvoxels_[1] - 1)
           return 2;
-        else if(p[0] == nbvoxels_[0] - 1 or p[1] == nbvoxels_[1] - 1)
+        else if(p[0] == this->nbvoxels_[0] - 1 or p[1] == this->nbvoxels_[1] - 1)
           return 3;
         else
           return 4;
@@ -2534,42 +2582,42 @@ SimplexId ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighborNumber(
   return 0;
 }
 
-template <typename Derived>
-int ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighbor(
+template <size_t card, typename Derived>
+int ImplicitTriangulationCRTP<card, Derived>::getTetrahedronNeighbor(
   const SimplexId &tetId,
   const int &localNeighborId,
   SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
-     or localNeighborId >= getTetrahedronNeighborNumber(tetId))
+     or localNeighborId >= this->getTetrahedronNeighborNumber(tetId))
     return -1;
 #endif
 
   neighborId = -1;
 
-  if(dimensionality_ == 3) {
+  if(this->dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
     const auto &c = this->underlying().getTetrahedronCoords(tetId);
     const auto p{c.data()};
 
     switch(id) {
       case 0:
-        neighborId = getTetrahedronNeighborABCG(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborABCG(tetId, p, localNeighborId);
         break;
       case 1:
-        neighborId = getTetrahedronNeighborBCDG(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborBCDG(tetId, p, localNeighborId);
         break;
       case 2:
-        neighborId = getTetrahedronNeighborABEG(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborABEG(tetId, p, localNeighborId);
         break;
       case 3:
-        neighborId = getTetrahedronNeighborBEFG(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborBEFG(tetId, p, localNeighborId);
         break;
       case 4:
-        neighborId = getTetrahedronNeighborBFGH(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborBFGH(tetId, p, localNeighborId);
         break;
       case 5:
-        neighborId = getTetrahedronNeighborBDGH(tetId, p, localNeighborId);
+        neighborId = this->getTetrahedronNeighborBDGH(tetId, p, localNeighborId);
         break;
     }
   }
@@ -2577,7 +2625,8 @@ int ImplicitTriangulationCRTP<Derived>::getTetrahedronNeighbor(
   return 0;
 }
 
-int ImplicitTriangulation::getTetrahedronNeighbors(
+template<size_t card>
+int ImplicitTriangulation<card>::getTetrahedronNeighbors(
   vector<vector<SimplexId>> &neighbors) {
   neighbors.resize(tetrahedronNumber_);
   for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
@@ -2589,479 +2638,490 @@ int ImplicitTriangulation::getTetrahedronNeighbors(
   return 0;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template <size_t card>
+SimplexId ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
   getCellVertexNumber)(const SimplexId & /*cellId*/) const {
-  return dimensionality_ + 1;
+  return this->dimensionality_ + 1;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
+template<size_t card>
+int ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
   const SimplexId &cellId,
   const int &localVertexId,
   SimplexId &vertexId) const {
 
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     getTetrahedronVertex(cellId, localVertexId, vertexId);
-  else if(dimensionality_ == 2)
-    getTriangleVertexInternal(cellId, localVertexId, vertexId);
-  else if(dimensionality_ == 1)
-    getEdgeVertexInternal(cellId, localVertexId, vertexId);
+  else if(this->dimensionality_ == 2)
+    this->getTriangleVertexInternal(cellId, localVertexId, vertexId);
+  else if(this->dimensionality_ == 1)
+    this->getEdgeVertexInternal(cellId, localVertexId, vertexId);
 
   return 0;
 }
 
-SimplexId ImplicitTriangulation::getCellEdgeNumberInternal(
+template <size_t card>
+SimplexId ImplicitTriangulation<card>::getCellEdgeNumberInternal(
   const SimplexId & /*cellId*/) const {
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     return 6;
-  else if(dimensionality_ == 2)
+  else if(this->dimensionality_ == 2)
     return 3;
 
   return 0;
 }
 
-int ImplicitTriangulation::getCellEdgeInternal(const SimplexId &cellId,
+template<size_t card>
+int ImplicitTriangulation<card>::getCellEdgeInternal(const SimplexId &cellId,
                                                const int &localEdgeId,
                                                SimplexId &edgeId) const {
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     getTetrahedronEdge(cellId, localEdgeId, edgeId);
-  else if(dimensionality_ == 2)
-    getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
-  else if(dimensionality_ == 1)
+  else if(this->dimensionality_ == 2)
+    this->getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
+  else if(this->dimensionality_ == 1)
     getCellNeighbor(cellId, localEdgeId, edgeId);
 
   return 0;
 }
 
-const vector<vector<SimplexId>> *ImplicitTriangulation::getCellEdgesInternal() {
-  if(cellEdgeVector_.empty()) {
+template <size_t card>
+const vector<vector<SimplexId>> *ImplicitTriangulation<card>::getCellEdgesInternal() {
+  if(this->cellEdgeVector_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronEdges(cellEdgeVector_);
-    else if(dimensionality_ == 2)
-      getTriangleEdgesInternal(cellEdgeVector_);
+    if(this->dimensionality_ == 3)
+      getTetrahedronEdges(this->cellEdgeVector_);
+    else if(this->dimensionality_ == 2)
+      getTriangleEdgesInternal(this->cellEdgeVector_);
 
-    printMsg("Built " + to_string(cellNumber_) + " cell edges.", 1,
+    this->printMsg("Built " + to_string(cellNumber_) + " cell edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellEdgeVector_;
+  return &this->cellEdgeVector_;
 }
 
-int ImplicitTriangulation::getCellTriangleInternal(
+template<size_t card>
+int ImplicitTriangulation<card>::getCellTriangleInternal(
   const SimplexId &cellId,
   const int &localTriangleId,
   SimplexId &triangleId) const {
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     getTetrahedronTriangle(cellId, localTriangleId, triangleId);
 
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::getCellTrianglesInternal() {
-  if(cellTriangleVector_.empty()) {
+  ImplicitTriangulation<card>::getCellTrianglesInternal() {
+  if(this->cellTriangleVector_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronTriangles(cellTriangleVector_);
+    if(this->dimensionality_ == 3)
+      getTetrahedronTriangles(this->cellTriangleVector_);
 
-    printMsg("Built " + to_string(cellNumber_) + " cell triangles.", 1,
+    this->printMsg("Built " + to_string(cellNumber_) + " cell triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellTriangleVector_;
+  return &this->cellTriangleVector_;
 }
 
-SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
+template <size_t card>
+SimplexId ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(
   getCellNeighborNumber)(const SimplexId &cellId) const {
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     return getTetrahedronNeighborNumber(cellId);
-  else if(dimensionality_ == 2)
+  else if(this->dimensionality_ == 2)
     return getTriangleNeighborNumber(cellId);
-  else if(dimensionality_ == 1) {
-    printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
+  else if(this->dimensionality_ == 1) {
+    this->printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
     return -1;
   }
 
   return 0;
 }
 
-int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
+template<size_t card>
+int ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
   const SimplexId &cellId,
   const int &localNeighborId,
   SimplexId &neighborId) const {
-  if(dimensionality_ == 3)
+  if(this->dimensionality_ == 3)
     getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
-  else if(dimensionality_ == 2)
+  else if(this->dimensionality_ == 2)
     getTriangleNeighbor(cellId, localNeighborId, neighborId);
-  else if(dimensionality_ == 1) {
-    printErr("getCellNeighbor() not implemented in 1D! (TODO)");
+  else if(this->dimensionality_ == 1) {
+    this->printErr("getCellNeighbor() not implemented in 1D! (TODO)");
     return -1;
   }
 
   return 0;
 }
 
+template<size_t card>
 const vector<vector<SimplexId>> *
-  ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() {
-  if(cellNeighborList_.empty()) {
+  ImplicitTriangulation<card>::TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() {
+  if(this->cellNeighborList_.empty()) {
     Timer t;
 
-    if(dimensionality_ == 3)
-      getTetrahedronNeighbors(cellNeighborList_);
-    else if(dimensionality_ == 2)
-      getTriangleNeighbors(cellNeighborList_);
-    else if(dimensionality_ == 1) {
-      printErr("getCellNeighbors() not implemented in 1D! (TODO)");
+    if(this->dimensionality_ == 3)
+      getTetrahedronNeighbors(this->cellNeighborList_);
+    else if(this->dimensionality_ == 2)
+      getTriangleNeighbors(this->cellNeighborList_);
+    else if(this->dimensionality_ == 1) {
+      this->printErr("getCellNeighbors() not implemented in 1D! (TODO)");
       return nullptr;
     }
 
-    printMsg("Built " + to_string(cellNumber_) + " cell neighbors.", 1,
+    this->printMsg("Built " + to_string(cellNumber_) + " cell neighbors.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellNeighborList_;
+  return &this->cellNeighborList_;
 }
 
-int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
+template<size_t card>
+int ImplicitTriangulation<card>::preconditionVertexNeighborsInternal() {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
   this->vertexNeighborABCDEFGH_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
-    -1 + vshift_[1], // V(d)::{g}
-    vshift_[1], // V(d)::{h}
+    -1 + this->vshift_[1], // V(d)::{g}
+    this->vshift_[1], // V(d)::{h}
     -1, // V(h)::{g}
-    -1 + vshift_[0], // V(b)::{c}
-    vshift_[0], // V(b)::{d}
-    -1 + vshift_[0] + vshift_[1], // V(b)::{g}
-    vshift_[0] + vshift_[1] // V(b)::{h}
+    -1 + this->vshift_[0], // V(b)::{c}
+    this->vshift_[0], // V(b)::{d}
+    -1 + this->vshift_[0] + this->vshift_[1], // V(b)::{g}
+    this->vshift_[0] + this->vshift_[1] // V(b)::{h}
   };
 
   // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
   this->vertexNeighborABCD_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
-    -vshift_[0], // V(d)::{b}
-    1 - vshift_[0], // V(c)::{b}
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
+    -this->vshift_[0], // V(d)::{b}
+    1 - this->vshift_[0], // V(c)::{b}
     1, // V(a)::{b}
   };
   // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
   this->vertexNeighborEFGH_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
     -1, // V(h)::{g}
-    -1 + vshift_[0], // V(f)::{g}
-    vshift_[0], // V(f)::{h}
+    -1 + this->vshift_[0], // V(f)::{g}
+    this->vshift_[0], // V(f)::{h}
   };
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
   this->vertexNeighborAEFB_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
     1, // V(a)::{b}
-    1 - vshift_[1], // V(e)::{b}
-    -vshift_[1], // V(f)::{b}
+    1 - this->vshift_[1], // V(e)::{b}
+    -this->vshift_[1], // V(f)::{b}
   };
   // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
   this->vertexNeighborGHDC_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
     -1, // V(h)::{g}
-    -1 + vshift_[1], // V(d)::{g}
-    vshift_[1] // V(d)::{h}
+    -1 + this->vshift_[1], // V(d)::{g}
+    this->vshift_[1] // V(d)::{h}
   };
   // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
   this->vertexNeighborAEGC_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
-    vshift_[0], // V(a)::{c}
-    vshift_[0] + vshift_[1], // V(a)::{g}
-    vshift_[1], // V(c)::{g}
+    this->vshift_[0], // V(a)::{c}
+    this->vshift_[0] + this->vshift_[1], // V(a)::{g}
+    this->vshift_[1], // V(c)::{g}
   };
   // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
   this->vertexNeighborBFHD_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
-    -vshift_[1], // V(f)::{b}
-    -vshift_[0] - vshift_[1], // V(h)::{b}
-    -vshift_[0], // V(d)::{b}
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
+    -this->vshift_[1], // V(f)::{b}
+    -this->vshift_[0] - this->vshift_[1], // V(h)::{b}
+    -this->vshift_[0], // V(d)::{b}
   };
 
   // V(ab)=V(b)+V(a)::{b}
   this->vertexNeighborAB_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
     1, // V(a)::{b}
   };
   // V(bd)=V(b)+V(d)::{b}
   this->vertexNeighborBD_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
-    -vshift_[0], // V(d)::{b}
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
+    -this->vshift_[0], // V(d)::{b}
   };
   // V(gh)=V(g)+V(h)::{g}
   this->vertexNeighborGH_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
     -1, // V(h)::{g}
   };
   // V(eg)=V(g)+V(e)::{g}
   this->vertexNeighborEG_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
-    vshift_[0], // V(e)::{g}
+    this->vshift_[0], // V(e)::{g}
   };
   // V(cg)=V(g)+V(c)::{g}
   this->vertexNeighborCG_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
-    vshift_[1], // V(c)::{g}
+    this->vshift_[1], // V(c)::{g}
   };
   // V(bf)=V(b)+V(f)::{b}
   this->vertexNeighborBF_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
-    -vshift_[1], // V(f)::{b}
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
+    -this->vshift_[1], // V(f)::{b}
   };
 
   // V(b)={a,c,d,e,f,g,h}
   this->vertexNeighborB_ = {
     -1, // a
-    -1 + vshift_[0], // c
-    vshift_[0], // d
-    -1 + vshift_[1], // e
-    vshift_[1], // f
-    -1 + vshift_[0] + vshift_[1], // g
-    vshift_[0] + vshift_[1], // h
+    -1 + this->vshift_[0], // c
+    this->vshift_[0], // d
+    -1 + this->vshift_[1], // e
+    this->vshift_[1], // f
+    -1 + this->vshift_[0] + this->vshift_[1], // g
+    this->vshift_[0] + this->vshift_[1], // h
   };
   // V(g)={a,b,c,d,e,f,h}
   this->vertexNeighborG_ = {
-    -vshift_[0] - vshift_[1], // a
-    1 - vshift_[0] - vshift_[1], // b
-    -vshift_[1], // c
-    1 - vshift_[1], // d
-    -vshift_[0], // e
-    1 - vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // a
+    1 - this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // c
+    1 - this->vshift_[1], // d
+    -this->vshift_[0], // e
+    1 - this->vshift_[0], // f
     1, // h
   };
 
   // V(ef)=V(f)+V(e)::{b,f}
   this->vertexNeighborEF_ = {
-    -vshift_[1], // b
+    -this->vshift_[1], // b
     -1, // e
-    -1 + vshift_[0], // g
-    vshift_[0], // h
-    1 - vshift_[1], // V(e)::{b}
+    -1 + this->vshift_[0], // g
+    this->vshift_[0], // h
+    1 - this->vshift_[1], // V(e)::{b}
     1, // V(e)::{f}
   };
   // V(cd)=V(d)+V(c)::{b,d}
   this->vertexNeighborCD_ = {
-    -vshift_[0], // b
+    -this->vshift_[0], // b
     -1, // c
-    -1 + vshift_[1], // g
-    vshift_[1], // h
-    1 - vshift_[0], // V(c)::{b}
+    -1 + this->vshift_[1], // g
+    this->vshift_[1], // h
+    1 - this->vshift_[0], // V(c)::{b}
     1, // V(c)::{d}
   };
   // V(ac)=V(c)+V(a)::{c,g}
   this->vertexNeighborAC_ = {
-    -vshift_[0], // a
-    1 - vshift_[0], // b
+    -this->vshift_[0], // a
+    1 - this->vshift_[0], // b
     1, // d
-    vshift_[1], // g
-    vshift_[0], // V(a)::{c}
-    vshift_[0] + vshift_[1], // V(a)::{c}
+    this->vshift_[1], // g
+    this->vshift_[0], // V(a)::{c}
+    this->vshift_[0] + this->vshift_[1], // V(a)::{c}
   };
   // V(ae)=V(a)+V(e)::{a,b}
   this->vertexNeighborAE_ = {
     1, // b
-    vshift_[0], // c
-    vshift_[1], // e
-    vshift_[0] + vshift_[1], // g
-    -vshift_[1], // V(e)::{a}
-    1 - vshift_[1], // V(e)::{b}
+    this->vshift_[0], // c
+    this->vshift_[1], // e
+    this->vshift_[0] + this->vshift_[1], // g
+    -this->vshift_[1], // V(e)::{a}
+    1 - this->vshift_[1], // V(e)::{b}
   };
   // V(fh)=V(f)+V(h)::{b,f}
   this->vertexNeighborFH_ = {
-    -vshift_[1], // b
+    -this->vshift_[1], // b
     -1, // e
-    -1 + vshift_[0], // g
-    vshift_[0], // h
-    -vshift_[0] - vshift_[1], // V(h)::{b}
-    -vshift_[0], // V(h)::{f}
+    -1 + this->vshift_[0], // g
+    this->vshift_[0], // h
+    -this->vshift_[0] - this->vshift_[1], // V(h)::{b}
+    -this->vshift_[0], // V(h)::{f}
   };
   // V(dh)=V(d)+V(h)::{b,d}
   this->vertexNeighborDH_ = {
-    -vshift_[0], // b
+    -this->vshift_[0], // b
     -1, // c
-    -1 + vshift_[1], // g
-    vshift_[1], // h
-    -vshift_[0] - vshift_[1], // V(h)::{b}
-    -vshift_[1], // V(h)::{d}
+    -1 + this->vshift_[1], // g
+    this->vshift_[1], // h
+    -this->vshift_[0] - this->vshift_[1], // V(h)::{b}
+    -this->vshift_[1], // V(h)::{d}
   };
 
   // V(a)={b,c,e,g}
   this->vertexNeighborA_ = {
     1, // b
-    vshift_[0], // c
-    vshift_[1], // e
-    vshift_[0] + vshift_[1], // g
+    this->vshift_[0], // c
+    this->vshift_[1], // e
+    this->vshift_[0] + this->vshift_[1], // g
   };
   // V(c)={a,b,d,g}
   this->vertexNeighborC_ = {
-    -vshift_[0], // a
-    1 - vshift_[0], // b
+    -this->vshift_[0], // a
+    1 - this->vshift_[0], // b
     1, // d
-    +vshift_[1], // g
+    +this->vshift_[1], // g
   };
   // V(d)={b,c,g,h}
   this->vertexNeighborD_ = {
-    -vshift_[0], // b
+    -this->vshift_[0], // b
     -1, // c
-    -1 + vshift_[1], // g
-    vshift_[1], // h
+    -1 + this->vshift_[1], // g
+    this->vshift_[1], // h
   };
   // V(e)={a,b,f,g}
   this->vertexNeighborE_ = {
-    -vshift_[1], // a
-    1 - vshift_[1], // b
+    -this->vshift_[1], // a
+    1 - this->vshift_[1], // b
     1, // f
-    +vshift_[0], // g
+    +this->vshift_[0], // g
   };
   // V(f)={b,e,g,h}
   this->vertexNeighborF_ = {
-    -vshift_[1], // b
+    -this->vshift_[1], // b
     -1, // e
-    -1 + vshift_[0], // g
-    vshift_[0], // h
+    -1 + this->vshift_[0], // g
+    this->vshift_[0], // h
   };
   // V(h)={b,d,f,g}
   this->vertexNeighborH_ = {
-    -vshift_[0] - vshift_[1], // b
-    -vshift_[1], // d
-    -vshift_[0], // f
+    -this->vshift_[0] - this->vshift_[1], // b
+    -this->vshift_[1], // d
+    -this->vshift_[0], // f
     -1, // g
   };
 
   // V(abcd)=V(d)::{b,c}+V(c)::{b,d}+V(a)::{b}+V(b)::{c}
   this->vertexNeighbor2dABCD_ = {
-    -1, -vshift_[0], -vshift_[0] + 1, 1, vshift_[0], vshift_[0] - 1,
+    -1, -this->vshift_[0], -this->vshift_[0] + 1, 1, this->vshift_[0], this->vshift_[0] - 1,
   };
   // V(ab)=V(b)::{a,c,d}+V(a)::{b}
   this->vertexNeighbor2dAB_ = {
     -1, // V(b)::a
-    vshift_[0] - 1, // V(b)::c
-    vshift_[0], // V(b)::d
+    this->vshift_[0] - 1, // V(b)::c
+    this->vshift_[0], // V(b)::d
     +1, // V(a)::b
   };
   // V(cd)=V(c)::{a,b,d}+V(d)::{c}
   this->vertexNeighbor2dCD_ = {
     -1, // V(d)::c
-    -vshift_[0], // V(c)::a
-    -vshift_[0] + 1, // V(c)::b
+    -this->vshift_[0], // V(c)::a
+    -this->vshift_[0] + 1, // V(c)::b
     1, // V(c)::d
   };
   // V(ac)=V(c)::{a,b,d}+V(a)::{c}
   this->vertexNeighbor2dAC_ = {
-    -vshift_[0], // V(c)::{a}
-    -vshift_[0] + 1, // V(c)::{b}
+    -this->vshift_[0], // V(c)::{a}
+    -this->vshift_[0] + 1, // V(c)::{b}
     1, // V(c)::{d}
-    vshift_[0], // V(a)::{c}
+    this->vshift_[0], // V(a)::{c}
   };
   // V(bd)=V(b)::{c,d}+V(d)::{b,c}
   this->vertexNeighbor2dBD_ = {
-    vshift_[0] - 1, // V(b)::{c}
-    vshift_[0], // V(b)::{d}
-    -vshift_[0], // V(d)::{b}
+    this->vshift_[0] - 1, // V(b)::{c}
+    this->vshift_[0], // V(b)::{d}
+    -this->vshift_[0], // V(d)::{b}
     -1, // V(d)::{c}
   };
   // V(b)={a,c,d}
   this->vertexNeighbor2dB_ = {
     -1, // a
-    vshift_[0], // d
-    vshift_[0] - 1, // c
+    this->vshift_[0], // d
+    this->vshift_[0] - 1, // c
   };
   // V(c)={a,b,d}
   this->vertexNeighbor2dC_ = {
     1, // d
-    -vshift_[0], // a
-    -vshift_[0] + 1, // b
+    -this->vshift_[0], // a
+    -this->vshift_[0] + 1, // b
   };
   this->vertexNeighbor2dA_ = {};
   // V(a)={b,c}
   this->vertexNeighbor2dA_ = {
     1, // b
-    vshift_[0] // c
+    this->vshift_[0] // c
   };
   // V(d)={c,b}
   this->vertexNeighbor2dD_ = {
     -1, // c
-    -vshift_[0], // b
+    -this->vshift_[0], // b
 
   };
 
@@ -3069,8 +3129,8 @@ int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
 }
 
 #ifdef TTK_ENABLE_MPI
-
-int ttk::ImplicitTriangulation::preconditionDistributedCells() {
+template <size_t card>
+int ttk::ImplicitTriangulation<card>::preconditionDistributedCells() {
   if(this->hasPreconditionedDistributedCells_) {
     return 0;
   }
@@ -3162,7 +3222,9 @@ int ttk::ImplicitTriangulation::preconditionDistributedCells() {
   return 0;
 }
 
-void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
+
+template <size_t card>
+void ttk::ImplicitTriangulation<card>::createMetaGrid(const double *const bounds) {
 
   // only works with 2 processes or more
   if(!ttk::isRunningWithMPI()) {
@@ -3214,7 +3276,7 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
       std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
   };
 
-  this->metaGrid_ = std::make_shared<ImplicitNoPreconditions>();
+  this->metaGrid_ = std::make_shared<ImplicitNoPreconditions<card> >();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
@@ -3224,8 +3286,9 @@ void ttk::ImplicitTriangulation::createMetaGrid(const double *const bounds) {
   this->metaGrid_->preconditionBoundaryTriangles();
 }
 
+template <size_t card>
 std::array<SimplexId, 3>
-  ttk::ImplicitTriangulation::getVertGlobalCoords(const SimplexId lvid) const {
+  ttk::ImplicitTriangulation<card>::getVertGlobalCoords(const SimplexId lvid) const {
 
   // local vertex coordinates
   std::array<SimplexId, 3> p{};
@@ -3243,8 +3306,9 @@ std::array<SimplexId, 3>
   return p;
 }
 
+template <size_t card>
 std::array<SimplexId, 3>
-  ttk::ImplicitTriangulation::getVertLocalCoords(const SimplexId gvid) const {
+  ttk::ImplicitTriangulation<card>::getVertLocalCoords(const SimplexId gvid) const {
 
   // global vertex coordinates
   std::array<SimplexId, 3> p{};
@@ -3262,7 +3326,8 @@ std::array<SimplexId, 3>
   return p;
 }
 
-bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
+template<size_t card>
+bool ImplicitTriangulation<card>::isVertexOnGlobalBoundaryInternal(
   const SimplexId lvid) const {
 
   if(!ttk::isRunningWithMPI()) {
@@ -3286,7 +3351,8 @@ bool ImplicitTriangulation::isVertexOnGlobalBoundaryInternal(
   return this->metaGrid_->isVertexOnBoundary(gvid);
 }
 
-bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
+template<size_t card>
+bool ImplicitTriangulation<card>::isEdgeOnGlobalBoundaryInternal(
   const SimplexId leid) const {
 
   if(!ttk::isRunningWithMPI()) {
@@ -3309,7 +3375,8 @@ bool ImplicitTriangulation::isEdgeOnGlobalBoundaryInternal(
   return this->metaGrid_->isEdgeOnBoundary(geid);
 }
 
-bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
+template<size_t card>
+bool ImplicitTriangulation<card>::isTriangleOnGlobalBoundaryInternal(
   const SimplexId ltid) const {
 
   if(!ttk::isRunningWithMPI()) {
@@ -3332,7 +3399,8 @@ bool ImplicitTriangulation::isTriangleOnGlobalBoundaryInternal(
   return this->metaGrid_->isTriangleOnBoundary(gtid);
 }
 
-int ttk::ImplicitTriangulation::getCellRankInternal(
+template <size_t card>
+int ttk::ImplicitTriangulation<card>::getCellRankInternal(
   const SimplexId lcid) const {
 
   const int nTetraPerCube{this->dimensionality_ == 3 ? 6 : 2};
@@ -3379,5 +3447,16 @@ int ttk::ImplicitTriangulation::getCellRankInternal(
 #endif // TTK_ENABLE_MPI
 
 // explicit instantiations
-template class ttk::ImplicitTriangulationCRTP<ttk::ImplicitWithPreconditions>;
-template class ttk::ImplicitTriangulationCRTP<ttk::ImplicitNoPreconditions>;
+template class ttk::ImplicitTriangulation<0>;
+template class ttk::ImplicitTriangulation<1>;
+template class ttk::ImplicitTriangulation<2>;
+template class ttk::ImplicitTriangulation<3>;
+template class ttk::ImplicitTriangulationCRTP<0, ttk::ImplicitWithPreconditions<0>>;
+template class ttk::ImplicitTriangulationCRTP<0, ttk::ImplicitNoPreconditions<0>>;
+template class ttk::ImplicitTriangulationCRTP<1, ttk::ImplicitWithPreconditions<1>>;
+template class ttk::ImplicitTriangulationCRTP<1, ttk::ImplicitNoPreconditions<1>>;
+template class ttk::ImplicitTriangulationCRTP<2, ttk::ImplicitWithPreconditions<2>>;
+template class ttk::ImplicitTriangulationCRTP<2, ttk::ImplicitNoPreconditions<2>>;
+template class ttk::ImplicitTriangulationCRTP<3, ttk::ImplicitWithPreconditions<3>>;
+template class ttk::ImplicitTriangulationCRTP<3, ttk::ImplicitNoPreconditions<3>>;
+/// @endcond

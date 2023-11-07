@@ -17,7 +17,8 @@
 
 namespace ttk {
 
-  class ImplicitTriangulation : public RegularGridTriangulation<0> {
+  template<size_t card>
+  class ImplicitTriangulation : public RegularGridTriangulation<card> {
 
   public:
     ImplicitTriangulation();
@@ -74,7 +75,7 @@ namespace ttk {
       const SimplexId &cellId) const override;
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
-      return dimensionality_;
+      return this->dimensionality_;
     }
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
@@ -213,10 +214,10 @@ namespace ttk {
     virtual int preconditionTetrahedronsInternal() = 0;
 
     inline int preconditionCellsInternal() {
-      if(dimensionality_ == 3) {
+      if(this->dimensionality_ == 3) {
         return this->preconditionTetrahedronsInternal();
-      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
-        hasPreconditionedTriangles_ = true;
+      } else if(this->dimensionality_ == 2 && !this->hasPreconditionedTriangles_) {
+        this->hasPreconditionedTriangles_ = true;
         return this->preconditionTrianglesInternal();
       }
       return 0;
@@ -840,8 +841,8 @@ namespace ttk {
     //\endcond
   };
 
-  template <typename Derived>
-  class ImplicitTriangulationCRTP : public ImplicitTriangulation {
+  template <size_t card, typename Derived>
+  class ImplicitTriangulationCRTP : public ImplicitTriangulation<card> {
     inline Derived &underlying() {
       return static_cast<Derived &>(*this);
     }
@@ -858,54 +859,55 @@ namespace ttk {
         return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
+      using CRTPClass = ttk::ImplicitTriangulationCRTP<card, Derived>;
       switch(this->underlying().getVertexPosition(vertexId)) {
-        case VertexPosition::CENTER_3D:
+        case CRTPClass::VertexPosition::CENTER_3D:
           return 14;
-        case VertexPosition::FRONT_FACE_3D:
-        case VertexPosition::BACK_FACE_3D:
-        case VertexPosition::TOP_FACE_3D:
-        case VertexPosition::BOTTOM_FACE_3D:
-        case VertexPosition::LEFT_FACE_3D:
-        case VertexPosition::RIGHT_FACE_3D:
+        case CRTPClass::VertexPosition::FRONT_FACE_3D:
+        case CRTPClass::VertexPosition::BACK_FACE_3D:
+        case CRTPClass::VertexPosition::TOP_FACE_3D:
+        case CRTPClass::VertexPosition::BOTTOM_FACE_3D:
+        case CRTPClass::VertexPosition::LEFT_FACE_3D:
+        case CRTPClass::VertexPosition::RIGHT_FACE_3D:
           return 10;
-        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+        case CRTPClass::VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        case CRTPClass::VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        case CRTPClass::VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        case CRTPClass::VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        case CRTPClass::VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        case CRTPClass::VertexPosition::TOP_RIGHT_EDGE_3D: // bf
           return 8;
-        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+        case CRTPClass::VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        case CRTPClass::VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
           return 7;
-        case VertexPosition::TOP_BACK_EDGE_3D: // ef
-        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-        case VertexPosition::CENTER_2D:
+        case CRTPClass::VertexPosition::TOP_BACK_EDGE_3D: // ef
+        case CRTPClass::VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        case CRTPClass::VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        case CRTPClass::VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        case CRTPClass::VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        case CRTPClass::VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        case CRTPClass::VertexPosition::CENTER_2D:
           return 6;
-        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-        case VertexPosition::TOP_EDGE_2D:
-        case VertexPosition::BOTTOM_EDGE_2D:
-        case VertexPosition::LEFT_EDGE_2D:
-        case VertexPosition::RIGHT_EDGE_2D:
+        case CRTPClass::VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        case CRTPClass::VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        case CRTPClass::VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        case CRTPClass::VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        case CRTPClass::VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        case CRTPClass::VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        case CRTPClass::VertexPosition::TOP_EDGE_2D:
+        case CRTPClass::VertexPosition::BOTTOM_EDGE_2D:
+        case CRTPClass::VertexPosition::LEFT_EDGE_2D:
+        case CRTPClass::VertexPosition::RIGHT_EDGE_2D:
           return 4;
-        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+        case CRTPClass::VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        case CRTPClass::VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
           return 3;
-        case VertexPosition::TOP_LEFT_CORNER_2D: // a
-        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-        case VertexPosition::CENTER_1D:
+        case CRTPClass::VertexPosition::TOP_LEFT_CORNER_2D: // a
+        case CRTPClass::VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        case CRTPClass::VertexPosition::CENTER_1D:
           return 2;
-        case VertexPosition::LEFT_CORNER_1D:
-        case VertexPosition::RIGHT_CORNER_1D:
+        case CRTPClass::VertexPosition::LEFT_CORNER_1D:
+        case CRTPClass::VertexPosition::RIGHT_CORNER_1D:
           return 1;
       }
 
@@ -1027,8 +1029,9 @@ namespace ttk {
 
 /// @cond
 
+template <size_t card>
 inline void
-  ttk::ImplicitTriangulation::vertexToPosition2d(const SimplexId vertex,
+  ttk::ImplicitTriangulation<card>::vertexToPosition2d(const SimplexId vertex,
                                                  SimplexId p[2]) const {
   if(isAccelerated_) {
     p[0] = vertex & mod_[0];
@@ -1039,7 +1042,8 @@ inline void
   }
 }
 
-inline void ttk::ImplicitTriangulation::edgeToPosition2d(const SimplexId edge,
+template<size_t card>
+inline void ttk::ImplicitTriangulation<card>::edgeToPosition2d(const SimplexId edge,
                                                          const int k,
                                                          SimplexId p[2]) const {
   const int e = (k) ? edge - esetshift_[k - 1] : edge;
@@ -1047,15 +1051,17 @@ inline void ttk::ImplicitTriangulation::edgeToPosition2d(const SimplexId edge,
   p[1] = e / eshift_[2 * k];
 }
 
+template<size_t card>
 inline void
-  ttk::ImplicitTriangulation::triangleToPosition2d(const SimplexId triangle,
+  ttk::ImplicitTriangulation<card>::triangleToPosition2d(const SimplexId triangle,
                                                    SimplexId p[2]) const {
   p[0] = triangle % tshift_[0];
   p[1] = triangle / tshift_[0];
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dA(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dA(const SimplexId p[2],
                                                const int id) const {
   // V(a)={b,c}
   switch(id) {
@@ -1067,8 +1073,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dB(const SimplexId p[2],
                                                const int id) const {
   // V(b)={a,c,d}
   switch(id) {
@@ -1082,8 +1089,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dC(const SimplexId p[2],
                                                const int id) const {
   // V(c)={a,b,d}
   switch(id) {
@@ -1097,8 +1105,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dD(const SimplexId p[2],
                                                const int id) const {
   // V(d)={c,b}
   switch(id) {
@@ -1110,8 +1119,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dAB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dAB(const SimplexId p[2],
                                                 const int id) const {
   // V(ab)=V(b)::{a,c,d}+V(a)::{b}
   switch(id) {
@@ -1127,8 +1137,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dCD(const SimplexId p[2],
                                                 const int id) const {
   // V(cd)=V(c)::{a,b,d}+V(d)::{c}
   switch(id) {
@@ -1144,8 +1155,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dAC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dAC(const SimplexId p[2],
                                                 const int id) const {
   // V(ac)=V(c)::{a,b,d}+V(a)::{c}
   switch(id) {
@@ -1161,8 +1173,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dBD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dBD(const SimplexId p[2],
                                                 const int id) const {
   // V(bd)=V(b)::{c,d}+V(d)::{b,c}
   switch(id) {
@@ -1178,8 +1191,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdge2dABCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexEdge2dABCD(const SimplexId p[2],
                                                   const int id) const {
   // V(abcd)=V(d)::{b,c}+V(c)::{b,d}+V(a)::{c}+V(b)::{c}
   switch(id) {
@@ -1199,14 +1213,16 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dA(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dA(const SimplexId p[2],
                                                const int /*id*/) const {
   return p[0] * 2 + p[1] * tshift_[0];
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dB(const SimplexId p[2],
                                                const int id) const {
   switch(id) {
     case 0:
@@ -1217,8 +1233,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dC(const SimplexId p[2],
                                                const int id) const {
   switch(id) {
     case 0:
@@ -1229,14 +1246,16 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dD(const SimplexId p[2],
                                                const int /*id*/) const {
   return (p[0] - 1) * 2 + (p[1] - 1) * tshift_[0] + 1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dAB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dAB(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1249,8 +1268,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dCD(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1263,8 +1283,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dAC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dAC(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1277,8 +1298,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dBD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dBD(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1291,8 +1313,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStar2dABCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexStar2dABCD(const SimplexId p[2],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1311,14 +1334,16 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dA(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dA(const SimplexId p[2],
                                                const int /*id*/) const {
   return esetshift_[1] + p[0] + p[1] * eshift_[4]; // D1::bc
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dB(const SimplexId p[2],
                                                const int id) const {
   switch(id) {
     case 0:
@@ -1329,8 +1354,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dC(const SimplexId p[2],
                                                const int id) const {
   switch(id) {
     case 0:
@@ -1341,14 +1367,16 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dD(const SimplexId p[2],
                                                const int /*id*/) const {
   return esetshift_[1] + p[0] + (p[1] - 1) * eshift_[4] - 1; // D1::bc
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dAB(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dAB(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1361,8 +1389,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dCD(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1375,8 +1404,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dAC(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dAC(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1389,8 +1419,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dBD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dBD(const SimplexId p[2],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -1403,8 +1434,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLink2dABCD(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getVertexLink2dABCD(const SimplexId p[2],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1423,8 +1455,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_x0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_x0(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1433,8 +1466,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xn(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1445,8 +1479,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xN(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1455,8 +1490,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_0y(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_0y(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1465,8 +1501,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_ny(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_ny(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1477,8 +1514,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_Ny(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_Ny(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -1487,8 +1525,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD1_xy(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD1_xy(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -1499,8 +1538,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLink2dL(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getEdgeLink2dL(const SimplexId p[2],
                                              const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[Dj_]) {
     switch(id) {
@@ -1516,8 +1556,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLink2dH(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getEdgeLink2dH(const SimplexId p[2],
                                              const int id) const {
   if(p[0] > 0 and p[0] < nbvoxels_[Di_]) {
     switch(id) {
@@ -1533,8 +1574,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLink2dD1(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getEdgeLink2dD1(const SimplexId p[2],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -1545,8 +1587,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStar2dL(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getEdgeStar2dL(const SimplexId p[2],
                                              const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[Dj_]) {
     if(id == 0)
@@ -1559,8 +1602,9 @@ inline ttk::SimplexId
     return p[0] * 2 + (p[1] - 1) * tshift_[0] + 1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStar2dH(const SimplexId p[2],
+  ttk::ImplicitTriangulation<card>::getEdgeStar2dH(const SimplexId p[2],
                                              const int id) const {
   if(p[0] > 0 and p[0] < nbvoxels_[Di_]) {
     if(id == 0)
@@ -1573,7 +1617,8 @@ inline ttk::SimplexId
     return (p[0] - 1) * 2 + p[1] * tshift_[0] + 1;
 }
 
-inline void ttk::ImplicitTriangulation::vertexToPosition(const SimplexId vertex,
+template<size_t card>
+inline void ttk::ImplicitTriangulation<card>::vertexToPosition(const SimplexId vertex,
                                                          SimplexId p[3]) const {
   if(isAccelerated_) {
     p[0] = vertex & mod_[0];
@@ -1586,7 +1631,8 @@ inline void ttk::ImplicitTriangulation::vertexToPosition(const SimplexId vertex,
   }
 }
 
-inline void ttk::ImplicitTriangulation::edgeToPosition(const SimplexId edge,
+template<size_t card>
+inline void ttk::ImplicitTriangulation<card>::edgeToPosition(const SimplexId edge,
                                                        const int k,
                                                        SimplexId p[3]) const {
   const int e = (k) ? edge - esetshift_[k - 1] : edge;
@@ -1595,7 +1641,8 @@ inline void ttk::ImplicitTriangulation::edgeToPosition(const SimplexId edge,
   p[2] = e / eshift_[2 * k + 1];
 }
 
-inline void ttk::ImplicitTriangulation::triangleToPosition(
+template<size_t card>
+inline void ttk::ImplicitTriangulation<card>::triangleToPosition(
   const SimplexId triangle, const int k, SimplexId p[3]) const {
   const SimplexId t = (k) ? triangle - tsetshift_[k - 1] : triangle;
   p[0] = t % tshift_[2 * k];
@@ -1603,16 +1650,18 @@ inline void ttk::ImplicitTriangulation::triangleToPosition(
   p[2] = t / tshift_[2 * k + 1];
 }
 
+template<size_t card>
 inline void
-  ttk::ImplicitTriangulation::tetrahedronToPosition(const SimplexId tetrahedron,
+  ttk::ImplicitTriangulation<card>::tetrahedronToPosition(const SimplexId tetrahedron,
                                                     SimplexId p[3]) const {
   p[0] = (tetrahedron % tetshift_[0]) / 6;
   p[1] = (tetrahedron % tetshift_[1]) / tetshift_[0];
   p[2] = tetrahedron / tetshift_[1];
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeA(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeA(const SimplexId p[3],
                                              const int id) const {
   // V(a)={b,c,e,g}
   switch(id) {
@@ -1631,8 +1680,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeB(const SimplexId p[3],
                                              const int id) const {
   // V(b)={a,c,d,e,f,g,h}
   switch(id) {
@@ -1660,8 +1710,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeC(const SimplexId p[3],
                                              const int id) const {
   // V(c)={a,b,d,g}
   switch(id) {
@@ -1680,8 +1731,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeD(const SimplexId p[3],
                                              const int id) const {
   // V(d)={b,c,g,h}
   switch(id) {
@@ -1700,8 +1752,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeE(const SimplexId p[3],
                                              const int id) const {
   // V(e)={a,b,f,g}
   switch(id) {
@@ -1720,8 +1773,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeF(const SimplexId p[3],
                                              const int id) const {
   // V(f)={b,e,g,h}
   switch(id) {
@@ -1740,8 +1794,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeG(const SimplexId p[3],
                                              const int id) const {
   // V(g)={a,b,c,d,e,f,h}
   switch(id) {
@@ -1769,8 +1824,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeH(const SimplexId p[3],
                                              const int id) const {
   // V(h)={b,d,f,g}
   switch(id) {
@@ -1789,8 +1845,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeAB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeAB(const SimplexId p[3],
                                               const int id) const {
   // V(ab)=V(b)+V(a)::{b}
   switch(id) {
@@ -1820,8 +1877,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeCD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeCD(const SimplexId p[3],
                                               const int id) const {
   // V(cd)=V(d)+V(c)::{b,d}
   switch(id) {
@@ -1845,8 +1903,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeEF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeEF(const SimplexId p[3],
                                               const int id) const {
   // V(fe)=V(f)+V(e)::{b,f}
   switch(id) {
@@ -1870,8 +1929,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeGH(const SimplexId p[3],
                                               const int id) const {
   // V(gh)=V(g)+V(h)::{g}
   switch(id) {
@@ -1901,8 +1961,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeAC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeAC(const SimplexId p[3],
                                               const int id) const {
   // V(ac)=V(c)+V(a)::{c,g}
   switch(id) {
@@ -1927,8 +1988,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeBD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeBD(const SimplexId p[3],
                                               const int id) const {
   // V(bd)=V(b)+V(d)::{b}
   switch(id) {
@@ -1959,8 +2021,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeEG(const SimplexId p[3],
                                               const int id) const {
   // V(eg)=V(g)+V(e)::{g}
   switch(id) {
@@ -1991,8 +2054,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeFH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeFH(const SimplexId p[3],
                                               const int id) const {
   // V(fh)=V(f)+V(h)::{b,f}
   switch(id) {
@@ -2017,8 +2081,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeAE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeAE(const SimplexId p[3],
                                               const int id) const {
   // V(ae)=V(a)+V(e)::{a,b}
   switch(id) {
@@ -2043,8 +2108,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeBF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeBF(const SimplexId p[3],
                                               const int id) const {
   // V(bf)=V(b)+V(f)::{b}
   switch(id) {
@@ -2075,8 +2141,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeCG(const SimplexId p[3],
                                               const int id) const {
   // V(cg)=V(g)+V(c)::{g}
   switch(id) {
@@ -2107,8 +2174,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeDH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeDH(const SimplexId p[3],
                                               const int id) const {
   // V(dh)=V(d)+V(h)::{b,d}
   switch(id) {
@@ -2133,8 +2201,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeABDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeABDC(const SimplexId p[3],
                                                 const int id) const {
   // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
   switch(id) {
@@ -2170,8 +2239,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeEFHG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeEFHG(const SimplexId p[3],
                                                 const int id) const {
   // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
   switch(id) {
@@ -2207,8 +2277,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeAEGC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeAEGC(const SimplexId p[3],
                                                 const int id) const {
   // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
   switch(id) {
@@ -2245,8 +2316,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeBFHD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeBFHD(const SimplexId p[3],
                                                 const int id) const {
   // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
   switch(id) {
@@ -2283,8 +2355,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeAEFB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeAEFB(const SimplexId p[3],
                                                 const int id) const {
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
   switch(id) {
@@ -2320,8 +2393,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeGHDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeGHDC(const SimplexId p[3],
                                                 const int id) const {
   // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
   switch(id) {
@@ -2357,8 +2431,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexEdgeABCDEFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexEdgeABCDEFGH(const SimplexId p[3],
                                                     const int id) const {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
   switch(id) {
@@ -2406,8 +2481,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId /*p*/[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleA(const SimplexId /*p*/[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2424,8 +2500,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleB(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2456,8 +2533,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleC(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2474,8 +2552,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleD(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2492,8 +2571,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleE(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2510,8 +2590,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleF(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2528,8 +2609,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleG(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2565,8 +2647,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleH(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -2587,8 +2670,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleAB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleAB(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2625,8 +2709,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleCD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleCD(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2651,8 +2736,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleEF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleEF(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2677,8 +2763,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleGH(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2727,8 +2814,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleAC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleAC(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2753,8 +2841,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleBD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleBD(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2791,8 +2880,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleEG(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2834,8 +2924,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleFH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleFH(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2866,8 +2957,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleAE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleAE(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2892,8 +2984,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleBF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleBF(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2930,8 +3023,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleCG(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -2973,8 +3067,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleDH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleDH(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -3007,8 +3102,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleABDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleABDC(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3057,8 +3153,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleEFHG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleEFHG(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3122,8 +3219,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleAEGC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleAEGC(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3177,8 +3275,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleBFHD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleBFHD(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3244,8 +3343,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleAEFB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleAEFB(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3294,8 +3394,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleGHDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleGHDC(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -3361,8 +3462,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleABCDEFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexTriangleABCDEFGH(const SimplexId p[3],
                                                         const int id) const {
   switch(id) {
     case 0:
@@ -3468,8 +3570,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkA(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkA(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3482,8 +3585,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkB(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3508,8 +3612,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkC(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3522,8 +3627,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkD(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3536,8 +3642,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkE(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3550,8 +3657,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkF(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3564,8 +3672,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkG(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3590,8 +3699,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkH(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -3604,8 +3714,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkAB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkAB(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3636,8 +3747,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkCD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkCD(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3656,8 +3768,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkEF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkEF(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3676,8 +3789,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkGH(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3708,8 +3822,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkAC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkAC(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3728,8 +3843,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkBD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkBD(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3760,8 +3876,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkEG(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3792,8 +3909,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkFH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkFH(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3812,8 +3930,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkAE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkAE(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3832,8 +3951,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkBF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkBF(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3864,8 +3984,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkCG(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3896,8 +4017,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkDH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkDH(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -3916,8 +4038,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkABDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkABDC(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -3960,8 +4083,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkEFHG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkEFHG(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -4004,8 +4128,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkAEGC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkAEGC(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -4048,8 +4173,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkBFHD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkBFHD(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -4092,8 +4218,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkAEFB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkAEFB(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -4136,8 +4263,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkGHDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkGHDC(const SimplexId p[3],
                                                 const int id) const {
   switch(id) {
     case 0:
@@ -4180,8 +4308,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexLinkABCDEFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexLinkABCDEFGH(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -4260,8 +4389,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarA(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarA(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4272,16 +4402,18 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarB(const SimplexId p[3],
                                              const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1] + id;
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarC(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4293,8 +4425,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarD(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4307,8 +4440,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarE(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4321,8 +4455,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarF(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4335,8 +4470,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarG(const SimplexId p[3],
                                              const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4344,8 +4480,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarH(const SimplexId p[3],
                                              const int id) const {
   switch(id) {
     case 0:
@@ -4358,8 +4495,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarAB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarAB(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4375,8 +4513,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarCD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarCD(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4395,8 +4534,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarEF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarEF(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4415,8 +4555,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarGH(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4432,8 +4573,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarAC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarAC(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4452,8 +4594,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarBD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarBD(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4469,8 +4612,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarEG(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4486,8 +4630,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarFH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarFH(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4506,8 +4651,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarAE(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarAE(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4526,8 +4672,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarBF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarBF(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4543,8 +4690,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarCG(const SimplexId p[3],
                                               const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4560,8 +4708,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarDH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarDH(const SimplexId p[3],
                                               const int id) const {
   switch(id) {
     case 0:
@@ -4580,8 +4729,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarABDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarABDC(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4609,8 +4759,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarEFHG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarEFHG(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4638,8 +4789,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarAEGC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarAEGC(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4667,8 +4819,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarBFHD(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarBFHD(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4696,8 +4849,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarAEFB(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarAEFB(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4725,8 +4879,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarGHDC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarGHDC(const SimplexId p[3],
                                                 const int id) const {
   if(id >= 0 && id <= 5)
     return p[0] * 6 + (p[1] - 1) * tetshift_[0] + (p[2] - 1) * tetshift_[1]
@@ -4754,8 +4909,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexStarABCDEFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getVertexStarABCDEFGH(const SimplexId p[3],
                                                     const int id) const {
   if(id >= 0 && id <= 5)
     return (p[0] - 1) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -4804,8 +4960,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_x00(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_x00(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4818,8 +4975,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_x0n(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_x0n(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4834,8 +4992,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_x0N(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_x0N(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4846,8 +5005,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xn0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xn0(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4862,8 +5022,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xnn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xnn(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4884,8 +5045,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xnN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xnN(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4902,8 +5064,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xN0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xN0(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4914,8 +5077,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xNn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xNn(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4932,8 +5096,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleL_xNN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleL_xNN(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4948,8 +5113,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_0y0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_0y0(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4960,8 +5126,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_0yn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_0yn(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4976,8 +5143,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_0yN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_0yN(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -4990,8 +5158,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_ny0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_ny0(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5006,8 +5175,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_nyn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_nyn(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5029,8 +5199,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_nyN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_nyN(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5047,8 +5218,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_Ny0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_Ny0(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5061,8 +5233,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_Nyn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_Nyn(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5079,8 +5252,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleH_NyN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleH_NyN(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5092,8 +5266,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_00z(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_00z(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5104,8 +5279,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_0nz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_0nz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5120,8 +5296,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_0Nz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_0Nz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5134,8 +5311,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_n0z(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_n0z(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5150,8 +5328,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_nnz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_nnz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5175,8 +5354,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_nNz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_nNz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5194,8 +5374,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_N0z(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_N0z(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5208,8 +5389,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_Nnz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_Nnz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5228,8 +5410,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleP_NNz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleP_NNz(const SimplexId p[3],
                                                    const int id) const {
   switch(id) {
     case 0:
@@ -5242,8 +5425,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD1_xy0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD1_xy0(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5256,8 +5440,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD1_xyn(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD1_xyn(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5273,8 +5458,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD1_xyN(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD1_xyN(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5288,8 +5474,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD2_0yz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD2_0yz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5302,8 +5489,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD2_nyz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD2_nyz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5320,8 +5508,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD2_Nyz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD2_Nyz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5336,8 +5525,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD3_x0z(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD3_x0z(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5350,8 +5540,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD3_xnz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD3_xnz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5369,8 +5560,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD3_xNz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD3_xNz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5385,8 +5577,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeTriangleD4_xyz(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeTriangleD4_xyz(const SimplexId p[3],
                                                     const int id) const {
   switch(id) {
     case 0:
@@ -5408,8 +5601,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkL(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkL(const SimplexId p[3],
                                            const int id) const {
   if(p[2] == 0 and p[1] == 0) {
     switch(id) {
@@ -5502,8 +5696,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkH(const SimplexId p[3],
                                            const int id) const {
   if(p[0] == 0 and p[2] == 0)
     return esetshift_[5] + p[1] * eshift_[12];
@@ -5586,8 +5781,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkP(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkP(const SimplexId p[3],
                                            const int id) const {
   if(p[0] == 0 and p[1] == 0)
     return esetshift_[5] + p[0] + p[1] * eshift_[12] + p[2] * eshift_[13];
@@ -5674,8 +5870,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkD1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkD1(const SimplexId p[3],
                                             const int id) const {
   if(p[2] > 0 and p[2] < nbvoxels_[2]) {
     switch(id) {
@@ -5712,8 +5909,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkD2(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkD2(const SimplexId p[3],
                                             const int id) const {
   if(p[0] > 0 and p[0] < nbvoxels_[0]) {
     switch(id) {
@@ -5748,8 +5946,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkD3(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkD3(const SimplexId p[3],
                                             const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[1]) {
     switch(id) {
@@ -5786,8 +5985,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeLinkD4(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeLinkD4(const SimplexId p[3],
                                             const int id) const {
   switch(id) {
     case 0:
@@ -5808,8 +6008,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarL(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarL(const SimplexId p[3],
                                            const int id) const {
   if(p[2] == 0 and p[1] == 0) {
     switch(id) {
@@ -5905,8 +6106,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarH(const SimplexId p[3],
                                            const int id) const {
   if(p[0] == 0 and p[2] == 0)
     return p[1] * tetshift_[0]; // ABCG
@@ -5996,8 +6198,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarP(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarP(const SimplexId p[3],
                                            const int id) const {
   if(p[0] == 0 and p[1] == 0)
     return p[2] * tetshift_[1] + 2; // ABEG
@@ -6087,8 +6290,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarD1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarD1(const SimplexId p[3],
                                             const int id) const {
   if(p[2] > 0 and p[2] < nbvoxels_[2]) {
     switch(id) {
@@ -6123,8 +6327,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarD2(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarD2(const SimplexId p[3],
                                             const int id) const {
   if(p[0] > 0 and p[0] < nbvoxels_[0]) {
     switch(id) {
@@ -6159,8 +6364,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getEdgeStarD3(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getEdgeStarD3(const SimplexId p[3],
                                             const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[1]) {
     switch(id) {
@@ -6195,8 +6401,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexF(const SimplexId p[3],
                                                  const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6215,8 +6422,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexH(const SimplexId p[3],
                                                  const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6235,8 +6443,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexC(const SimplexId p[3],
                                                  const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6257,8 +6466,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexD1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexD1(const SimplexId p[3],
                                                   const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6279,8 +6489,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexD2(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexD2(const SimplexId p[3],
                                                   const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6302,8 +6513,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleVertexD3(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleVertexD3(const SimplexId p[3],
                                                   const int id) const {
   if(p[0] % 2) {
     if(id == 0)
@@ -6324,8 +6536,9 @@ inline ttk::SimplexId
   }
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeF_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeF_0(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6338,8 +6551,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeF_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeF_1(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6353,8 +6567,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeH_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeH_0(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6367,8 +6582,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeH_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeH_1(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6382,8 +6598,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeC_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeC_0(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6397,8 +6614,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeC_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeC_1(const SimplexId p[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6412,8 +6630,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD1_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD1_0(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6428,8 +6647,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD1_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD1_1(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6443,8 +6663,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD2_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD2_0(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6457,8 +6678,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD2_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD2_1(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6472,8 +6694,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD3_0(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD3_0(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6487,8 +6710,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleEdgeD3_1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleEdgeD3_1(const SimplexId p[3],
                                                   const int id) const {
   switch(id) {
     case 0:
@@ -6503,8 +6727,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkF(const SimplexId p[3],
                                                const int id) const {
   if(p[2] > 0 and p[2] < nbvoxels_[2]) {
     switch(id) {
@@ -6521,8 +6746,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkH(const SimplexId p[3],
                                                const int id) const {
   if(p[1] > 0 and p[1] < nbvoxels_[1]) {
     switch(id) {
@@ -6539,10 +6765,11 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkC(const SimplexId p[3],
                                                const int id) const {
-  if(p[0] > 1 and p[0] < (dimensions_[0] * 2 - 2)) {
+  if(p[0] > 1 and p[0] < (this->dimensions_[0] * 2 - 2)) {
     switch(id) {
       case 0:
         return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
@@ -6557,8 +6784,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkD1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkD1(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6578,8 +6806,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkD2(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkD2(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6599,8 +6828,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleLinkD3(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleLinkD3(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6620,8 +6850,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarF(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarF(const SimplexId p[3],
                                                const int id) const {
   if(p[0] % 2) {
     if(p[2] > 0 and p[2] < nbvoxels_[2]) {
@@ -6658,8 +6889,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarH(const SimplexId p[3],
                                                const int id) const {
   if(p[0] % 2) {
     if(p[1] > 0 and p[1] < nbvoxels_[1]) {
@@ -6696,11 +6928,12 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarC(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarC(const SimplexId p[3],
                                                const int id) const {
   if(p[0] % 2) {
-    if(p[0] > 1 and p[0] < (dimensions_[0] * 2 - 2)) {
+    if(p[0] > 1 and p[0] < (this->dimensions_[0] * 2 - 2)) {
       switch(id) {
         case 0:
           return (p[0] - 1) * 3 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
@@ -6716,7 +6949,7 @@ inline ttk::SimplexId
       return ((p[0] - 2) / 2) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
              + 4; // BFGH
   } else {
-    if(p[0] > 1 and p[0] < (dimensions_[0] * 2 - 2)) {
+    if(p[0] > 1 and p[0] < (this->dimensions_[0] * 2 - 2)) {
       switch(id) {
         case 0:
           return p[0] * 3 + p[1] * tetshift_[0] + p[2] * tetshift_[1]; // ABCG
@@ -6730,12 +6963,13 @@ inline ttk::SimplexId
       return ((p[0] - 1) / 2) * 6 + p[1] * tetshift_[0] + p[2] * tetshift_[1]
              + 5; // BDGH
   }
-
+  
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarD1(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarD1(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6757,8 +6991,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarD2(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarD2(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6780,8 +7015,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTriangleStarD3(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTriangleStarD3(const SimplexId p[3],
                                                 const int id) const {
   if(p[0] % 2) {
     switch(id) {
@@ -6803,8 +7039,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexABCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexABCG(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6820,8 +7057,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexBCDG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexBCDG(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6837,8 +7075,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexABEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexABEG(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6854,8 +7093,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexBEFG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexBEFG(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6871,8 +7111,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexBFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexBFGH(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6889,8 +7130,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronVertexBDGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronVertexBDGH(const SimplexId p[3],
                                                        const int id) const {
   switch(id) {
     case 0:
@@ -6907,8 +7149,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeABCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeABCG(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -6932,8 +7175,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeBCDG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeBCDG(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -6957,8 +7201,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeABEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeABEG(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -6982,8 +7227,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeBEFG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeBEFG(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -7007,8 +7253,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeBFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeBFGH(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -7032,8 +7279,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronEdgeBDGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronEdgeBDGH(const SimplexId p[3],
                                                      const int id) const {
   switch(id) {
     case 0:
@@ -7057,8 +7305,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleABCG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleABCG(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7073,8 +7322,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleBCDG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleBCDG(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7090,8 +7340,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleABEG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleABEG(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7108,8 +7359,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleBEFG(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleBEFG(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7127,8 +7379,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleBFGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleBFGH(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7146,8 +7399,9 @@ inline ttk::SimplexId
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getTetrahedronTriangleBDGH(const SimplexId p[3],
+  ttk::ImplicitTriangulation<card>::getTetrahedronTriangleBDGH(const SimplexId p[3],
                                                          const int id) const {
   switch(id) {
     case 0:
@@ -7165,7 +7419,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborABCG(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborABCG(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7183,7 +7438,8 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborABCG(
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBCDG(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborBCDG(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7201,7 +7457,8 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBCDG(
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborABEG(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborABEG(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7219,7 +7476,8 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborABEG(
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBEFG(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborBEFG(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7237,7 +7495,8 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBEFG(
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBFGH(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborBFGH(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7255,7 +7514,8 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBFGH(
   return -1;
 }
 
-inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
+template<size_t card>
+inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborBDGH(
   const SimplexId t, const SimplexId p[3], const int id) const {
   switch(id) {
     case 0:
@@ -7273,6 +7533,5 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   return -1;
 }
 
-#include <ImplicitPreconditions.h>
 
-/// @endcond
+#include <ImplicitPreconditions.h>

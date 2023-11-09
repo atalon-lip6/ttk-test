@@ -45,7 +45,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget llvm libomp ninja python open-mpi
+        brew install wget llvm libomp ninja python@3.12 open-mpi
         # TTK dependencies
         brew install boost eigen graphviz numpy websocketpp ccache
         # prepend ccache to system path

@@ -204,8 +204,8 @@ int ttk::ScalarFieldCriticalPoints::executeProgressive(
 
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
-    (const ImplicitTriangulation *)triangulation));
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
+    (const ImplicitTriangulation<0> *)triangulation));
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);
@@ -610,8 +610,8 @@ template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
-     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
-     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
+     && !std::is_same<ttk::ImplicitWithPreconditions<0>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value) {
 
     printMsg(ttk::debug::Separator::L2);
     printWrn("Explicit, Compact or Periodic");

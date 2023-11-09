@@ -806,7 +806,7 @@ namespace ttk {
     int getDimensionality() const {
       return dimensionality_;
     }
-    void setTriangulation(ImplicitTriangulation *triangulation) {
+    void setTriangulation(ImplicitTriangulation<0> *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_) {
         dimensionality_ = triangulation_->getDimensionality();
@@ -924,7 +924,7 @@ namespace ttk {
       return dimensions;
     }
 
-    ImplicitTriangulation *getTriangulation() const {
+    ImplicitTriangulation<0> *getTriangulation() const {
       return triangulation_;
     }
 
@@ -1030,7 +1030,7 @@ namespace ttk {
     int Di_, Dj_, Dk_;
     int vshift_[2];
 
-    ImplicitTriangulation *triangulation_;
+    ImplicitTriangulation<0> *triangulation_;
   };
 } // namespace ttk
 

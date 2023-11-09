@@ -14,8 +14,8 @@ namespace ttk {
       this->setDebugMsgPrefix("PeriodicTriangulationWithPreconditions");
     }
 
-    using EdgePosition = typename PeriodicImplicitTriangulation<card>::EdgePosition; 
-    using TrianglePosition = typename PeriodicImplicitTriangulation<card>::TrianglePosition; 
+    using EdgePosition = typename PeriodicWithPreconditions<card>::EdgePosition; 
+    using TrianglePosition = typename PeriodicWithPreconditions<card>::TrianglePosition; 
     int preconditionVerticesInternal() override;
     int preconditionEdgesInternal() override;
     int preconditionTrianglesInternal() override;
@@ -88,8 +88,8 @@ namespace ttk {
       this->setDebugMsgPrefix("PeriodicTriangulationNoPreconditions");
     }
 
-    using EdgePosition = typename PeriodicImplicitTriangulation<card>::EdgePosition; 
-    using TrianglePosition = typename PeriodicImplicitTriangulation<card>::TrianglePosition; 
+    using EdgePosition = typename PeriodicNoPreconditions<card>::EdgePosition; 
+    using TrianglePosition = typename PeriodicNoPreconditions<card>::TrianglePosition; 
     inline int preconditionVerticesInternal() override {
       return 0;
     }
@@ -328,7 +328,7 @@ int ttk::PeriodicWithPreconditions<card>::preconditionTetrahedronsInternal() {
 }
 
 template<size_t card>
-typename ttk::PeriodicImplicitTriangulation<card>::EdgePosition
+typename ttk::PeriodicNoPreconditions<card>::EdgePosition
   ttk::PeriodicNoPreconditions<card>::getEdgePosition(const SimplexId e) const {
 
   std::array<SimplexId, 3> p{};
@@ -412,7 +412,7 @@ std::array<ttk::SimplexId, 3>
 }
 
 template<size_t card>
-typename ttk::PeriodicImplicitTriangulation<card>::TrianglePosition
+typename ttk::PeriodicNoPreconditions<card>::TrianglePosition
   ttk::PeriodicNoPreconditions<card>::getTrianglePosition(const SimplexId t) const {
   if(this->dimensionality_ == 2) {
     if(t % 2 == 0) {

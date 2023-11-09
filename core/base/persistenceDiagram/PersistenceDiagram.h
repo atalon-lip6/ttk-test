@@ -574,8 +574,8 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
 
   approxT_.setDebugLevel(debugLevel_);
   approxT_.setThreadNumber(threadNumber_);
-  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
-    (const ImplicitTriangulation *)triangulation));
+  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
+    (const ImplicitTriangulation<0> *)triangulation));
   approxT_.setStartingResolutionLevel(StartingResolutionLevel);
   approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   approxT_.setPreallocateMemory(true);
@@ -618,8 +618,8 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation *>(
-    (const ImplicitTriangulation *)triangulation));
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
+    (const ImplicitTriangulation<0> *)triangulation));
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);
@@ -713,8 +713,8 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
 
   if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
       || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
-     && !std::is_same<ttk::ImplicitWithPreconditions, triangulationType>::value
-     && !std::is_same<ttk::ImplicitNoPreconditions, triangulationType>::value) {
+     && !std::is_same<ttk::ImplicitWithPreconditions<0>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value) {
 
     printWrn("Explicit, Compact or Periodic triangulation detected.");
     printWrn("Defaulting to the FTM backend.");

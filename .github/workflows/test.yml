@@ -31,7 +31,7 @@ jobs:
   # ------------------#
   # Test Ubuntu build #
   # ------------------#
-  test-build-ubuntu:
+  .test-build-ubuntu:
     runs-on: ${{ matrix.os }}
     # trigger job when push event on a branch (not on a tag) only for
     # the "topology-tool-kit/ttk" repository
@@ -405,7 +405,7 @@ jobs:
   # ------------------ #
   # Test Windows build #
   # ------------------ #
-  test-build-windows:
+  .test-build-windows:
     runs-on: windows-2022
     if: ${{ github.repository_owner == 'topology-tool-kit' || !contains(github.ref, 'heads') }}
     env:

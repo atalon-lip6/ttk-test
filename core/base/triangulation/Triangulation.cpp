@@ -11,67 +11,252 @@ Triangulation::Triangulation() : abstractTriangulation_{nullptr} {
 
 Triangulation::Triangulation(const Triangulation &rhs)
   : AbstractTriangulation(rhs), abstractTriangulation_{nullptr},
-    explicitTriangulation_{rhs.explicitTriangulation_},
-    implicitTriangulation_{rhs.implicitTriangulation_},
-    periodicImplicitTriangulation_{rhs.periodicImplicitTriangulation_},
-    compactTriangulation_{rhs.compactTriangulation_} {
+    explicitTriangulation0_{rhs.explicitTriangulation0_},
+    explicitTriangulation1_{rhs.explicitTriangulation1_},
+    explicitTriangulation2_{rhs.explicitTriangulation2_},
+    explicitTriangulation3_{rhs.explicitTriangulation3_},
+    implicitTriangulation0_{rhs.implicitTriangulation0_},
+    implicitTriangulation1_{rhs.implicitTriangulation1_},
+    implicitTriangulation2_{rhs.implicitTriangulation2_},
+    implicitTriangulation3_{rhs.implicitTriangulation3_},
+    periodicImplicitTriangulation0_{rhs.periodicImplicitTriangulation0_},
+    periodicImplicitTriangulation1_{rhs.periodicImplicitTriangulation1_},
+    periodicImplicitTriangulation2_{rhs.periodicImplicitTriangulation2_},
+    periodicImplicitTriangulation3_{rhs.periodicImplicitTriangulation3_},
+    compactTriangulation0_{rhs.compactTriangulation0_},
+    compactTriangulation1_{rhs.compactTriangulation1_},
+    compactTriangulation2_{rhs.compactTriangulation2_},
+    compactTriangulation3_{rhs.compactTriangulation3_} {
 
   gridDimensions_ = rhs.gridDimensions_;
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
   switch(rhs.getType()) {
     case Type::EXPLICIT:
-      this->abstractTriangulation_ = &this->explicitTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->explicitTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->explicitTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->explicitTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->explicitTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
     case Type::COMPACT:
-      this->abstractTriangulation_ = &this->compactTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->compactTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->compactTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->compactTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->compactTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
     case Type::IMPLICIT:
-      this->abstractTriangulation_ = &this->implicitTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->implicitTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->implicitTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->implicitTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->implicitTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
     case Type::HYBRID_IMPLICIT:
-      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
     case Type::PERIODIC:
-      this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->periodicImplicitTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
     case Type::HYBRID_PERIODIC:
-      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation_;
+      if (rhs.getDimensionality() == 0) {
+        this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation0_;
+      }
+      else if (rhs.getDimensionality() == 1) {
+        this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation1_;
+      }
+      else if (rhs.getDimensionality() == 2) {
+        this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation2_;
+      }
+      else if (rhs.getDimensionality() == 3) {
+        this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation3_;
+      }
+      else {
+        this->printErr("Error: dimensionality should be between 0 and 3.");
+      }
       break;
   }
 }
 
+//TODO preconditions hybrid?
 Triangulation::Triangulation(Triangulation &&rhs) noexcept
   : AbstractTriangulation(
     std::move(*static_cast<AbstractTriangulation *>(&rhs))),
-    abstractTriangulation_{nullptr}, explicitTriangulation_{std::move(
-                                       rhs.explicitTriangulation_)},
-    implicitTriangulation_{std::move(rhs.implicitTriangulation_)},
-    periodicImplicitTriangulation_{
-      std::move(rhs.periodicImplicitTriangulation_)},
-    compactTriangulation_{std::move(rhs.compactTriangulation_)} {
+    abstractTriangulation_{nullptr},
+    explicitTriangulation0_{std::move(rhs.explicitTriangulation0_)},
+    explicitTriangulation1_{std::move(rhs.explicitTriangulation1_)},
+    explicitTriangulation2_{std::move(rhs.explicitTriangulation2_)},
+    explicitTriangulation3_{std::move(rhs.explicitTriangulation3_)},
+    implicitTriangulation0_{std::move(rhs.implicitTriangulation0_)},
+    implicitTriangulation1_{std::move(rhs.implicitTriangulation1_)},
+    implicitTriangulation2_{std::move(rhs.implicitTriangulation2_)},
+    implicitTriangulation3_{std::move(rhs.implicitTriangulation3_)},
+    periodicImplicitTriangulation0_{std::move(rhs.periodicImplicitTriangulation0_)},
+    periodicImplicitTriangulation1_{std::move(rhs.periodicImplicitTriangulation1_)},
+    periodicImplicitTriangulation2_{std::move(rhs.periodicImplicitTriangulation2_)},
+    periodicImplicitTriangulation3_{std::move(rhs.periodicImplicitTriangulation3_)},
+    compactTriangulation0_{std::move(rhs.compactTriangulation0_)},
+    compactTriangulation1_{std::move(rhs.compactTriangulation1_)},
+    compactTriangulation2_{std::move(rhs.compactTriangulation2_)},
+    compactTriangulation3_{std::move(rhs.compactTriangulation3_)} {
 
   gridDimensions_ = rhs.gridDimensions_;
   hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
+#define repeatAssign4(a, b, c) \
+  switch(c) { \
+    case 0: \
+    ##a = &this->##b0_;\
+    case 1: \
+  ##a = &this->##b1_; \
+    case 2: \
+  ##a = &this->##b2_; \
+    case 3: \
+  ##a = &this->##b3_; \
+
   switch(rhs.getType()) {
     case Type::EXPLICIT:
-      this->abstractTriangulation_ = &this->explicitTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation0_) {
+      this->abstractTriangulation_ = &this->explicitTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation1_) {
+      this->abstractTriangulation_ = &this->explicitTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation2_) {
+      this->abstractTriangulation_ = &this->explicitTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation3_) {
+      this->abstractTriangulation_ = &this->explicitTriangulation3_;
+    }
       break;
     case Type::COMPACT:
-      this->abstractTriangulation_ = &this->compactTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.compactTriangulation0_) {
+      this->abstractTriangulation_ = &this->compactTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation1_) {
+      this->abstractTriangulation_ = &this->compactTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation2_) {
+      this->abstractTriangulation_ = &this->compactTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation3_) {
+      this->abstractTriangulation_ = &this->compactTriangulation3_;
+    }
       break;
     case Type::IMPLICIT:
-      this->abstractTriangulation_ = &this->implicitTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation0_) {
+      this->abstractTriangulation_ = &this->implicitTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation1_) {
+      this->abstractTriangulation_ = &this->implicitTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation2_) {
+      this->abstractTriangulation_ = &this->implicitTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation3_) {
+      this->abstractTriangulation_ = &this->implicitTriangulation3_;
+    }
       break;
     case Type::HYBRID_IMPLICIT:
-      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation0_) {
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation1_) {
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation2_) {
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation3_) {
+      this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation3_;
+    }
       break;
     case Type::PERIODIC:
-      this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation0_) {
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation1_) {
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation2_) {
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation3_) {
+      this->abstractTriangulation_ = &this->periodicImplicitTriangulation3_;
+    }
       break;
     case Type::HYBRID_PERIODIC:
-      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation_;
+      if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation0_) {
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation0_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation1_) {
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation1_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation2_) {
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation2_;
+    }
+      else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation3_) {
+      this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation3_;
+    }
       break;
   }
   rhs.abstractTriangulation_ = nullptr;
@@ -82,32 +267,108 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
     AbstractTriangulation::operator=(rhs);
     gridDimensions_ = rhs.gridDimensions_;
     abstractTriangulation_ = nullptr;
-    explicitTriangulation_ = rhs.explicitTriangulation_;
-    implicitTriangulation_ = rhs.implicitTriangulation_;
-    periodicImplicitTriangulation_ = rhs.periodicImplicitTriangulation_;
-    compactTriangulation_ = rhs.compactTriangulation_;
+    explicitTriangulation0_ = rhs.explicitTriangulation0_;
+    explicitTriangulation1_ = rhs.explicitTriangulation1_;
+    explicitTriangulation2_ = rhs.explicitTriangulation2_;
+    explicitTriangulation3_ = rhs.explicitTriangulation3_;
+    implicitTriangulation0_ = rhs.implicitTriangulation0_;
+    implicitTriangulation1_ = rhs.implicitTriangulation1_;
+    implicitTriangulation2_ = rhs.implicitTriangulation2_;
+    implicitTriangulation3_ = rhs.implicitTriangulation3_;
+    periodicImplicitTriangulation0_ = rhs.periodicImplicitTriangulation0_;
+    periodicImplicitTriangulation1_ = rhs.periodicImplicitTriangulation1_;
+    periodicImplicitTriangulation2_ = rhs.periodicImplicitTriangulation2_;
+    periodicImplicitTriangulation3_ = rhs.periodicImplicitTriangulation3_;
+    compactTriangulation0_ = rhs.compactTriangulation0_;
+    compactTriangulation1_ = rhs.compactTriangulation1_;
+    compactTriangulation2_ = rhs.compactTriangulation2_;
+    compactTriangulation3_ = rhs.compactTriangulation3_;
     hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
     switch(rhs.getType()) {
       case Type::EXPLICIT:
-        this->abstractTriangulation_ = &this->explicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation3_;
+        }
         break;
       case Type::COMPACT:
-        this->abstractTriangulation_ = &this->compactTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.compactTriangulation0_) {
+          this->abstractTriangulation_ = &this->compactTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation1_) {
+          this->abstractTriangulation_ = &this->compactTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation2_) {
+          this->abstractTriangulation_ = &this->compactTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation3_) {
+          this->abstractTriangulation_ = &this->compactTriangulation3_;
+        }
         break;
       case Type::IMPLICIT:
-        this->abstractTriangulation_ = &this->implicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation3_;
+        }
         break;
       case Type::HYBRID_IMPLICIT:
-        this->abstractTriangulation_
-          = &this->implicitPreconditionsTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation0_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation1_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation2_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation3_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation3_;
+        }
         break;
       case Type::PERIODIC:
-        this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation3_;
+        }
         break;
       case Type::HYBRID_PERIODIC:
-        this->abstractTriangulation_
-          = &this->periodicPreconditionsTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation0_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation1_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation2_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation3_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation3_;
+        }
         break;
     }
   }
@@ -118,39 +379,118 @@ Triangulation &Triangulation::operator=(Triangulation &&rhs) noexcept {
   if(this != &rhs) {
     gridDimensions_ = rhs.gridDimensions_;
     abstractTriangulation_ = nullptr;
-    explicitTriangulation_ = std::move(rhs.explicitTriangulation_);
-    implicitTriangulation_ = std::move(rhs.implicitTriangulation_);
-    periodicImplicitTriangulation_
-      = std::move(rhs.periodicImplicitTriangulation_);
-    compactTriangulation_ = std::move(rhs.compactTriangulation_);
+    explicitTriangulation0_ = std::move(rhs.explicitTriangulation0_);
+    explicitTriangulation1_ = std::move(rhs.explicitTriangulation1_);
+    explicitTriangulation2_ = std::move(rhs.explicitTriangulation2_);
+    explicitTriangulation3_ = std::move(rhs.explicitTriangulation3_);
+    implicitTriangulation0_ = std::move(rhs.implicitTriangulation0_);
+    implicitTriangulation1_ = std::move(rhs.implicitTriangulation1_);
+    implicitTriangulation2_ = std::move(rhs.implicitTriangulation2_);
+    implicitTriangulation3_ = std::move(rhs.implicitTriangulation3_);
+    periodicImplicitTriangulation0_
+      = std::move(rhs.periodicImplicitTriangulation0_);
+    periodicImplicitTriangulation1_
+      = std::move(rhs.periodicImplicitTriangulation1_);
+    periodicImplicitTriangulation2_
+      = std::move(rhs.periodicImplicitTriangulation2_);
+    periodicImplicitTriangulation3_
+      = std::move(rhs.periodicImplicitTriangulation3_);
+    compactTriangulation0_ = std::move(rhs.compactTriangulation0_);
+    compactTriangulation1_ = std::move(rhs.compactTriangulation1_);
+    compactTriangulation2_ = std::move(rhs.compactTriangulation2_);
+    compactTriangulation3_ = std::move(rhs.compactTriangulation3_);
     hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
     switch(rhs.getType()) {
       case Type::EXPLICIT:
-        this->abstractTriangulation_ = &this->explicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.explicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->explicitTriangulation3_;
+        }
         break;
       case Type::COMPACT:
-        this->abstractTriangulation_ = &this->compactTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.compactTriangulation0_) {
+          this->abstractTriangulation_ = &this->compactTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation1_) {
+          this->abstractTriangulation_ = &this->compactTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation2_) {
+          this->abstractTriangulation_ = &this->compactTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.compactTriangulation3_) {
+          this->abstractTriangulation_ = &this->compactTriangulation3_;
+        }
         break;
       case Type::IMPLICIT:
-        this->abstractTriangulation_ = &this->implicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->implicitTriangulation3_;
+        }
         break;
       case Type::HYBRID_IMPLICIT:
-        this->abstractTriangulation_
-          = &this->implicitPreconditionsTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation0_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation1_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation2_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.implicitPreconditionsTriangulation3_) {
+          this->abstractTriangulation_ = &this->implicitPreconditionsTriangulation3_;
+        }
         break;
       case Type::PERIODIC:
-        this->abstractTriangulation_ = &this->periodicImplicitTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation0_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation1_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation2_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicImplicitTriangulation3_) {
+          this->abstractTriangulation_ = &this->periodicImplicitTriangulation3_;
+        }
         break;
       case Type::HYBRID_PERIODIC:
-        this->abstractTriangulation_
-          = &this->periodicPreconditionsTriangulation_;
+        if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation0_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation0_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation1_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation1_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation2_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation2_;
+        }
+        else if (rhs.abstractTriangulation_ == &rhs.periodicPreconditionsTriangulation3_) {
+          this->abstractTriangulation_ = &this->periodicPreconditionsTriangulation3_;
+        }
         break;
     }
-  }
-  AbstractTriangulation::operator=(std::move(rhs));
+			}
+    AbstractTriangulation::operator=(std::move(rhs));
 
-  return *this;
+    return *this;
 }
 
 Triangulation::~Triangulation() = default;
@@ -158,36 +498,88 @@ Triangulation::~Triangulation() = default;
 void Triangulation::switchGrid(const bool usePeriodic,
                                const bool usePreconditions) {
   if(abstractTriangulation_ != nullptr
-     && abstractTriangulation_ != &implicitTriangulation_
-     && abstractTriangulation_ != &implicitPreconditionsTriangulation_
-     && abstractTriangulation_ != &periodicImplicitTriangulation_
-     && abstractTriangulation_ != &periodicPreconditionsTriangulation_) {
+     && !isImplicitTriangulation()
+     && !isHybridImplicitTriangulation()
+     && !isPeriodicImplicitTriangulation()
+     && !isHybridPeriodicTriangulation()) {
     return;
   }
 
   if(abstractTriangulation_ != nullptr) {
     // clear preconditions when switching triangulation type
-    if(abstractTriangulation_ == &implicitPreconditionsTriangulation_
+    //if(abstractTriangulation_ == &implicitPreconditionsTriangulation_
+      if(isHybridImplicitTriangulation()
        && (usePeriodic || !usePreconditions)) {
-      implicitPreconditionsTriangulation_.clear();
-    } else if(abstractTriangulation_ == &periodicPreconditionsTriangulation_
+      implicitPreconditionsTriangulation0_.clear();
+      implicitPreconditionsTriangulation1_.clear();
+      implicitPreconditionsTriangulation2_.clear();
+      implicitPreconditionsTriangulation3_.clear();
+    //} else if(abstractTriangulation_ == &periodicPreconditionsTriangulation_
+    } else if (isHybridPeriodicTriangulation()
               && (!usePeriodic || !usePreconditions)) {
-      periodicPreconditionsTriangulation_.clear();
+      periodicPreconditionsTriangulation0_.clear();
+      periodicPreconditionsTriangulation1_.clear();
+      periodicPreconditionsTriangulation2_.clear();
+      periodicPreconditionsTriangulation3_.clear();
     }
   }
 
   if(!usePeriodic && !usePreconditions) {
-    abstractTriangulation_ = &implicitTriangulation_;
-    implicitTriangulation_.preconditionVerticesAndCells();
+    if (isTriangulation0()) {
+      abstractTriangulation_ = &implicitTriangulation0_;
+      implicitTriangulation0_.preconditionVerticesAndCells();
+    } else if (isTriangulation1()) {
+      abstractTriangulation_ = &implicitTriangulation1_;
+      implicitTriangulation1_.preconditionVerticesAndCells();
+    } else if (isTriangulation2()) {
+      abstractTriangulation_ = &implicitTriangulation2_;
+      implicitTriangulation2_.preconditionVerticesAndCells();
+    } else { //triangulation 3
+      abstractTriangulation_ = &implicitTriangulation3_;
+      implicitTriangulation3_.preconditionVerticesAndCells();
+    }
   } else if(!usePeriodic && usePreconditions) {
-    abstractTriangulation_ = &implicitPreconditionsTriangulation_;
-    implicitPreconditionsTriangulation_.preconditionVerticesAndCells();
+    if (isTriangulation0()) {
+      abstractTriangulation_ = &implicitPreconditionsTriangulation0_;
+      implicitPreconditionsTriangulation0_.preconditionVerticesAndCells();
+    } else if (isTriangulation1()) {
+      abstractTriangulation_ = &implicitPreconditionsTriangulation1_;
+      implicitPreconditionsTriangulation1_.preconditionVerticesAndCells();
+    } else if (isTriangulation2()) {
+      abstractTriangulation_ = &implicitPreconditionsTriangulation2_;
+      implicitPreconditionsTriangulation2_.preconditionVerticesAndCells();
+    } else { //triangulation 3
+      abstractTriangulation_ = &implicitPreconditionsTriangulation3_;
+      implicitPreconditionsTriangulation3_.preconditionVerticesAndCells();
+    }
   } else if(usePeriodic && !usePreconditions) {
-    abstractTriangulation_ = &periodicImplicitTriangulation_;
-    periodicImplicitTriangulation_.preconditionVerticesAndCells();
+    if (isTriangulation0()) {
+      abstractTriangulation_ = &periodicImplicitTriangulation0_;
+      periodicImplicitTriangulation0_.preconditionVerticesAndCells();
+    } else if (isTriangulation1()) {
+      abstractTriangulation_ = &periodicImplicitTriangulation1_;
+      periodicImplicitTriangulation1_.preconditionVerticesAndCells();
+    } else if (isTriangulation2()) {
+      abstractTriangulation_ = &periodicImplicitTriangulation2_;
+      periodicImplicitTriangulation2_.preconditionVerticesAndCells();
+    } else { //triangulation 3
+      abstractTriangulation_ = &periodicImplicitTriangulation3_;
+      periodicImplicitTriangulation3_.preconditionVerticesAndCells();
+    }
   } else if(usePeriodic && usePreconditions) {
-    abstractTriangulation_ = &periodicPreconditionsTriangulation_;
-    periodicPreconditionsTriangulation_.preconditionVerticesAndCells();
+    if (isTriangulation0()) {
+      abstractTriangulation_ = &periodicPreconditionsTriangulation0_;
+      periodicPreconditionsTriangulation0_.preconditionVerticesAndCells();
+    } else if (isTriangulation1()) {
+      abstractTriangulation_ = &periodicPreconditionsTriangulation1_;
+      periodicPreconditionsTriangulation1_.preconditionVerticesAndCells();
+    } else if (isTriangulation2()) {
+      abstractTriangulation_ = &periodicPreconditionsTriangulation2_;
+      periodicPreconditionsTriangulation2_.preconditionVerticesAndCells();
+    } else { //triangulation 3
+      abstractTriangulation_ = &periodicPreconditionsTriangulation3_;
+      periodicPreconditionsTriangulation3_.preconditionVerticesAndCells();
+    }
   }
 }
 

@@ -43,6 +43,7 @@
 
 #include <array>
 
+
 namespace ttk {
 
   class Triangulation final : public AbstractTriangulation {
@@ -98,6 +99,129 @@ namespace ttk {
       }
 
       return 0;
+    }
+
+    inline bool isExplicitTriangulation(void) const
+    {
+      if (abstractTriangulation_ == &explicitTriangulation0_ ||
+          abstractTriangulation_ == &explicitTriangulation1_ ||
+          abstractTriangulation_ == &explicitTriangulation2_ ||
+          abstractTriangulation_ == &explicitTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+
+    inline bool isCompactTriangulation() const
+    {
+      if (abstractTriangulation_ == &compactTriangulation0_ ||
+          abstractTriangulation_ == &compactTriangulation1_ ||
+          abstractTriangulation_ == &compactTriangulation2_ ||
+          abstractTriangulation_ == &compactTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+    inline bool isImplicitTriangulation() const
+    {
+      if (abstractTriangulation_ == &implicitTriangulation0_ ||
+          abstractTriangulation_ == &implicitTriangulation1_ ||
+          abstractTriangulation_ == &implicitTriangulation2_ ||
+          abstractTriangulation_ == &implicitTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+
+    inline bool isHybridImplicitTriangulation() const
+    {
+      if (abstractTriangulation_ == &implicitPreconditionsTriangulation0_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation1_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation2_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+
+    inline bool isPeriodicImplicitTriangulation() const
+    {
+      if (abstractTriangulation_ == &periodicImplicitTriangulation0_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation1_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation2_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+
+    inline bool isHybridPeriodicTriangulation() const
+    {
+      if (abstractTriangulation_ == &periodicPreconditionsTriangulation0_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation1_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation2_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation3_) {
+        return true;
+      }
+
+      return false;
+    }
+    inline bool isTriangulation0() const
+    {
+      if (abstractTriangulation_ == &compactTriangulation0_ ||
+          abstractTriangulation_ == &implicitTriangulation0_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation0_ ||
+          abstractTriangulation_ == &explicitTriangulation0_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation0_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation0_) {
+        return true;
+      }
+
+      return false;
+    }
+    inline bool isTriangulation1() const
+    {
+      if (abstractTriangulation_ == &compactTriangulation1_ ||
+          abstractTriangulation_ == &implicitTriangulation1_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation1_ ||
+          abstractTriangulation_ == &explicitTriangulation1_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation1_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation1_) {
+        return true;
+      }
+
+      return false;
+    }
+    inline bool isTriangulation2() const
+    {
+      if (abstractTriangulation_ == &compactTriangulation2_ ||
+          abstractTriangulation_ == &implicitTriangulation2_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation2_ ||
+          abstractTriangulation_ == &explicitTriangulation2_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation2_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation2_) {
+        return true;
+      }
+
+      return false;
+    }
+    inline bool isTriangulation3() const
+    {
+      if (abstractTriangulation_ == &compactTriangulation3_ ||
+          abstractTriangulation_ == &implicitTriangulation3_ ||
+          abstractTriangulation_ == &periodicImplicitTriangulation3_ ||
+          abstractTriangulation_ == &explicitTriangulation3_ ||
+          abstractTriangulation_ == &implicitPreconditionsTriangulation3_ ||
+          abstractTriangulation_ == &periodicPreconditionsTriangulation3_) {
+        return true;
+      }
+
+      return false;
     }
 
     /// Get the \p localEdgeId-th edge of the \p cellId-th cell.
@@ -1257,16 +1381,21 @@ namespace ttk {
     /// \return Returns the current type of the triangulation.
     /// \sa setPeriodicBoundaryConditions()
     inline Triangulation::Type getType() const {
-      if(abstractTriangulation_ == &explicitTriangulation_)
-        return Triangulation::Type::EXPLICIT;
-      else if(abstractTriangulation_ == &implicitTriangulation_)
+      if (isExplicitTriangulation()) {
+       return Triangulation::Type::EXPLICIT;
+      }
+      else if (isImplicitTriangulation()) {
         return Triangulation::Type::IMPLICIT;
-      else if(abstractTriangulation_ == &implicitPreconditionsTriangulation_)
+      }
+      else if (isHybridImplicitTriangulation()) {
         return Triangulation::Type::HYBRID_IMPLICIT;
-      else if(abstractTriangulation_ == &compactTriangulation_)
+      }
+      else if (isCompactTriangulation()) {
         return Triangulation::Type::COMPACT;
-      else if(abstractTriangulation_ == &periodicImplicitTriangulation_)
-        return Triangulation::Type::PERIODIC;
+      }
+      else if (isPeriodicImplicitTriangulation()) {
+         return Triangulation::Type::PERIODIC;
+      }
       else
         return Triangulation::Type::HYBRID_PERIODIC;
     }
@@ -1400,7 +1529,21 @@ namespace ttk {
     /// \param map the std::unordered_map<SimplexId, SimplexId> in which we want
     /// our GidToLidMap. \return 0 if successful, -1 else.
     inline std::unordered_map<SimplexId, SimplexId> &getVertexGlobalIdMap() {
-      return this->explicitTriangulation_.getVertexGlobalIdMap();
+      if (this->getDimensionality() == 0) {
+        return this->explicitTriangulation0_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 1) {
+        return this->explicitTriangulation1_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 2) {
+        return this->explicitTriangulation2_.getVertexGlobalIdMap();
+      }
+      else if (this->getDimensionality() == 3) {
+        return this->explicitTriangulation3_.getVertexGlobalIdMap();
+      }
+      else {
+        this->printErr("Error, dimensionality should be between 0 and 3.");
+        return -1;
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1472,12 +1615,42 @@ namespace ttk {
      * @param[in] dimensions Global grid dimensions
      */
     inline void createMetaGrid(const double *const bounds) {
-      this->implicitPreconditionsTriangulation_.createMetaGrid(bounds);
-      this->periodicImplicitTriangulation_.createMetaGrid(bounds);
-      this->implicitTriangulation_.createMetaGrid(bounds);
-      this->periodicPreconditionsTriangulation_.createMetaGrid(bounds);
-      // also pass bounding box to ExplicitTriangulation...
-      this->explicitTriangulation_.setBoundingBox(bounds);
+      if (this->getDimensionality() == 0) {
+        this->implicitPreconditionsTriangulation0_.createMetaGrid(bounds);
+        this->periodicImplicitTriangulation0_.createMetaGrid(bounds);
+        this->implicitTriangulation0_.createMetaGrid(bounds);
+        this->periodicPreconditionsTriangulation0_.createMetaGrid(bounds);
+        // also pass bounding box to ExplicitTriangulation...
+        this->explicitTriangulation0_.setBoundingBox(bounds);
+      }
+      else if (this->getDimensionality() == 1) {
+        this->implicitPreconditionsTriangulation1_.createMetaGrid(bounds);
+        this->periodicImplicitTriangulation1_.createMetaGrid(bounds);
+        this->implicitTriangulation1_.createMetaGrid(bounds);
+        this->periodicPreconditionsTriangulation1_.createMetaGrid(bounds);
+        // also pass bounding box to ExplicitTriangulation...
+        this->explicitTriangulation1_.setBoundingBox(bounds);
+      }
+      else if (this->getDimensionality() == 2) {
+        this->implicitPreconditionsTriangulation2_.createMetaGrid(bounds);
+        this->periodicImplicitTriangulation2_.createMetaGrid(bounds);
+        this->implicitTriangulation2_.createMetaGrid(bounds);
+        this->periodicPreconditionsTriangulation2_.createMetaGrid(bounds);
+        // also pass bounding box to ExplicitTriangulation...
+        this->explicitTriangulation2_.setBoundingBox(bounds);
+      }
+      else if (this->getDimensionality() == 3) {
+        this->implicitPreconditionsTriangulation3_.createMetaGrid(bounds);
+        this->periodicImplicitTriangulation3_.createMetaGrid(bounds);
+        this->implicitTriangulation3_.createMetaGrid(bounds);
+        this->periodicPreconditionsTriangulation3_.createMetaGrid(bounds);
+        // also pass bounding box to ExplicitTriangulation...
+        this->explicitTriangulation3_.setBoundingBox(bounds);
+      }
+
+      else {
+        this->printErr("Error, dimensionality should be between 0 and 3.");
+      }
     }
 
     inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
@@ -2664,20 +2837,47 @@ namespace ttk {
 
     /// Tune the debug level (default: 0)
     inline int setDebugLevel(const int &debugLevel) override {
-      explicitTriangulation_.setDebugLevel(debugLevel);
-      compactTriangulation_.setDebugLevel(debugLevel);
-      implicitTriangulation_.setDebugLevel(debugLevel);
-      implicitPreconditionsTriangulation_.setDebugLevel(debugLevel);
-      periodicImplicitTriangulation_.setDebugLevel(debugLevel);
-      periodicPreconditionsTriangulation_.setDebugLevel(debugLevel);
+      explicitTriangulation0_.setDebugLevel(debugLevel);
+      explicitTriangulation1_.setDebugLevel(debugLevel);
+      explicitTriangulation2_.setDebugLevel(debugLevel);
+      explicitTriangulation3_.setDebugLevel(debugLevel);
+      implicitTriangulation0_.setDebugLevel(debugLevel);
+      implicitTriangulation1_.setDebugLevel(debugLevel);
+      implicitTriangulation2_.setDebugLevel(debugLevel);
+      implicitTriangulation3_.setDebugLevel(debugLevel);
+      implicitPreconditionsTriangulation0_.setDebugLevel(debugLevel);
+      implicitPreconditionsTriangulation1_.setDebugLevel(debugLevel);
+      implicitPreconditionsTriangulation2_.setDebugLevel(debugLevel);
+      implicitPreconditionsTriangulation3_.setDebugLevel(debugLevel);
+      periodicImplicitTriangulation0_.setDebugLevel(debugLevel);
+      periodicImplicitTriangulation1_.setDebugLevel(debugLevel);
+      periodicImplicitTriangulation2_.setDebugLevel(debugLevel);
+      periodicImplicitTriangulation3_.setDebugLevel(debugLevel);
+      periodicPreconditionsTriangulation0_.setDebugLevel(debugLevel);
+      periodicPreconditionsTriangulation1_.setDebugLevel(debugLevel);
+      periodicPreconditionsTriangulation2_.setDebugLevel(debugLevel);
+      periodicPreconditionsTriangulation3_.setDebugLevel(debugLevel);
+      compactTriangulation0_.setDebugLevel(debugLevel);
+      compactTriangulation1_.setDebugLevel(debugLevel);
+      compactTriangulation2_.setDebugLevel(debugLevel);
+      compactTriangulation3_.setDebugLevel(debugLevel);
       debugLevel_ = debugLevel;
       return 0;
     }
 
     // Set the cache size
     inline int setCacheSize(const float &ratio) {
-      if(abstractTriangulation_ == &compactTriangulation_) {
-        compactTriangulation_.initCache(ratio);
+      if(abstractTriangulation_ == &compactTriangulation0_) {
+        compactTriangulation0_.initCache(ratio);
+      }
+      if(abstractTriangulation_ == &compactTriangulation1_) {
+        compactTriangulation1_.initCache(ratio);
+      }
+      if(abstractTriangulation_ == &compactTriangulation2_) {
+        compactTriangulation2_.initCache(ratio);
+      }
+      if(abstractTriangulation_ == &compactTriangulation3_) {
+        compactTriangulation3_.initCache(ratio);
       }
       return 0;
     }
@@ -2705,19 +2905,58 @@ namespace ttk {
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *connectivity,
                              const LongSimplexId *offset) {
-      abstractTriangulation_ = &explicitTriangulation_;
+      
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return explicitTriangulation_.setInputCells(
-        cellNumber, connectivity, offset);
+      if (getDimensionality() == 0) {
+        abstractTriangulation_ = &explicitTriangulation0_;
+        return explicitTriangulation0_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 1) {
+        abstractTriangulation_ = &explicitTriangulation1_;
+        return explicitTriangulation1_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 2) {
+        abstractTriangulation_ = &explicitTriangulation2_;
+        return explicitTriangulation2_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 3) {
+        abstractTriangulation_ = &explicitTriangulation3_;
+        return explicitTriangulation3_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      this->printErr("Error, dimensionality should be between 0 and 3.");
+      return -1;
     }
 
     inline int setStellarInputCells(const SimplexId &cellNumber,
                                     const LongSimplexId *connectivity,
                                     const LongSimplexId *offset) {
-      abstractTriangulation_ = &compactTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return compactTriangulation_.setInputCells(
-        cellNumber, connectivity, offset);
+      if (getDimensionality() == 0) { //TODO dimensionalité déjà bonne ?
+        abstractTriangulation_ = &compactTriangulation0_;
+        return compactTriangulation0_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 1) {
+        abstractTriangulation_ = &compactTriangulation1_;
+        return compactTriangulation1_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 2) {
+        abstractTriangulation_ = &compactTriangulation2_;
+        return compactTriangulation2_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+      else if (getDimensionality() == 3) {
+        abstractTriangulation_ = &compactTriangulation3_;
+        return compactTriangulation3_.setInputCells(
+            cellNumber, connectivity, offset);
+      }
+
+      return -1;
     }
 #else
     /// Set the input cells for the triangulation.
@@ -2791,18 +3030,66 @@ namespace ttk {
 
       int ret{};
 
-      ret |= periodicImplicitTriangulation_.setInputGrid(
-        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
-        zDim);
-      ret |= periodicPreconditionsTriangulation_.setInputGrid(
-        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
-        zDim);
-      ret |= implicitTriangulation_.setInputGrid(xOrigin, yOrigin, zOrigin,
-                                                 xSpacing, ySpacing, zSpacing,
-                                                 xDim, yDim, zDim);
-      ret |= implicitPreconditionsTriangulation_.setInputGrid(
-        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
-        zDim);
+      if (getDimensionality() == 0) {
+        ret |= periodicImplicitTriangulation0_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= periodicPreconditionsTriangulation0_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= implicitTriangulation0_.setInputGrid(xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+        ret |= implicitPreconditionsTriangulation0_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+      }
+
+      else if (getDimensionality() == 1) {
+        ret |= periodicImplicitTriangulation1_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= periodicPreconditionsTriangulation1_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= implicitTriangulation1_.setInputGrid(xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+        ret |= implicitPreconditionsTriangulation1_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+      }
+      else if (getDimensionality() == 2) {
+        ret |= periodicImplicitTriangulation2_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= periodicPreconditionsTriangulation2_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= implicitTriangulation2_.setInputGrid(xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+        ret |= implicitPreconditionsTriangulation2_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+      }
+      else if (getDimensionality() == 3) {
+        ret |= periodicImplicitTriangulation3_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= periodicPreconditionsTriangulation3_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+        ret |= implicitTriangulation3_.setInputGrid(xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+        ret |= implicitPreconditionsTriangulation3_.setInputGrid(
+            xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+            zDim);
+      }
+      else {
+        printErr("Error, dimensionality is not between 0 and 3.\n");
+      }
       const auto useImplicitPreconditions = this->processImplicitStrategy();
 
       this->switchGrid(this->hasPeriodicBoundaries_, useImplicitPreconditions);
@@ -2816,10 +3103,7 @@ namespace ttk {
     inline void
       setPeriodicBoundaryConditions(const bool &usePeriodicBoundaries) {
 
-      if(abstractTriangulation_ == &implicitTriangulation_
-         || abstractTriangulation_ == &periodicImplicitTriangulation_
-         || abstractTriangulation_ == &implicitPreconditionsTriangulation_
-         || abstractTriangulation_ == &periodicPreconditionsTriangulation_) {
+      if(isImplicitTriangulation() || isPeriodicImplicitTriangulation() || isHybridImplicitTriangulation() || isHybridPeriodicTriangulation()) {
         if(usePeriodicBoundaries == hasPeriodicBoundaries_) {
           return;
         }
@@ -2839,11 +3123,7 @@ namespace ttk {
      * @param[in] strategy Strategy to implement.
      */
     inline void setImplicitPreconditions(const STRATEGY strategy) {
-      if(abstractTriangulation_ == &implicitTriangulation_
-         || abstractTriangulation_ == &periodicImplicitTriangulation_
-         || abstractTriangulation_ == &implicitPreconditionsTriangulation_
-         || abstractTriangulation_ == &periodicPreconditionsTriangulation_) {
-
+      if (isImplicitTriangulation() || isPeriodicImplicitTriangulation() || isHybridImplicitTriangulation() || isHybridPeriodicTriangulation()) {
         const auto useImplicitPreconditions
           = this->processImplicitStrategy(strategy);
 
@@ -2882,11 +3162,29 @@ namespace ttk {
     inline int setInputPoints(const SimplexId &pointNumber,
                               const void *pointSet,
                               const bool &doublePrecision = false) {
-
-      abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return explicitTriangulation_.setInputPoints(
-        pointNumber, pointSet, doublePrecision);
+if (getDimensionality() == 0) {
+        abstractTriangulation_ = &explicitTriangulation0_;
+        return explicitTriangulation0_.setInputPoints(
+            pointNumber, pointSet, doublePrecision);
+      }
+      else if (getDimensionality() == 1) {
+        abstractTriangulation_ = &explicitTriangulation1_;
+        return explicitTriangulation1_.setInputPoints(
+            pointNumber, pointSet, doublePrecision);
+      }
+      else if (getDimensionality() == 2) {
+        abstractTriangulation_ = &explicitTriangulation2_;
+        return explicitTriangulation2_.setInputPoints(
+            pointNumber, pointSet, doublePrecision);
+      }
+      else if (getDimensionality() == 3) {
+        abstractTriangulation_ = &explicitTriangulation3_;
+        return explicitTriangulation3_.setInputPoints(
+            pointNumber, pointSet, doublePrecision);
+      }
+      printErr("Error, dimensionality is not between 0 and 3.\n");
+      return -1;
     }
 
     inline int setStellarInputPoints(const SimplexId &pointNumber,
@@ -2894,20 +3192,58 @@ namespace ttk {
                                      const int *indexArray,
                                      const bool &doublePrecision = false) {
 
-      abstractTriangulation_ = &compactTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return compactTriangulation_.setInputPoints(
-        pointNumber, pointSet, indexArray, doublePrecision);
+if (getDimensionality() == 0) {
+        abstractTriangulation_ = &compactTriangulation0_;
+        return compactTriangulation0_.setInputPoints(
+            pointNumber, pointSet, indexArray, doublePrecision);
+      }
+      else if (getDimensionality() == 1) {
+        abstractTriangulation_ = &compactTriangulation1_;
+        return compactTriangulation1_.setInputPoints(
+            pointNumber, pointSet, indexArray, doublePrecision);
+      }
+      else if (getDimensionality() == 2) {
+        abstractTriangulation_ = &compactTriangulation2_;
+        return compactTriangulation2_.setInputPoints(
+            pointNumber, pointSet, indexArray, doublePrecision);
+      }
+      else if (getDimensionality() == 3) {
+        abstractTriangulation_ = &compactTriangulation3_;
+        return compactTriangulation3_.setInputPoints(
+            pointNumber, pointSet, indexArray, doublePrecision);
+      }
+      printErr("Error, dimensionality is not between 0 and 3.\n");
+      return -1;
     }
 
     /// Tune the number of active threads (default: number of logical cores)
     inline int setThreadNumber(const ThreadId threadNumber) override {
-      explicitTriangulation_.setThreadNumber(threadNumber);
-      implicitTriangulation_.setThreadNumber(threadNumber);
-      implicitPreconditionsTriangulation_.setThreadNumber(threadNumber);
-      periodicImplicitTriangulation_.setThreadNumber(threadNumber);
-      periodicPreconditionsTriangulation_.setThreadNumber(threadNumber);
-      compactTriangulation_.setThreadNumber(threadNumber);
+      explicitTriangulation0_.setThreadNumber(threadNumber);
+      explicitTriangulation1_.setThreadNumber(threadNumber);
+      explicitTriangulation2_.setThreadNumber(threadNumber);
+      explicitTriangulation3_.setThreadNumber(threadNumber);
+      implicitTriangulation0_.setThreadNumber(threadNumber);
+      implicitTriangulation1_.setThreadNumber(threadNumber);
+      implicitTriangulation2_.setThreadNumber(threadNumber);
+      implicitTriangulation3_.setThreadNumber(threadNumber);
+      implicitPreconditionsTriangulation0_.setThreadNumber(threadNumber);
+      implicitPreconditionsTriangulation1_.setThreadNumber(threadNumber);
+      implicitPreconditionsTriangulation2_.setThreadNumber(threadNumber);
+      implicitPreconditionsTriangulation3_.setThreadNumber(threadNumber);
+      periodicImplicitTriangulation0_.setThreadNumber(threadNumber);
+      periodicImplicitTriangulation1_.setThreadNumber(threadNumber);
+      periodicImplicitTriangulation2_.setThreadNumber(threadNumber);
+      periodicImplicitTriangulation3_.setThreadNumber(threadNumber);
+      periodicPreconditionsTriangulation0_.setThreadNumber(threadNumber);
+      periodicPreconditionsTriangulation1_.setThreadNumber(threadNumber);
+      periodicPreconditionsTriangulation2_.setThreadNumber(threadNumber);
+      periodicPreconditionsTriangulation3_.setThreadNumber(threadNumber);
+      compactTriangulation0_.setThreadNumber(threadNumber);
+      compactTriangulation1_.setThreadNumber(threadNumber);
+      compactTriangulation2_.setThreadNumber(threadNumber);
+      compactTriangulation3_.setThreadNumber(threadNumber);
+
       threadNumber_ = threadNumber;
       return 0;
     }
@@ -2915,19 +3251,37 @@ namespace ttk {
     /// Internal usage. Pass the execution context (debug level, number of
     /// threads, etc.) to the implementing classes.
     inline int setWrapper(const Wrapper *wrapper) override {
-      explicitTriangulation_.setWrapper(wrapper);
-      implicitTriangulation_.setWrapper(wrapper);
-      implicitPreconditionsTriangulation_.setWrapper(wrapper);
-      periodicImplicitTriangulation_.setWrapper(wrapper);
-      periodicPreconditionsTriangulation_.setWrapper(wrapper);
-      compactTriangulation_.setWrapper(wrapper);
+    explicitTriangulation0_.setWrapper(wrapper);
+    explicitTriangulation1_.setWrapper(wrapper);
+    explicitTriangulation2_.setWrapper(wrapper);
+    explicitTriangulation3_.setWrapper(wrapper);
+    implicitTriangulation0_.setWrapper(wrapper);
+    implicitTriangulation1_.setWrapper(wrapper);
+    implicitTriangulation2_.setWrapper(wrapper);
+    implicitTriangulation3_.setWrapper(wrapper);
+    implicitPreconditionsTriangulation0_.setWrapper(wrapper);
+    implicitPreconditionsTriangulation1_.setWrapper(wrapper);
+    implicitPreconditionsTriangulation2_.setWrapper(wrapper);
+    implicitPreconditionsTriangulation3_.setWrapper(wrapper);
+    periodicImplicitTriangulation0_.setWrapper(wrapper);
+    periodicImplicitTriangulation1_.setWrapper(wrapper);
+    periodicImplicitTriangulation2_.setWrapper(wrapper);
+    periodicImplicitTriangulation3_.setWrapper(wrapper);
+    periodicPreconditionsTriangulation0_.setWrapper(wrapper);
+    periodicPreconditionsTriangulation1_.setWrapper(wrapper);
+    periodicPreconditionsTriangulation2_.setWrapper(wrapper);
+    periodicPreconditionsTriangulation3_.setWrapper(wrapper);
+    compactTriangulation0_.setWrapper(wrapper);
+    compactTriangulation1_.setWrapper(wrapper);
+    compactTriangulation2_.setWrapper(wrapper);
+    compactTriangulation3_.setWrapper(wrapper);
+
       return 0;
     }
 
     /// Returns true if the grid uses preconditions.
     inline bool hasImplicitPreconditions() const {
-      return abstractTriangulation_ == &implicitPreconditionsTriangulation_
-             || abstractTriangulation_ == &periodicPreconditionsTriangulation_;
+      return isHybridImplicitTriangulation() || isHybridPeriodicTriangulation();
     }
 
 #ifdef TTK_ENABLE_MPI
@@ -2935,10 +3289,39 @@ namespace ttk {
     // GlobalPointIds, GlobalCellIds (only for ExplicitTriangulation)
 
     inline void setVertsGlobalIds(const LongSimplexId *data) {
-      this->explicitTriangulation_.setVertsGlobalIds(data);
+      if (getDimensionality() == 0) {
+        this->explicitTriangulation0_.setVertsGlobalIds(data);
+      }
+      else if (getDimensionality() == 1) {
+        this->explicitTriangulation1_.setVertsGlobalIds(data);
+      }
+      else if (getDimensionality() == 2) {
+        this->explicitTriangulation2_.setVertsGlobalIds(data);
+      }
+      else if (getDimensionality() == 3) {
+        this->explicitTriangulation3_.setVertsGlobalIds(data);
+      }
+      else {
+        printErr("Error, dimensionality is not between 0 and 3.\n");
+      }
     }
+
     inline void setCellsGlobalIds(const LongSimplexId *const data) {
-      this->explicitTriangulation_.setCellsGlobalIds(data);
+      if (getDimensionality() == 0) {
+        this->explicitTriangulation0_.setVertsGlobalIds(data);
+      }
+      else if (getDimensionality() == 1) {
+        this->explicitTriangulation1_.setCellsGlobalIds(data);
+      }
+      else if (getDimensionality() == 2) {
+        this->explicitTriangulation2_.setCellsGlobalIds(data);
+      }
+      else if (getDimensionality() == 3) {
+        this->explicitTriangulation3_.setCellsGlobalIds(data);
+      }
+      else {
+        printErr("Error, dimensionality is not between 0 and 3.\n");
+      }
     }
 
     // "vtkGhostType" on vertices & cells
@@ -2989,11 +3372,29 @@ namespace ttk {
     void switchGrid(const bool usePeriodic, const bool usePreconditions);
 
     AbstractTriangulation *abstractTriangulation_;
-    ExplicitTriangulation<0> explicitTriangulation_;
-    ImplicitNoPreconditions<0> implicitTriangulation_;
-    ImplicitWithPreconditions<0> implicitPreconditionsTriangulation_;
-    PeriodicNoPreconditions<0> periodicImplicitTriangulation_;
-    PeriodicWithPreconditions<0> periodicPreconditionsTriangulation_;
-    CompactTriangulation<0> compactTriangulation_;
+    ExplicitTriangulation<0> explicitTriangulation0_;
+    ExplicitTriangulation<1> explicitTriangulation1_;
+    ExplicitTriangulation<2> explicitTriangulation2_;
+    ExplicitTriangulation<3> explicitTriangulation3_;
+    ImplicitNoPreconditions<0> implicitTriangulation0_;
+    ImplicitNoPreconditions<1> implicitTriangulation1_;
+    ImplicitNoPreconditions<2> implicitTriangulation2_;
+    ImplicitNoPreconditions<3> implicitTriangulation3_;
+    ImplicitWithPreconditions<0> implicitPreconditionsTriangulation0_;
+    ImplicitWithPreconditions<1> implicitPreconditionsTriangulation1_;
+    ImplicitWithPreconditions<2> implicitPreconditionsTriangulation2_;
+    ImplicitWithPreconditions<3> implicitPreconditionsTriangulation3_;
+    PeriodicNoPreconditions<0> periodicImplicitTriangulation0_;
+    PeriodicNoPreconditions<1> periodicImplicitTriangulation1_;
+    PeriodicNoPreconditions<2> periodicImplicitTriangulation2_;
+    PeriodicNoPreconditions<3> periodicImplicitTriangulation3_;
+    PeriodicWithPreconditions<0> periodicPreconditionsTriangulation0_;
+    PeriodicWithPreconditions<1> periodicPreconditionsTriangulation1_;
+    PeriodicWithPreconditions<2> periodicPreconditionsTriangulation2_;
+    PeriodicWithPreconditions<3> periodicPreconditionsTriangulation3_;
+    CompactTriangulation<0> compactTriangulation0_;
+    CompactTriangulation<1> compactTriangulation1_;
+    CompactTriangulation<2> compactTriangulation2_;
+    CompactTriangulation<3> compactTriangulation3_;
   };
 } // namespace ttk

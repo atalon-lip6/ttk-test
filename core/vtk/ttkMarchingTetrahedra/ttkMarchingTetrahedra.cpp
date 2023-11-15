@@ -149,7 +149,7 @@ int ttkMarchingTetrahedra::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status{};
 
-  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
                       (status = dispatch<VTK_TT, TTK_TT>(
                          inputScalars, outputSeparators,
                          *static_cast<TTK_TT *>(triangulation->getData()))));

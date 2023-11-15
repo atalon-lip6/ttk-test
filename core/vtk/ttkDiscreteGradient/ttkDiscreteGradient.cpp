@@ -293,7 +293,7 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::Timer t_mpi;
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (ret = this->buildGradient<TTK_TT>(
                       *static_cast<TTK_TT *>(triangulation->getData()), true)));
 #ifdef TTK_ENABLE_MPI_TIME
@@ -310,14 +310,14 @@ int ttkDiscreteGradient::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   // critical points
-  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
                       (fillCriticalPoints<VTK_TT, TTK_TT>(
                         outputCriticalPoints, inputScalars,
                         *static_cast<TTK_TT *>(triangulation->getData()))));
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
-    ttkTemplateMacro(triangulation->getType(),
+    ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                      (fillGradientGlyphs<TTK_TT>(
                        outputGradientGlyphs,
                        *static_cast<TTK_TT *>(triangulation->getData()))));

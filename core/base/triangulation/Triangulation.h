@@ -3208,8 +3208,12 @@ namespace ttk {
     inline int setInputPoints(const SimplexId &pointNumber,
                               const void *pointSet,
                               const bool &doublePrecision = false) {
+      if (this->abstractTriangulation_ == nullptr) {
+        this->printErr("Error: please call setInputCells before setInputPoints.");
+        return {};
+      }
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-if (getDimensionality() == 0) {
+      if (getDimensionality() == 0) {
         abstractTriangulation_ = &explicitTriangulation0_;
         return explicitTriangulation0_.setInputPoints(
             pointNumber, pointSet, doublePrecision);
@@ -3239,7 +3243,11 @@ if (getDimensionality() == 0) {
                                      const bool &doublePrecision = false) {
 
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-if (getDimensionality() == 0) {
+      if (this->abstractTriangulation_ == nullptr) {
+        this->printErr("Error: please call setStellarCells before setStellarInputPoints.");
+        return {};
+      }
+      if (getDimensionality() == 0) {
         abstractTriangulation_ = &compactTriangulation0_;
         return compactTriangulation0_.setInputPoints(
             pointNumber, pointSet, indexArray, doublePrecision);

@@ -1543,7 +1543,8 @@ namespace ttk {
       }
       else {
         this->printErr("Error, dimensionality should be between 0 and 3.");
-        return -1;
+        return {};
+      }
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1654,8 +1655,14 @@ namespace ttk {
     }
 
     inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
-      this->periodicImplicitTriangulation_.setIsBoundaryPeriodic(boundary);
-      this->periodicPreconditionsTriangulation_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation<0>_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation<0>_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation<1>_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation<1>_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation<2>_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation<2>_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation<3>_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation<3>_.setIsBoundaryPeriodic(boundary);
     }
 
     /**

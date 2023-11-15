@@ -89,7 +89,7 @@ int ttkTopologicalCompressionWriter::Write() {
   this->relToAbsZFPTolerance(this->ZFPTolerance, sfRange);
 
   ttkVtkTemplateMacro(
-    inputScalarField->GetDataType(), triangulation->getType(),
+    inputScalarField->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     this->execute(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
       static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)),

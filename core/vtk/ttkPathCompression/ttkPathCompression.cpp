@@ -129,7 +129,7 @@ int ttkPathCompression::RequestData(vtkInformation *ttkNotUsed(request),
   int ret{};
 
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     (ret = dispatch<TTK_TT>(ttkUtils::GetPointer<SimplexId>(inputOrderArray),
                             *static_cast<TTK_TT *>(triangulation->getData()))));
 

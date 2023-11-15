@@ -121,7 +121,7 @@ int ttkTopologicalCompressionReader::RequestData(
   this->preconditionTriangulation(triangulation);
 
   int status{0};
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    status = this->ReadFromFile(
                      fp, *static_cast<TTK_TT *>(triangulation->getData())));
   if(status != 0) {

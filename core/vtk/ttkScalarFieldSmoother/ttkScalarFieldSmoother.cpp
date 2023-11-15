@@ -98,7 +98,7 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *ttkNotUsed(request),
 
   // calling the smoothing package
   ttkTypeMacroAT(
-    inputScalarField->GetDataType(), triangulation->getType(),
+    inputScalarField->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     (smooth<T0, T1>(
       static_cast<const T1 *>(triangulation->getData()), NumberOfIterations)));
 

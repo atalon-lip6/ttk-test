@@ -1624,7 +1624,7 @@ namespace ttk {
      * @param[in] dimensions Global grid dimensions
      */
     inline void createMetaGrid(const double *const bounds) {
-      if (this->getDimensionality() == 0) {
+      if (this->getDimensionality() == 0) { //TODO see
         this->implicitPreconditionsTriangulation0_.createMetaGrid(bounds);
         this->periodicImplicitTriangulation0_.createMetaGrid(bounds);
         this->implicitTriangulation0_.createMetaGrid(bounds);
@@ -2922,22 +2922,23 @@ namespace ttk {
                              const LongSimplexId *offset) {
       
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      if (getDimensionality() == 0) {
+      int cellDimension = offset[1] - offset[0] - 1;
+      if (cellDimension == 0) {
         abstractTriangulation_ = &explicitTriangulation0_;
         return explicitTriangulation0_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 1) {
+      else if (cellDimension == 1) {
         abstractTriangulation_ = &explicitTriangulation1_;
         return explicitTriangulation1_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 2) {
+      else if (cellDimension == 2) {
         abstractTriangulation_ = &explicitTriangulation2_;
         return explicitTriangulation2_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 3) {
+      else if (cellDimension == 3) {
         abstractTriangulation_ = &explicitTriangulation3_;
         return explicitTriangulation3_.setInputCells(
             cellNumber, connectivity, offset);
@@ -2950,22 +2951,24 @@ namespace ttk {
                                     const LongSimplexId *connectivity,
                                     const LongSimplexId *offset) {
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      if (getDimensionality() == 0) { //TODO dimensionalité déjà bonne ?
+      
+      int cellDimension = offset[1] - offset[0] - 1;
+      if (cellDimension == 0) {
         abstractTriangulation_ = &compactTriangulation0_;
         return compactTriangulation0_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 1) {
+      else if (cellDimension == 1) {
         abstractTriangulation_ = &compactTriangulation1_;
         return compactTriangulation1_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 2) {
+      else if (cellDimension == 2) {
         abstractTriangulation_ = &compactTriangulation2_;
         return compactTriangulation2_.setInputCells(
             cellNumber, connectivity, offset);
       }
-      else if (getDimensionality() == 3) {
+      else if (cellDimension == 3) {
         abstractTriangulation_ = &compactTriangulation3_;
         return compactTriangulation3_.setInputCells(
             cellNumber, connectivity, offset);
@@ -2996,18 +2999,49 @@ namespace ttk {
     /// means that preconditioning functions should be called again).
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *cellArray) {
-      abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-      return explicitTriangulation_.setInputCells(cellNumber, cellArray);
-    }
+      int cellDimension = cellNumber == 0 ? 0 : cellArray[0]-1;
+      if (cellDimension == 0) {
+        abstractTriangulation_ = &explicitTriangulation0_;
+        return explicitTriangulation0_.setInputCells(cellNumber, cellArray);
+      }
+      else if (cellDimension == 1) {
+        abstractTriangulation_ = &explicitTriangulation1_;
+        return explicitTriangulation1_.setInputCells(cellNumber, cellArray);
+      }
+      if (cellDimension == 2) {
+        abstractTriangulation_ = &explicitTriangulation2_;
+        return explicitTriangulation2_.setInputCells(cellNumber, cellArray);
+      }
+      if (cellDimension == 3) {
+        abstractTriangulation_ = &explicitTriangulation3_;
+        return explicitTriangulation3_.setInputCells(cellNumber, cellArray);
+      }
+      return 0; // TODO ok ?
+    } //TODO problem ici ?
 
     inline int setStellarInputCells(const SimplexId &cellNumber,
                                     const LongSimplexId *cellArray) {
 
-      abstractTriangulation_ = &compactTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-
-      return compactTriangulation_.setInputCells(cellNumber, cellArray);
+      int cellDimension = cellNumber == 0 ? 0 : cellArray[0]-1;
+      if (cellDimension == 0) {
+        abstractTriangulation_ = &compactTriangulation0_;
+        return compactTriangulation0_.setInputCells(cellNumber, cellArray);
+      }
+      else if (cellDimension == 1) {
+        abstractTriangulation_ = &compactTriangulation1_;
+        return compactTriangulation1_.setInputCells(cellNumber, cellArray);
+      }
+      if (cellDimension == 2) {
+        abstractTriangulation_ = &compactTriangulation2_;
+        return compactTriangulation2_.setInputCells(cellNumber, cellArray);
+      }
+      if (cellDimension == 3) {
+        abstractTriangulation_ = &compactTriangulation3_;
+        return compactTriangulation3_.setInputCells(cellNumber, cellArray);
+      }
+      return 0; //TODO 0 ?
     }
 #endif
     /// Set the specifications of the input grid to implicitly represent as a
@@ -3044,8 +3078,20 @@ namespace ttk {
       gridDimensions_[2] = zDim;
 
       int ret{};
+      int curDimensionality;
+      if(xDim < 1 or yDim < 1 or zDim < 1)
+        curDimensionality = -1;
+      else if(xDim > 1 and yDim > 1 and zDim > 1)
+        curDimensionality = 3;
+      else if((xDim > 1 and yDim > 1) or (yDim > 1 and zDim > 1)
+          or (xDim > 1 and zDim > 1))
+        curDimensionality = 2;
+      else if(xDim > 1 or yDim > 1 or zDim > 1)
+        curDimensionality = 1;
+      else
+        curDimensionality = 0;
 
-      if (getDimensionality() == 0) {
+      if (curDimensionality == 0) {
         ret |= periodicImplicitTriangulation0_.setInputGrid(
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);
@@ -3060,7 +3106,7 @@ namespace ttk {
             zDim);
       }
 
-      else if (getDimensionality() == 1) {
+      else if (curDimensionality == 1) {
         ret |= periodicImplicitTriangulation1_.setInputGrid(
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);
@@ -3074,7 +3120,7 @@ namespace ttk {
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);
       }
-      else if (getDimensionality() == 2) {
+      else if (curDimensionality == 2) {
         ret |= periodicImplicitTriangulation2_.setInputGrid(
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);
@@ -3088,7 +3134,7 @@ namespace ttk {
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);
       }
-      else if (getDimensionality() == 3) {
+      else if (curDimensionality == 3) {
         ret |= periodicImplicitTriangulation3_.setInputGrid(
             xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
             zDim);

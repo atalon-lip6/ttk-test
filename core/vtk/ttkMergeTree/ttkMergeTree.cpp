@@ -229,7 +229,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       int status = 0;
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         (status = subModule.execute<T0>(
            om, ttkUtils::GetPointer<const ttk::SimplexId>(orderArray),
            *(T0 *)triangulation->getData())));
@@ -269,7 +269,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
         orderArrayData[i] = nVertices - orderArrayData[i] - 1;
       }
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         (status = exTreeMTree.computePairs<T0>(
            persistencePairsJoin, cpMap, mergeTreeJoin,
            ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
@@ -291,11 +291,11 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
       auto outputMergeTreeJoin = vtkUnstructuredGrid::GetData(outputVector, 1);
 
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         getMergeTree<T0>(outputMergeTreeJoin, mergeTreeJoin, scalarArray,
                          (T0 *)triangulation->getData()));
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         getMergeTreePoints<T0>(outputPoints, cpMap, persistencePairsJoin,
                                scalarArray, (T0 *)triangulation->getData()));
 
@@ -307,7 +307,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
       int status = 0;
 
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         (status = exTreeMTree.computePairs<T0>(
            persistencePairsSplit, cpMap, mergeTreeSplit,
            ttkUtils::GetPointer<ttk::SimplexId>(segmentationId),
@@ -322,11 +322,11 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
       auto outputMergeTreeSplit = vtkUnstructuredGrid::GetData(outputVector, 1);
 
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         getMergeTree<T0>(outputMergeTreeSplit, mergeTreeSplit, scalarArray,
                          (T0 *)triangulation->getData()));
       ttkTypeMacroT(
-        triangulation->getType(),
+        triangulation->getType(), triangulation->getDimensionality(),
         getMergeTreePoints<T0>(outputPoints, cpMap, persistencePairsSplit,
                                scalarArray, (T0 *)triangulation->getData()));
     }
@@ -436,6 +436,7 @@ int ttkMergeTree::RequestData(vtkInformation *ttkNotUsed(request),
 
       ttkVtkTemplateMacro(inputArray->GetDataType(),
                           triangulation_[cc]->getType(),
+                          triangulation_[cc]->getDimensionality(),
                           (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
                             (TTK_TT *)triangulation_[cc]->getData())));
 

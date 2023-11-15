@@ -101,7 +101,7 @@ int ttkMorphologicalOperators::RequestData(vtkInformation *ttkNotUsed(request),
   int status = 0;
 
   ttkVtkTemplateMacro(
-    inputLabels->GetDataType(), triangulation->getType(),
+    inputLabels->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     (status = this->execute<VTK_TT, TTK_TT>(
        // Output
        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputLabels)),

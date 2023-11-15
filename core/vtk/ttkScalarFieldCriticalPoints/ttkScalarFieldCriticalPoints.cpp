@@ -92,7 +92,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   int status = 0;
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     (status = this->execute(
        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
        (TTK_TT *)triangulation->getData())));

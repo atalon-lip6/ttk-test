@@ -130,7 +130,7 @@ int ttkTopologicalCompression::RequestData(vtkInformation *ttkNotUsed(request),
 
   // Call TopologicalCompression
   ttkVtkTemplateMacro(
-    inputScalarField->GetDataType(), triangulation->getType(),
+    inputScalarField->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     this->execute(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
       static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)),

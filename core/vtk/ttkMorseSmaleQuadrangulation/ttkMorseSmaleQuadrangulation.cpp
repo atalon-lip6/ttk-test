@@ -92,7 +92,7 @@ int ttkMorseSmaleQuadrangulation::RequestData(
 
   int res{-1};
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     res = this->execute(*static_cast<TTK_TT *>(triangulation->getData())););
 
   if(res != 0) {

@@ -218,7 +218,7 @@ int ttkMandatoryCriticalPoints::RequestData(
 
   // Execute process
   ttkVtkTemplateMacro(inputUpperBoundField->GetDataType(),
-                      triangulation->getType(),
+                      triangulation->getType(), triangulation->getDimensionality(),
                       (this->execute<VTK_TT, TTK_TT>(
                         *static_cast<TTK_TT *>(triangulation->getData()))));
 

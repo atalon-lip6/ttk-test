@@ -204,7 +204,7 @@ int ttkPersistentGenerators::RequestData(vtkInformation *ttkNotUsed(request),
   }
 
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     this->dispatch(output, inputScalars,
                    ttkUtils::GetPointer<SimplexId>(offsetField),
                    *static_cast<TTK_TT *>(triangulation->getData())));

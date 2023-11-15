@@ -44,7 +44,7 @@ int ttkJacobiSet::dispatch(const dataTypeU *const uField,
                            const dataTypeV *const vField,
                            ttk::Triangulation *const triangulation) {
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     this->execute(jacobiSet_, uField, vField,
                   *static_cast<TTK_TT *>(triangulation->getData()),
                   &isPareto_));

@@ -93,7 +93,7 @@ int ttkConnectedComponents::RequestData(vtkInformation *,
 
     // compute connected components (componentIds now store component idx)
     this->preconditionTriangulation(triangulation);
-    ttkTypeMacroT(triangulation->getType(),
+    ttkTypeMacroT(triangulation->getType(), triangulation->getDimensionality(),
                   (status = this->computeConnectedComponents<T0>(
                      components, ttkUtils::GetPointer<int>(componentIds),
                      static_cast<const T0 *>(triangulation->getData()))));

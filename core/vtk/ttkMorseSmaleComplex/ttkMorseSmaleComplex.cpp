@@ -492,7 +492,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *ttkNotUsed(request),
   int ret{};
 
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
+    inputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     (ret = dispatch<VTK_TT, TTK_TT>(
        inputScalars, outputCriticalPoints, outputSeparatrices1,
        outputSeparatrices2, ttkUtils::GetPointer<SimplexId>(inputOffsets),

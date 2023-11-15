@@ -1544,6 +1544,7 @@ namespace ttk {
       else {
         this->printErr("Error, dimensionality should be between 0 and 3.");
         return -1;
+      }
     }
 
     /// Set the flag for precondtioning of distributed vertices of the

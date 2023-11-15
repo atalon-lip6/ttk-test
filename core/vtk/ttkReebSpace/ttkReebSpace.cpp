@@ -57,14 +57,14 @@ int ttkReebSpace::dispatch(const dataTypeU *const uField,
   if(this->empty() || VaryingValues || VaryingTriangulation) {
     this->printMsg("Starting computation");
     ttkTemplateMacro(
-      triangulation->getType(),
+      triangulation->getType(), triangulation->getDimensionality(),
       this->execute(
         uField, vField, *static_cast<TTK_TT *>(triangulation->getData())));
   }
 
   if(SimplificationThreshold > 0) {
     ttkTemplateMacro(
-      triangulation->getType(),
+      triangulation->getType(), triangulation->getDimensionality(),
       this->simplify(uField, vField,
                      *static_cast<TTK_TT *>(triangulation->getData()),
                      SimplificationThreshold,

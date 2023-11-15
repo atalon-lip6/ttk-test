@@ -179,7 +179,7 @@ int ttkTriangulationManager::processExplicit(
   int status = 0; // this integer checks if the base code returns an error
   ttk::CompactTriangulationPreconditioning const worker{};
   ttkTemplateMacro(
-    triangulation.getType(),
+    triangulation.getType(), triangulation.getDimensionality(),
     (status = worker.execute(
        static_cast<TTK_TT *>(triangulation.getData()), this->Threshold)));
 

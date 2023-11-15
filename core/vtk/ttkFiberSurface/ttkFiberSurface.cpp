@@ -43,13 +43,13 @@ int ttkFiberSurface::dispatch(ttk::Triangulation *const triangulation) {
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if(RangeOctree) {
-    ttkTemplateMacro(triangulation->getType(),
+    ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                      (this->buildOctree<VTK_T1, VTK_T2>(
                        static_cast<TTK_TT *>(triangulation->getData()))));
   }
 #endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (this->computeSurface<VTK_T1, VTK_T2>(
                      static_cast<TTK_TT *>(triangulation->getData()))));
   return 0;

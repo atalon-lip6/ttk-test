@@ -397,7 +397,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::startMPITimer(t_mpi, ttk::MPIrank_, ttk::MPIsize_);
 #endif
   int status = 0;
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (status = this->execute<TTK_TT>(
                       static_cast<TTK_TT *>(triangulation->getData()))));
 
@@ -412,7 +412,7 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #ifdef TTK_ENABLE_MPI
   std::vector<ttk::SimplexId> globalVertexId;
   std::vector<ttk::SimplexId> globalCellId;
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (getGlobalIdentifiers<TTK_TT>(
                      globalVertexId, globalCellId, integralLines,
                      static_cast<TTK_TT *>(triangulation->getData()))));
@@ -426,12 +426,12 @@ int ttkIntegralLines::RequestData(vtkInformation *ttkNotUsed(request),
 #endif
   // make the vtk trajectories
 #ifdef TTK_ENABLE_MPI
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (getTrajectories<TTK_TT>(
                      domain, static_cast<TTK_TT *>(triangulation->getData()),
                      integralLines, globalVertexId, globalCellId, output)));
 #else
-  ttkTemplateMacro(triangulation->getType(),
+  ttkTemplateMacro(triangulation->getType(), triangulation->getDimensionality(),
                    (getTrajectories<TTK_TT>(
                      domain, static_cast<TTK_TT *>(triangulation->getData()),
                      integralLines, output)));

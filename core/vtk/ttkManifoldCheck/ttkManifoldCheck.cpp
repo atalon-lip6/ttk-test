@@ -62,7 +62,7 @@ int ttkManifoldCheck::RequestData(vtkInformation *ttkNotUsed(request),
 
   int error = 0;
   ttkTemplateMacro(
-    triangulation->getType(),
+    triangulation->getType(), triangulation->getDimensionality(),
     (error = this->execute<TTK_TT>((TTK_TT *)triangulation->getData())));
   if(error)
     return error;

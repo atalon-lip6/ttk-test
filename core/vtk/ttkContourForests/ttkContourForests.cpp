@@ -1084,6 +1084,7 @@ void ttkContourForests::getTree() {
   // build
   ttkVtkTemplateMacro(vtkInputScalars_->GetDataType(),
                       triangulation_->getType(),
+                      triangulation_->getDimensionality(),
                       (this->build<VTK_TT, TTK_TT *>(
                         static_cast<TTK_TT *>(triangulation_->getData()))));
 

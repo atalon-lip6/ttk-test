@@ -4195,7 +4195,7 @@ void ttk::PeriodicImplicitTriangulation<card>::createMetaGrid(const double *cons
       std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
   };
 
-  this->metaGrid_ = std::make_shared<PeriodicNoPreconditions>();
+  this->metaGrid_ = std::make_shared<PeriodicNoPreconditions<card>>();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],
@@ -4230,7 +4230,7 @@ int ttk::PeriodicImplicitTriangulation<card>::preconditionDistributedCells() {
   const auto nLocCells{(this->dimensions_[0] - 1) * (this->dimensions_[1] - 1)
                        * (this->dimensions_[2] - 1) * nTetraPerCube};
 
-  std::std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
+  std::vector<unsigned char> fillCells(nLocCells / nTetraPerCube);
 
   this->neighborCellBBoxes_.resize(ttk::MPIsize_);
   auto &localBBox{this->neighborCellBBoxes_[ttk::MPIrank_]};
@@ -4395,7 +4395,7 @@ int ttk::PeriodicImplicitTriangulation<card>::getCellRankInternal(
 #endif // TTK_ENABLE_KAMIKAZE
 
   const auto nVertsCell{this->getCellVertexNumber(lcid)};
-  std::std::vector<bool> inRank(nVertsCell);
+  std::vector<bool> inRank(nVertsCell);
   std::map<int, int> neighborOccurrences;
   for(const auto neigh : this->neighborRanks_) {
     std::fill(inRank.begin(), inRank.end(), false);

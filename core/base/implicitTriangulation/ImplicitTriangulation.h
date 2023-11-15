@@ -13,6 +13,7 @@
 #include <array>
 
 // base code includes
+#include <ImplicitPreconditions.h>
 #include <RegularGridTriangulation.h>
 
 namespace ttk {
@@ -7533,7 +7534,6 @@ inline ttk::SimplexId ttk::ImplicitTriangulation<card>::getTetrahedronNeighborBD
   return -1;
 }
 
-#include <ImplicitPreconditions.h>
 
 
 // -- was in .h
@@ -10813,7 +10813,7 @@ void ttk::ImplicitTriangulation<card>::createMetaGrid(const double *const bounds
       std::round((this->origin_[2] - globalBounds[4]) / this->spacing_[2])),
   };
 
-  this->metaGrid_ = std::make_shared<ImplicitNoPreconditions<card>>();
+  this->metaGrid_ = std::make_shared<ImplicitNoPreconditions<card> >();
   this->metaGrid_->setInputGrid(globalBounds[0], globalBounds[1],
                                 globalBounds[2], this->spacing_[0],
                                 this->spacing_[1], this->spacing_[2],

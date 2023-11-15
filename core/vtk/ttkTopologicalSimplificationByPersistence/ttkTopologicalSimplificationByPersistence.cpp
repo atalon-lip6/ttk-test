@@ -92,7 +92,7 @@ int ttkTopologicalSimplificationByPersistence::RequestData(
   // perform simplification
   int status = 0;
   ttkVtkTemplateMacro(
-    outputScalars->GetDataType(), triangulation->getType(),
+    outputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     (status = this->removeNonPersistentExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
        ttkUtils::GetPointer<VTK_TT>(outputScalars),
        ttkUtils::GetPointer<ttk::SimplexId>(outputOrder),

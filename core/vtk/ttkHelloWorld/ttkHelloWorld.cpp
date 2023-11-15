@@ -180,7 +180,7 @@ int ttkHelloWorld::RequestData(vtkInformation *ttkNotUsed(request),
 
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
-  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
+  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
                       (status = this->computeAverages<VTK_TT, TTK_TT>(
                          (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),

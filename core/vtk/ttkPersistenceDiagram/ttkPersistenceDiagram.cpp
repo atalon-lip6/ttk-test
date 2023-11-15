@@ -152,7 +152,7 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *ttkNotUsed(request),
 
   int status{};
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
+    inputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     status = this->dispatch(
       outputCTPersistenceDiagram, inputScalars,
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),

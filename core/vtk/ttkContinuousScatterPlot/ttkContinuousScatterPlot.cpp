@@ -136,7 +136,7 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *ttkNotUsed(request),
   this->setOutputMask(&validPointMask);
 
   int status = 0;
-  ttkVtkTemplateMacro(inputScalars1->GetDataType(), triangulation->getType(),
+  ttkVtkTemplateMacro(inputScalars1->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
                       (status = this->dispatch<VTK_TT, TTK_TT>(
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars1),
                          inputScalars2, (TTK_TT *)triangulation->getData())));

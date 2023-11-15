@@ -179,7 +179,7 @@ int ttkPersistenceDiagramApproximation::RequestData(
 
   int status{};
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
+    inputScalars->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
     status = this->dispatch(
       outputCTPersistenceDiagram, outputBounds, inputScalars,
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),

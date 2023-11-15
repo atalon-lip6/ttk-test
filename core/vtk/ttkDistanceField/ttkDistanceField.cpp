@@ -104,7 +104,7 @@ int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
       this->setOutputScalarFieldPointer(
         ttkUtils::GetVoidPointer(distanceScalars));
       ttkTemplateMacro(
-        triangulation->getType(), (ret = this->execute<float, TTK_TT>(
+        triangulation->getType(), triangulation->getDimensionality(), (ret = this->execute<float, TTK_TT>(
                                      (TTK_TT *)triangulation->getData())));
       break;
 
@@ -118,7 +118,7 @@ int ttkDistanceField::RequestData(vtkInformation *ttkNotUsed(request),
         ttkUtils::GetVoidPointer(distanceScalars));
 
       ttkTemplateMacro(
-        triangulation->getType(), (ret = this->execute<double, TTK_TT>(
+        triangulation->getType(), triangulation->getDimensionality(), (ret = this->execute<double, TTK_TT>(
                                      (TTK_TT *)triangulation->getData())));
       break;
 

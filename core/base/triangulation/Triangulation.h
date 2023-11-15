@@ -39,6 +39,7 @@
 #include <CompactTriangulation.h>
 #include <ExplicitTriangulation.h>
 #include <ImplicitTriangulation.h>
+#include <ImplicitPreconditions.h>
 #include <PeriodicImplicitTriangulation.h>
 
 #include <array>
@@ -1543,7 +1544,8 @@ namespace ttk {
       }
       else {
         this->printErr("Error, dimensionality should be between 0 and 3.");
-        return -1;
+        return explicitTriangulation0_.getVertexGlobalIdMap();
+      }
     }
 
     /// Set the flag for precondtioning of distributed vertices of the
@@ -1654,8 +1656,14 @@ namespace ttk {
     }
 
     inline void setIsBoundaryPeriodic(std::array<unsigned char, 6> boundary) {
-      this->periodicImplicitTriangulation_.setIsBoundaryPeriodic(boundary);
-      this->periodicPreconditionsTriangulation_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation0_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation0_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation1_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation1_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation2_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation2_.setIsBoundaryPeriodic(boundary);
+      this->periodicImplicitTriangulation3_.setIsBoundaryPeriodic(boundary);
+      this->periodicPreconditionsTriangulation3_.setIsBoundaryPeriodic(boundary);
     }
 
     /**

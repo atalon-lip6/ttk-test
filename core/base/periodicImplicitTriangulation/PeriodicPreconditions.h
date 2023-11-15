@@ -82,7 +82,7 @@ namespace ttk {
    */
   template <size_t card>
   class PeriodicNoPreconditions final
-    : public PeriodicImplicitTriangulationCRTP<0, PeriodicNoPreconditions<card>> {
+    : public PeriodicImplicitTriangulationCRTP<card, PeriodicNoPreconditions<card>> {
   public:
     PeriodicNoPreconditions() {
       this->setDebugMsgPrefix("PeriodicTriangulationNoPreconditions");

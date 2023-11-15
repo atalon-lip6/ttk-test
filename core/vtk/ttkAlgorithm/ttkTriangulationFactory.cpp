@@ -232,27 +232,7 @@ RegistryTriangulation
                    ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
   }
 
-  // Points
-  {
-    auto pointDataType = points->GetDataType();
-    if(pointDataType != VTK_FLOAT && pointDataType != VTK_DOUBLE) {
-      this->printErr("Unable to initialize 'ttk::Triangulation' for point "
-                     "precision other than 'float' or 'double'.");
-      return {};
-    }
 
-    void *pointDataArray = ttkUtils::GetVoidPointer(points);
-    if(hasIndexArray) {
-      vtkAbstractArray *indexArray = pointSet->GetPointData()->GetAbstractArray(
-        ttk::compactTriangulationIndex);
-      triangulation->setStellarInputPoints(
-        points->GetNumberOfPoints(), pointDataArray,
-        (int *)indexArray->GetVoidPointer(0), pointDataType == VTK_DOUBLE);
-    } else {
-      triangulation->setInputPoints(points->GetNumberOfPoints(), pointDataArray,
-                                    pointDataType == VTK_DOUBLE);
-    }
-  }
 
   // check if cell types are simplices
   int const cellTypeStatus = checkCellTypes(pointSet);
@@ -314,6 +294,29 @@ RegistryTriangulation
                    timer.getElapsedTime(), ttk::debug::LineMode::NEW,
                    ttk::debug::Priority::DETAIL);
   }
+
+  // Points
+  {
+    auto pointDataType = points->GetDataType();
+    if(pointDataType != VTK_FLOAT && pointDataType != VTK_DOUBLE) {
+      this->printErr("Unable to initialize 'ttk::Triangulation' for point "
+                     "precision other than 'float' or 'double'.");
+      return {};
+    }
+
+    void *pointDataArray = ttkUtils::GetVoidPointer(points);
+    if(hasIndexArray) {
+      vtkAbstractArray *indexArray = pointSet->GetPointData()->GetAbstractArray(
+        ttk::compactTriangulationIndex);
+      triangulation->setStellarInputPoints(
+        points->GetNumberOfPoints(), pointDataArray,
+        (int *)indexArray->GetVoidPointer(0), pointDataType == VTK_DOUBLE);
+    } else {
+      triangulation->setInputPoints(points->GetNumberOfPoints(), pointDataArray,
+                                    pointDataType == VTK_DOUBLE);
+    }
+  }
+
 
   return triangulation;
 }

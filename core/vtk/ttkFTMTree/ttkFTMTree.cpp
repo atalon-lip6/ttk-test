@@ -166,6 +166,7 @@ int ttkFTMTree::RequestData(vtkInformation *ttkNotUsed(request),
 
     ttkVtkTemplateMacro(inputArray->GetDataType(),
                         triangulation_[cc]->getType(),
+                        triangulation_[cc]->getDimensionality(),
                         (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
                           (TTK_TT *)triangulation_[cc]->getData())));
 

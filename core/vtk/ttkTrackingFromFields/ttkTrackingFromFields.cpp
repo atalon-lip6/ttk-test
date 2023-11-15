@@ -235,7 +235,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *ttkNotUsed(request),
   int status = 0;
   if(useTTKMethod) {
     ttkVtkTemplateMacro(
-      inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      inputScalarFields[0]->GetDataType(), triangulation->getType(), triangulation->getDimensionality(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
          output, fieldNumber, (TTK_TT *)triangulation->getData())));
   } else {

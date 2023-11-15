@@ -85,7 +85,7 @@ int ttkSurfaceGeometrySmoother::RequestData(
   // here we assume that the two triangulation objects have the same
   // underlying type
   ttkTemplateMacro(
-    triangulationToSmooth->getType(),
+    triangulationToSmooth->getType(), triangulationToSmooth->getDimensionality(),
     this->execute(
       ttkUtils::GetPointer<float>(outputPoints->GetData()),
       ttkUtils::GetPointer<float>(inputPoints->GetData()),

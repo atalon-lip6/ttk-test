@@ -159,7 +159,6 @@ int main(int argc, char **argv) {
 
   // load the input
   load(inputFilePath, pointSet, triangleSetCo, triangleSetOff);
-  triangulation.setInputPoints(pointSet.size() / 3, pointSet.data());
   long long int triangleNumber = triangleSetOff.size() - 1;
 #ifdef TTK_CELL_ARRAY_NEW
   triangulation.setInputCells(
@@ -169,6 +168,7 @@ int main(int argc, char **argv) {
   CellArray::TranslateToFlatLayout(triangleSetCo, triangleSetOff, triangleSet);
   triangulation.setInputCells(triangleNumber, triangleSet);
 #endif
+  triangulation.setInputPoints(pointSet.size() / 3, pointSet.data());
 
   // NOW, do the TTK processing
 

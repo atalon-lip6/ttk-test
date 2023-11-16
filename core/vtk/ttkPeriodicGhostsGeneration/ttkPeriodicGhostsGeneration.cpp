@@ -565,9 +565,36 @@ int ttkPeriodicGhostsGeneration::MPIPeriodicGhostPipelinePreconditioning(
 
   int dimensionality = imageIn->GetDataDimension();
 
-  ttk::RegularGridTriangulation *triangulation
-    = (ttk::RegularGridTriangulation *)GetTriangulation(imageIn);
+  if (dimensionality == 0) {
+  ttk::RegularGridTriangulation<0> *triangulation
+    = (ttk::RegularGridTriangulation<0> *)GetTriangulation(imageIn);
   neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
+  }
+
+  else if (dimensionality == 1) {
+  ttk::RegularGridTriangulation<1> *triangulation
+    = (ttk::RegularGridTriangulation<1> *)GetTriangulation(imageIn);
+  neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
+  }
+
+  else if (dimensionality == 2) {
+  ttk::RegularGridTriangulation<2> *triangulation
+    = (ttk::RegularGridTriangulation<2> *)GetTriangulation(imageIn);
+  neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
+  }
+
+  else if (dimensionality == 3) {
+  ttk::RegularGridTriangulation<3> *triangulation
+    = (ttk::RegularGridTriangulation<3> *)GetTriangulation(imageIn);
+  neighborVertexBBoxes_ = triangulation->getNeighborVertexBBoxes();
+  }
+  else {
+    this->printErr("Dimensionality should be between 0 and 3 inclusive. Aborting.");
+    return 0;
+  }
+
+
+
 
   // Computation of the order in which the merging of the ghosts should be done
   // The first dimension is the longest

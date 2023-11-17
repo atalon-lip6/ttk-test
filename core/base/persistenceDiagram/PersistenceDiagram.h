@@ -574,8 +574,27 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
 
   approxT_.setDebugLevel(debugLevel_);
   approxT_.setThreadNumber(threadNumber_);
+  size_t card = triangultion->getDimensionality();
+  if (card == 0) {
   approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
     (const ImplicitTriangulation<0> *)triangulation));
+  }
+  else if (card == 1) {
+  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<1> *>(
+    (const ImplicitTriangulation<1> *)triangulation));
+  }
+  else if (card == 2) {
+  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<2> *>(
+    (const ImplicitTriangulation<2> *)triangulation));
+  }
+  else if (card == 3) {
+  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<3> *>(
+    (const ImplicitTriangulation<3> *)triangulation));
+  }
+  else {
+    this->printErr("Error: the dimensionality should be between 0 and 3. Aborting.");
+    return 1;
+  }
   approxT_.setStartingResolutionLevel(StartingResolutionLevel);
   approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   approxT_.setPreallocateMemory(true);
@@ -618,8 +637,28 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
+  size_t card = triangultion->getDimensionality();
+  if (card == 0) {
   progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
     (const ImplicitTriangulation<0> *)triangulation));
+  }
+  else if (card == 1) {
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<1> *>(
+    (const ImplicitTriangulation<1> *)triangulation));
+  }
+  else if (card == 2) {
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<2> *>(
+    (const ImplicitTriangulation<2> *)triangulation));
+  }
+  else if (card == 3) {
+  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<3> *>(
+    (const ImplicitTriangulation<3> *)triangulation));
+  }
+  else {
+    this->printErr("Error: the dimensionality should be between 0 and 3. Aborting.");
+    return 1;
+  }
+
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);

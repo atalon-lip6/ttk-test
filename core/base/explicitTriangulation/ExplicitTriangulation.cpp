@@ -79,14 +79,14 @@ int ExplicitTriangulation<card>::preconditionBoundaryEdgesInternal() {
   preconditionEdgesInternal();
   boundaryEdges_.resize(edgeList_.size(), false);
 
-  if(getDimensionality() == 2) {
+  if constexpr (card == 2) {
     preconditionEdgeStarsInternal();
     for(SimplexId i = 0; i < (SimplexId)edgeStarData_.size(); i++) {
       if(edgeStarData_[i].size() == 1) {
         boundaryEdges_[i] = true;
       }
     }
-  } else if(getDimensionality() == 3) {
+  } else if constexpr (card == 3) {
     preconditionTriangleStarsInternal();
     preconditionTriangleEdgesInternal();
 
@@ -225,7 +225,7 @@ int ExplicitTriangulation<card>::preconditionBoundaryTrianglesInternal() {
     return 1;
   }
 
-  if(getDimensionality() == 2)
+  if constexpr (card == 2)
     return 0;
 
   Timer tm{};
@@ -238,7 +238,7 @@ int ExplicitTriangulation<card>::preconditionBoundaryTrianglesInternal() {
   preconditionTrianglesInternal();
   boundaryTriangles_.resize(triangleList_.size(), false);
 
-  if(getDimensionality() == 3) {
+  if constexpr (card == 3) {
     preconditionTriangleStarsInternal();
 
     for(size_t i = 0; i < triangleStarData_.size(); i++) {
@@ -300,14 +300,14 @@ int ExplicitTriangulation<card>::preconditionBoundaryVerticesInternal() {
   // create the list of boundary elements
   // create their star
   // look for singletons
-  if(getDimensionality() == 1) {
+  if constexpr(card == 1) {
     preconditionVertexStarsInternal();
     for(size_t i = 0; i < vertexStarData_.size(); i++) {
       if(vertexStarData_[i].size() == 1) {
         boundaryVertices_[i] = true;
       }
     }
-  } else if(getDimensionality() == 2) {
+  } else if constexpr(card == 2) {
     preconditionEdgesInternal();
     preconditionEdgeStarsInternal();
 
@@ -317,7 +317,7 @@ int ExplicitTriangulation<card>::preconditionBoundaryVerticesInternal() {
         boundaryVertices_[edgeList_[i][1]] = true;
       }
     }
-  } else if(getDimensionality() == 3) {
+  } else if constexpr(card == 3) {
     preconditionTrianglesInternal();
     preconditionTriangleStarsInternal();
 
@@ -391,12 +391,12 @@ int ExplicitTriangulation<card>::preconditionCellNeighborsInternal() {
   }
 
   if(cellNeighborData_.empty()) {
-    if(getDimensionality() == 3) {
+    if constexpr(card == 3) {
       ThreeSkeleton threeSkeleton;
       threeSkeleton.setWrapper(this);
       threeSkeleton.buildCellNeighborsFromTriangles(
         vertexNumber_, *cellArray_, cellNeighborData_, &triangleStarData_);
-    } else if(getDimensionality() == 2) {
+    } else if constexpr(card == 2) {
       this->preconditionEdgeStarsInternal();
       TwoSkeleton twoSkeleton;
       twoSkeleton.setWrapper(this);
@@ -471,14 +471,14 @@ int ExplicitTriangulation<card>::preconditionEdgesInternal() {
     oneSkeleton.setWrapper(this);
     // also computes edgeStar and triangleEdge / tetraEdge lists for free...
     int ret{};
-    if(getDimensionality() == 1) {
+    if constexpr(card == 1) {
       std::vector<std::array<SimplexId, 1>> tmp{};
       return oneSkeleton.buildEdgeList<1>(
         vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tmp);
-    } else if(getDimensionality() == 2) {
+    } else if constexpr(card == 2) {
       ret = oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_,
                                       edgeStarData_, triangleEdgeList_);
-    } else if(getDimensionality() == 3) {
+    } else if constexpr(card == 3) {
       ret = oneSkeleton.buildEdgeList(
         vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tetraEdgeList_);
     }
@@ -488,7 +488,7 @@ int ExplicitTriangulation<card>::preconditionEdgesInternal() {
     }
 
 #ifdef TTK_ENABLE_MPI
-    if(this->getDimensionality() == 2 || this->getDimensionality() == 3) {
+    if constexpr(card == 2 || card == 3) {
       return this->preconditionDistributedEdges();
     }
 #endif // TTK_ENABLE_MPI
@@ -510,7 +510,7 @@ int ExplicitTriangulation<card>::preconditionEdgeLinksInternal() {
 
   if(edgeLinkData_.empty()) {
 
-    if(getDimensionality() == 2) {
+    if constexpr(card == 2) {
       preconditionEdgesInternal();
       preconditionEdgeStarsInternal();
 
@@ -518,7 +518,7 @@ int ExplicitTriangulation<card>::preconditionEdgeLinksInternal() {
       oneSkeleton.setWrapper(this);
       return oneSkeleton.buildEdgeLinks(
         edgeList_, edgeStarData_, *cellArray_, edgeLinkData_);
-    } else if(getDimensionality() == 3) {
+    } else if constexpr(card == 3) {
       preconditionEdgesInternal();
       preconditionEdgeStarsInternal();
       preconditionCellEdgesInternal();
@@ -721,7 +721,7 @@ int ExplicitTriangulation<card>::preconditionVertexLinksInternal() {
 
   if((SimplexId)vertexLinkData_.size() != vertexNumber_) {
 
-    if(getDimensionality() == 2) {
+    if constexpr(card == 2) {
       preconditionEdgesInternal();
       preconditionVertexStarsInternal();
 
@@ -729,7 +729,7 @@ int ExplicitTriangulation<card>::preconditionVertexLinksInternal() {
       zeroSkeleton.setWrapper(this);
       return zeroSkeleton.buildVertexLinks(
         vertexStarData_, triangleEdgeList_, edgeList_, vertexLinkData_);
-    } else if(getDimensionality() == 3) {
+    } else if constexpr(card == 3) {
       preconditionTrianglesInternal();
       preconditionVertexStarsInternal();
 
@@ -819,13 +819,13 @@ int ttk::ExplicitTriangulation<card>::preconditionManifoldInternal() {
   // quick check by numbering (d-1)-simplices star
   FlatJaggedArray *simplexStar{};
 
-  if(this->getDimensionality() == 3) {
+  if constexpr(card == 3) {
     this->preconditionTriangleStarsInternal();
     simplexStar = &this->triangleStarData_;
-  } else if(this->getDimensionality() == 2) {
+  } else if constexpr(card == 2) {
     this->preconditionEdgeStarsInternal();
     simplexStar = &this->edgeStarData_;
-  } else if(this->getDimensionality() == 1) {
+  } else if constexpr(card == 1) {
     this->preconditionVertexStarsInternal();
     simplexStar = &this->vertexStarData_;
   }
@@ -1195,11 +1195,11 @@ int ExplicitTriangulation<card>::preconditionDistributedEdges() {
     return -2;
   }
 
-  if(this->getDimensionality() != 2 && this->getDimensionality() != 3) {
+  if constexpr(card != 2 && card != 3) {
     return -3;
   }
 
-  if(this->getDimensionality() == 2) {
+  if constexpr(card == 2) {
     this->preconditionTriangleEdges();
   }
 
@@ -1341,7 +1341,7 @@ int ExplicitTriangulation<card>::preconditionDistributedTriangles() {
     return -2;
   }
 
-  if(this->getDimensionality() != 3) {
+  if constexpr(card != 3) {
     return -3;
   }
 
@@ -1585,9 +1585,9 @@ int ExplicitTriangulation<card>::writeToFile(std::ofstream &stream) const {
   writeBin(stream, nVerts);
   // 5. number of edges (SimplexId)
   const auto edgesNumber = [this, dim]() -> SimplexId {
-    if(dim == 1) {
+    if constexpr (card == 1) {
       return this->getNumberOfCells();
-    } else if(dim > 1) {
+    } else if constexpr(card > 1) {
       return this->edgeList_.size();
     }
     return 0;
@@ -1704,9 +1704,9 @@ int ExplicitTriangulation<card>::writeToFileASCII(std::ofstream &stream) const {
   // 4. -> 7. number of simplices
   const auto nVerts = this->getNumberOfVertices();
   const auto edgesNumber = [this, dim]() -> SimplexId {
-    if(dim == 1) {
+    if constexpr (card == 1) {
       return this->getNumberOfCells();
-    } else if(dim > 1) {
+    } else if constexpr(card > 1) {
       return this->edgeList_.size();
     }
     return 0;

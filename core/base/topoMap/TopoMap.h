@@ -40,15 +40,6 @@
 static double Epsilon{ttk::Geometry::pow(10.0, -FLT_DIG + 2)};
 static double EpsilonDBL{ttk::Geometry::pow(10.0, -DBL_DIG + 2)};
 
-template <typename T>
-inline bool are_colinear(const T *pptA, const T *pptB, const T *pptC) {
-  double ptA[2] = {pptA[0], pptA[1]}, ptB[2] = {pptB[0], pptB[1]},
-         ptC[2] = {pptC[0], pptC[1]};
-  return fabs(ptA[0] * (ptB[1] - ptC[1]) + ptB[0] * (ptC[1] - ptA[1])
-              + ptC[0] * (ptA[1] - ptB[1]))
-         <= EpsilonDBL;
-}
-
 // Normalizes a given vector.
 template <typename T>
 static void
@@ -99,10 +90,10 @@ namespace ttk {
     ~TopoMap() override;
 
     /**
-     * @brief Computes the topological mapper
+     * @brief Computes the TopoMap projection
      *
      * @param[out] outputCoords the final coordinates of the points, computed by
-     the topological mapper
+     TopoMap
      *
      * @param[out] insertionTime an optional array indicating for each point at
      what time it was inserted in the projection.
@@ -231,7 +222,7 @@ namespace ttk {
       printErr("Error, template type must be either double or float.\n");
       return 1;
     }
-#ifndef TTK_KAMIKAZE
+
     if(isDistMat) {
       this->printMsg("Input data: " + std::to_string(n) + " points.");
     } else {
@@ -239,7 +230,7 @@ namespace ttk {
                      + std::to_string(inputMatrix.size() / n)
                      + " dimensions).");
     }
-#endif
+
     std::vector<T> computedDistMatrix(n * n);
     if(!isDistMat) {
       size_t dim = inputMatrix.size() / n;
@@ -247,13 +238,15 @@ namespace ttk {
         this->printErr("Error, the coordinates input matrix has invalid size.");
         return 1;
       }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_) \
+  shared(computedDistMatrix)
+#endif
       for(size_t i1 = 0; i1 < n; i1++) {
         for(size_t i2 = i1; i2 < n; i2++) {
-          T dist2 = 0;
-          for(size_t k = 0; k < dim; k++)
-            dist2 += (inputMatrix[dim * i1 + k] - inputMatrix[dim * i2 + k])
-                     * (inputMatrix[dim * i1 + k] - inputMatrix[dim * i2 + k]);
-          T dist = sqrt(dist2);
+          T dist = ttk::Geometry::distance<T>(
+            &inputMatrix[dim * i1], &inputMatrix[dim * i2], 2);
           computedDistMatrix[i1 * n + i2] = dist;
           computedDistMatrix[i2 * n + i1] = dist;
         }
@@ -450,8 +443,8 @@ namespace ttk {
         = {goalCoordChosenSmall[0] - outputCoords[idChosenSmall * 2],
            goalCoordChosenSmall[1] - outputCoords[idChosenSmall * 2 + 1]};
 
-      T distBaryPointSmall
-        = ttk::Geometry::distance(&outputCoords[idChosenSmall * 2], coordscenterSmall, 2);
+      T distBaryPointSmall = ttk::Geometry::distance(
+        &outputCoords[idChosenSmall * 2], coordscenterSmall, 2);
       T preFinalPosBarySmall[2] = {coordscenterSmall[0] + smallCompMoveVect[0],
                                    coordscenterSmall[1] + smallCompMoveVect[1]};
       T finalPosBarySmall[2]
@@ -543,9 +536,10 @@ namespace ttk {
       if(this->Strategy == STRATEGY::KRUSKAL) {
         for(size_t u1 = 0; u1 < n; u1++) {
           for(size_t u2 = u1 + 1; u2 < n; u2++) {
-            edgeHeapAfter.push(std::make_pair(
-              ttk::Geometry::distance(&outputCoords[2 * u1], &outputCoords[2 * u2], 2),
-              std::make_pair(u1, u2)));
+            edgeHeapAfter.push(
+              std::make_pair(ttk::Geometry::distance(
+                               &outputCoords[2 * u1], &outputCoords[2 * u2], 2),
+                             std::make_pair(u1, u2)));
           }
         }
       } else if(this->Strategy == STRATEGY::PRIM) {
@@ -604,7 +598,8 @@ namespace ttk {
           stillToDo.erase(v);
           for(size_t uToDo : stillToDo) {
             edgeHeapAfter.push(std::make_pair(
-              ttk::Geometry::distance(&outputCoords[2 * v], &outputCoords[2 * uToDo], 2),
+              ttk::Geometry::distance(
+                &outputCoords[2 * v], &outputCoords[2 * uToDo], 2),
               std::make_pair(v, uToDo)));
           }
         }
@@ -690,7 +685,7 @@ namespace ttk {
                                     T *allCoords,
                                     size_t n,
                                     size_t angularSampleNb,
-                                    size_t nThread) {
+                                    size_t nThread) { // TODO remove nThread
     TTK_FORCE_USE(nThread);
     // The distance between the two components.
     T shortestDistPossible
@@ -860,7 +855,8 @@ namespace ttk {
     if(nbPoint <= 2) {
       idsInHull.push_back(compPtsIds[0]);
       if(nbPoint == 2) {
-        double dist = ttk::Geometry::distance(&compCoords[0], &compCoords[2], 2);
+        double dist
+          = ttk::Geometry::distance(&compCoords[0], &compCoords[2], 2);
 
         if(dist > Epsilon) {
           idsInHull.push_back(compPtsIds[1]);
@@ -905,7 +901,8 @@ namespace ttk {
         continue;
       }
       const double *ptCur = &compCoords[2 * iPt];
-      if(!are_colinear(pt0, ptDistinct, ptCur)) {
+      if(!ttk::Geometry::isTriangleColinear2D(
+           pt0, ptDistinct, ptCur, EpsilonDBL)) {
         areColinear = false;
         break;
       }
@@ -995,11 +992,7 @@ static void
 
 template <typename T>
 static double computeAngle(const T *ptA, const T *ptB, const T *ptC) {
-  double angle;
-  double vect1[2] = {ptB[0] - ptA[0], ptB[1] - ptA[1]};
-  double vect2[2] = {ptC[0] - ptA[0], ptC[1] - ptA[1]};
-
-  angle = atan2(vect2[1], vect2[0]) - atan2(vect1[1], vect1[0]);
+  double angle = ttk::Geometry::angle2D<T>(ptA, ptB, ptA, ptC);
   if(angle < 0) {
     angle += 2 * M_PI;
   }

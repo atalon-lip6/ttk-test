@@ -78,19 +78,19 @@ int DimensionReduction::execute(
     topomap.setDebugLevel(this->debugLevel_);
     topomap.setThreadNumber(this->threadNumber_);
 
-    std::vector<double> coordsTopomap(2*nRow);
+    std::vector<double> coordsTopomap(2 * nRows);
     topomap.execute<double>(coordsTopomap.data(), insertionTimeForTopomap,
                             inputMatrix, IsInputADistanceMatrix, nRows);
     outputEmbedding.resize(2);
     outputEmbedding[0].resize(nRows);
     outputEmbedding[1].resize(nRows);
     for(int i = 0; i < nRows; i++) {
-      outputEmbedding[0][i] = ptrForCoordsTopomap[2 * i];
-      outputEmbedding[1][i] = ptrForCoordsTopomap[2 * i + 1];
+      outputEmbedding[0][i] = coordsTopomap[2 * i];
+      outputEmbedding[1][i] = coordsTopomap[2 * i + 1];
     }
 
-    this->printMsg("Computed Topological Mapper", 1.0, t.getElapsedTime(),
-                   this->threadNumber_);
+    this->printMsg(
+      "Computed TopoMap", 1.0, t.getElapsedTime(), this->threadNumber_);
     return 0;
   }
 

@@ -22,6 +22,8 @@ namespace ttk {
     template <typename T>
     T angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
 
+    template <typename T>
+    T angle2D(const T *vA0, const T *vA1, const T *vB0, const T *vB1);
     /// Check if two 3D std::vectors vA and vB are colinear.
     /// \param vA0 xyz coordinates of vA's origin
     /// \param vA1 xyz coordinates of vA's destination
@@ -39,6 +41,11 @@ namespace ttk {
                             const T *vB1,
                             std::array<T, 3> *coefficients = nullptr,
                             const T *tolerance = NULL);
+    template <typename T>
+    bool isTriangleColinear2D(const T *pptA,
+                              const T *pptB,
+                              const T *pptC,
+                              const T tolerance);
 
     /// Compute the barycentric coordinates of point \p p with regard to the
     /// edge defined by the 3D points \p p0 and \p p1.

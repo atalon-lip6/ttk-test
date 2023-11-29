@@ -26,8 +26,10 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   Timer timer;
 
   decimationLevel_ = startingDecimationLevel_;
-  multiresTriangulation_.setDecimationLevel(0);
-  const SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
+  SimplexId vertexNumber = -1;
+  this->setDecimationLevel(0);
+  vertexNumber = this->getVertexNumber();
+
 
 #ifdef TTK_ENABLE_KAMIKAZE
   if(vertexNumber == 0) {
@@ -41,7 +43,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   // clean state (in case previous operation was a resume)
   clearResumableState();
 
-  const auto dim = multiresTriangulation_.getDimensionality();
+  const auto dim = this->dimensionality_;
   const size_t maxNeigh = dim == 3 ? 14 : (dim == 2 ? 6 : 0);
 
   std::vector<std::vector<SimplexId>> saddleCCMin{}, saddleCCMax{};
@@ -100,21 +102,21 @@ int ttk::ProgressiveTopology::executeCPProgressive(
 
   // computation of implicit link
   std::vector<SimplexId> boundReps{};
-  multiresTriangulation_.findBoundaryRepresentatives(boundReps);
+  this->findBoundaryRepresentatives(boundReps);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 0; i < boundReps.size(); i++) {
     if(boundReps[i] != -1) {
-      buildVertexLinkByBoundary(boundReps[i], vertexLinkByBoundaryType);
+      this->buildVertexLinkByBoundary(boundReps[i], vertexLinkByBoundaryType);
     }
   }
 
   printMsg(this->resolutionInfoString(), 0,
            timer.getElapsedTime() - tm_allocation, this->threadNumber_,
            ttk::debug::LineMode::REPLACE);
-  multiresTriangulation_.setDecimationLevel(decimationLevel_);
+  this->setDecimationLevel(decimationLevel_);
 
   if(computePersistenceDiagram) {
     initSaddleSeeds(isNew, vertexLinkPolarity, toPropagateMin, toPropagateMax,
@@ -145,7 +147,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   while(decimationLevel_ > stoppingDecimationLevel_) {
     Timer tmIter{};
     decimationLevel_--;
-    multiresTriangulation_.setDecimationLevel(decimationLevel_);
+    this->setDecimationLevel(decimationLevel_);
 
     printMsg(this->resolutionInfoString(), 0,
              timer.getElapsedTime() - tm_allocation, this->threadNumber_,
@@ -223,14 +225,14 @@ int ttk::ProgressiveTopology::executeCPProgressive(
 int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
                                                 const SimplexId *offsets) {
 
-  const auto vertexNumber = multiresTriangulation_.getVertexNumber();
+  const auto vertexNumber = this->getVertexNumber();
 
   this->printMsg(
     "Resuming computation from resolution level "
-    + std::to_string(multiresTriangulation_.DL_to_RL(decimationLevel_))
+    + std::to_string(this->DL_to_RL(decimationLevel_))
     + " to level "
     + std::to_string(
-      multiresTriangulation_.DL_to_RL(stoppingDecimationLevel_)));
+      this->DL_to_RL(stoppingDecimationLevel_)));
 
   // lock vertex thread access for firstPropagate
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
@@ -250,7 +252,7 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
   while(this->decimationLevel_ > this->stoppingDecimationLevel_) {
     Timer tmIter{};
     this->decimationLevel_--;
-    multiresTriangulation_.setDecimationLevel(this->decimationLevel_);
+    this->setDecimationLevel(this->decimationLevel_);
     printMsg(this->resolutionInfoString(), 0, timer.getElapsedTime(),
              this->threadNumber_, ttk::debug::LineMode::REPLACE);
     if(computePersistenceDiagram) {
@@ -310,11 +312,11 @@ void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
 
   Timer timer{};
   std::vector<triplet> tripletsMax{}, tripletsMin{};
-  const SimplexId nbDecVert = multiresTriangulation_.getDecimatedVertexNumber();
+  const SimplexId nbDecVert = this->getDecimatedVertexNumber();
 
   for(SimplexId localId = 0; localId < nbDecVert; localId++) {
     SimplexId const globalId
-      = multiresTriangulation_.localToGlobalVertexId(localId);
+      = this->localToGlobalVertexId(localId);
     if(toPropagateMin[globalId]) {
       getTripletsFromSaddles(globalId, tripletsMin, vertexRepresentativesMin);
     }
@@ -451,11 +453,11 @@ void ttk::ProgressiveTopology::buildVertexLinkPolarity(
   const SimplexId *const offsets) const {
 
   const SimplexId neighborNumber
-    = multiresTriangulation_.getVertexNeighborNumber(vertexId);
+    = this->getVertexNeighborNumber(vertexId);
   vlp.resize(neighborNumber);
   for(SimplexId i = 0; i < neighborNumber; i++) {
     SimplexId neighborId0 = -1;
-    multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId0);
+    this->getVertexNeighbor(vertexId, i, neighborId0);
     const bool lower0 = offsets[neighborId0] < offsets[vertexId];
     const polarity isUpper0 = static_cast<polarity>(!lower0) * 255;
     vlp[i] = std::make_pair(isUpper0, 0);
@@ -475,11 +477,11 @@ void ttk::ProgressiveTopology::initDynamicLink(
   }
 
   const SimplexId neighborNumber
-    = multiresTriangulation_.getVertexNeighborNumber(vertexId);
+    = this->getVertexNeighborNumber(vertexId);
   link.alloc(neighborNumber);
 
   // associate vertex link boundary
-  vertexLink = multiresTriangulation_.getVertexBoundaryIndex(vertexId);
+  vertexLink = this->getVertexBoundaryIndex(vertexId);
 
   // update the link polarity for old points that are processed for
   // the first time
@@ -506,7 +508,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
   const SimplexId *const offsets) const {
 
   Timer tm;
-  const auto nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const auto nDecVerts = this->getDecimatedVertexNumber();
 
   // find breaking edges
 #ifdef TTK_ENABLE_OPENMP
@@ -514,7 +516,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId localId = 0; localId < nDecVerts; localId++) {
     SimplexId const globalId
-      = multiresTriangulation_.localToGlobalVertexId(localId);
+      = this->localToGlobalVertexId(localId);
     if(isNew[globalId]) {
       if(decimationLevel_ > stoppingDecimationLevel_ || isResumable_) {
         buildVertexLinkPolarity(
@@ -535,7 +537,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < nDecVerts; i++) {
-    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = this->localToGlobalVertexId(i);
 
     if(isNew[globalId]) { // new point
       if(toProcess[globalId]) {
@@ -591,7 +593,7 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
   const SimplexId *const offsets) const {
 
   Timer tm;
-  const auto nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const auto nDecVerts = this->getDecimatedVertexNumber();
 
   // find breaking edges
 #ifdef TTK_ENABLE_OPENMP
@@ -599,7 +601,7 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId localId = 0; localId < nDecVerts; localId++) {
     SimplexId const globalId
-      = multiresTriangulation_.localToGlobalVertexId(localId);
+      = this->localToGlobalVertexId(localId);
     if(isNew[globalId]) {
       if(decimationLevel_ > stoppingDecimationLevel_ || isResumable_) {
         buildVertexLinkPolarity(
@@ -620,7 +622,7 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < nDecVerts; i++) {
-    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = this->localToGlobalVertexId(i);
 
     if(isNew[globalId]) { // new point
       if(toProcess[globalId]) {
@@ -672,10 +674,10 @@ bool ttk::ProgressiveTopology::getMonotonyChangeByOldPointCP(
 
   bool hasMonotonyChanged = false;
   const SimplexId neighborNumber
-    = multiresTriangulation_.getVertexNeighborNumber(vertexId);
+    = this->getVertexNeighborNumber(vertexId);
   for(SimplexId i = 0; i < neighborNumber; i++) {
     SimplexId neighborId = -1;
-    multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId);
+    this->getVertexNeighbor(vertexId, i, neighborId);
 
     // check for monotony changes
     const bool lower = offsets[neighborId] < offsets[vertexId];
@@ -688,10 +690,10 @@ bool ttk::ProgressiveTopology::getMonotonyChangeByOldPointCP(
       toReprocess[vertexId] = 255;
       toProcess[neighborId] = 255;
       const SimplexId neighborNumberNew
-        = multiresTriangulation_.getVertexNeighborNumber(neighborId);
+        = this->getVertexNeighborNumber(neighborId);
       for(SimplexId j = 0; j < neighborNumberNew; j++) {
         SimplexId neighborIdNew = -1;
-        multiresTriangulation_.getVertexNeighbor(neighborId, j, neighborIdNew);
+        this->getVertexNeighbor(neighborId, j, neighborIdNew);
         if(isNew[neighborIdNew])
           toProcess[neighborIdNew] = 255;
       }
@@ -736,7 +738,7 @@ ttk::SimplexId ttk::ProgressiveTopology::propagateFromSaddles(
     for(size_t r = 0; r < CC.size(); r++) {
       SimplexId neighborId = -1;
       SimplexId const localId = CC[r];
-      multiresTriangulation_.getVertexNeighbor(vertexId, localId, neighborId);
+      this->getVertexNeighbor(vertexId, localId, neighborId);
       SimplexId const ret = propagateFromSaddles(
         neighborId, vertLock, toPropagate, vertexRepresentatives, saddleCC,
         isUpdated, globalExtremum, offsets, splitTree);
@@ -761,11 +763,11 @@ ttk::SimplexId ttk::ProgressiveTopology::propagateFromSaddles(
 
     SimplexId ret = vertexId;
     SimplexId const neighborNumber
-      = multiresTriangulation_.getVertexNeighborNumber(vertexId);
+      = this->getVertexNeighborNumber(vertexId);
     SimplexId maxNeighbor = vertexId;
     for(SimplexId i = 0; i < neighborNumber; i++) {
       SimplexId neighborId = -1;
-      multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId);
+      this->getVertexNeighbor(vertexId, i, neighborId);
       if(gt(neighborId, maxNeighbor)) {
         maxNeighbor = neighborId;
       }
@@ -806,14 +808,14 @@ void ttk::ProgressiveTopology::initCriticalPoints(
   const SimplexId *const offsets) const {
 
   Timer timer{};
-  const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const size_t nDecVerts = this->getDecimatedVertexNumber();
 
   // computes the critical types of all points
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = this->localToGlobalVertexId(i);
     buildVertexLinkPolarity(globalId, vertexLinkPolarity[globalId], offsets);
     initDynamicLink(globalId, vertexLinkPolarity[globalId],
                     vertexLink[globalId], link[globalId],
@@ -844,14 +846,14 @@ void ttk::ProgressiveTopology::initSaddleSeeds(
   const SimplexId *const offsets) const {
 
   Timer timer{};
-  const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const size_t nDecVerts = this->getDecimatedVertexNumber();
 
   // computes the critical types of all points
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId const globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const globalId = this->localToGlobalVertexId(i);
     buildVertexLinkPolarity(globalId, vertexLinkPolarity[globalId], offsets);
     initDynamicLink(globalId, vertexLinkPolarity[globalId],
                     vertexLink[globalId], link[globalId],
@@ -882,7 +884,7 @@ void ttk::ProgressiveTopology::initPropagation(
   const SimplexId *const offsets) const {
 
   Timer timer{};
-  const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const size_t nDecVerts = this->getDecimatedVertexNumber();
 
   std::vector<SimplexId> globalMaxThr(threadNumber_, 0);
   std::vector<SimplexId> globalMinThr(threadNumber_, 0);
@@ -891,7 +893,7 @@ void ttk::ProgressiveTopology::initPropagation(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId const v = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const v = this->localToGlobalVertexId(i);
     if(toPropagateMin[v]) {
       propagateFromSaddles(v, vertLockMin, toPropagateMin,
                            vertexRepresentativesMin, saddleCCMin, isUpdatedMin,
@@ -930,7 +932,7 @@ void ttk::ProgressiveTopology::updatePropagation(
   const SimplexId *const offsets) const {
 
   Timer tm{};
-  const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const size_t nDecVerts = this->getDecimatedVertexNumber();
 
   std::vector<SimplexId> globalMaxThr(threadNumber_, 0);
   std::vector<SimplexId> globalMinThr(threadNumber_, 0);
@@ -940,7 +942,7 @@ void ttk::ProgressiveTopology::updatePropagation(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nDecVerts; i++) {
-    SimplexId const v = multiresTriangulation_.localToGlobalVertexId(i);
+    SimplexId const v = this->localToGlobalVertexId(i);
     if(toPropagateMin[v]) {
       propagateFromSaddles(v, vertLockMin, toPropagateMin,
                            vertexRepresentativesMin, saddleCCMin, isUpdatedMin,
@@ -972,7 +974,7 @@ void ttk::ProgressiveTopology::updateLinkPolarity(
 
   for(size_t i = 0; i < vlp.size(); i++) {
     SimplexId neighborId = -1;
-    multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId);
+    this->getVertexNeighbor(vertexId, i, neighborId);
     const bool lower = offsets[neighborId] < offsets[vertexId];
     const polarity isUpper = lower ? 0 : 255;
     vlp[i] = std::make_pair(isUpper, 0);
@@ -1055,7 +1057,7 @@ double ttk::ProgressiveTopology::predictNextIterationDuration(
   const double currItDuration, const size_t nCurrPairs) const {
 
   // number of vertices at current iteration
-  const double nCurrVerts = multiresTriangulation_.getDecimatedVertexNumber();
+  const double nCurrVerts = this->getDecimatedVertexNumber();
   // prediction of duration at iteration n + 1 from iteration n
   // (linear regression, R^2 = 0.994)
   return -0.21 + 0.77 / (decimationLevel_ + 1) - 4.0 * nCurrPairs / nCurrVerts
@@ -1067,7 +1069,7 @@ void ttk::ProgressiveTopology::stopComputationIf(const bool b) {
   if(b) {
     if(this->decimationLevel_ > this->stoppingDecimationLevel_) {
       this->printMsg("Computation stopped at resolution level "
-                     + std::to_string(multiresTriangulation_.DL_to_RL(
+                     + std::to_string(this->DL_to_RL(
                        this->decimationLevel_)));
     }
     this->stoppingDecimationLevel_ = this->decimationLevel_;
@@ -1098,9 +1100,9 @@ char ttk::ProgressiveTopology::getCriticalTypeFromLink(
   const auto nbCC = link.getNbCC();
 
   bool const isVertexOnBoundary
-    = multiresTriangulation_.getTriangulation()->isVertexOnBoundary(globalId);
+    = this->isVertexOnTriangulationBoundary(globalId);
 
-  int const dimensionality = multiresTriangulation_.getDimensionality();
+  int const dimensionality = this->dimensionality_;
   SimplexId downValence = 0, upValence = 0;
 
   std::vector<size_t> CCIds;
@@ -1133,9 +1135,8 @@ char ttk::ProgressiveTopology::getCriticalTypeFromLink(
       const SimplexId neighborNumber = vlp.size();
       SimplexId neighborId = -1;
       for(int ineigh = 0; ineigh < neighborNumber; ineigh++) {
-        multiresTriangulation_.getVertexNeighbor(globalId, ineigh, neighborId);
-        if(multiresTriangulation_.getTriangulation()->isVertexOnBoundary(
-             neighborId)) {
+        this->getVertexNeighbor(globalId, ineigh, neighborId);
+        if(this->isVertexOnTriangulationBoundary( neighborId)) {
           if(vlp[ineigh].first) {
             isUpperOnBoundary = true;
           } else {
@@ -1206,7 +1207,7 @@ int ttk::ProgressiveTopology::computeProgressiveCP(
   int ret = -1;
   ret = executeCPProgressive(0, offsets);
 
-  SimplexId const vertexNumber = multiresTriangulation_.getVertexNumber();
+  SimplexId const vertexNumber = this->getVertexNumber();
   criticalPoints->clear();
   criticalPoints->reserve(vertexNumber);
   for(SimplexId i = 0; i < vertexNumber; i++) {

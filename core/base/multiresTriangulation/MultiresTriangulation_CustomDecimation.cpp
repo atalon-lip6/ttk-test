@@ -3,7 +3,8 @@
 using ttk::MultiresTriangulation;
 using ttk::SimplexId;
 
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation(
   const SimplexId &vertexId,
   const int &localNeighborId,
   SimplexId &neighborId,
@@ -197,7 +198,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dA(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dA(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -212,7 +214,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dA(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dB(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dB(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -230,7 +233,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dB(
   return -1;
 }
 
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dC(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -247,7 +251,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dC(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -262,7 +267,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dD(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dAB(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dAB(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -281,7 +287,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dAB(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dCD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dCD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -300,7 +307,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dCD(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dAC(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dAC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -319,7 +327,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dAC(
   }
   return -1;
 }
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dBD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dBD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -339,7 +348,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dBD(
   return -1;
 }
 
-SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dABCD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimation2dABCD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -363,7 +373,8 @@ SimplexId MultiresTriangulation::getVertexNeighborAtDecimation2dABCD(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationA(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationA(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -384,7 +395,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationA(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationB(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationB(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -410,7 +422,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationB(
   }
   return -1;
 }
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -431,7 +444,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationC(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationD(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -452,7 +466,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationD(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationE(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationE(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -473,7 +488,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationE(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationF(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationF(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -494,7 +510,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationF(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationG(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationG(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -521,7 +538,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationG(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationH(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -542,7 +560,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationH(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAB(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationAB(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -571,7 +590,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAB(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCD(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationCD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -596,7 +616,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCD(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEF(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationEF(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -621,7 +642,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEF(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationGH(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationGH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -651,7 +673,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationGH(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationAC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -676,7 +699,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAC(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBD(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationBD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -705,7 +729,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBD(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEG(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationEG(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -734,7 +759,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEG(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationFH(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationFH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -759,7 +785,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationFH(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAE(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationAE(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -784,7 +811,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAE(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBF(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationBF(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -813,7 +841,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBF(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCG(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationCG(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -842,7 +871,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCG(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationDH(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationDH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -867,7 +897,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationDH(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABDC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationABDC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -900,7 +931,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABDC(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEFHG(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationEFHG(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -933,7 +965,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEFHG(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEGC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationAEGC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -968,7 +1001,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEGC(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBFHD(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationBFHD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -1002,7 +1036,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBFHD(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEFB(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationAEFB(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -1035,7 +1070,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEFB(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationGHDC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationGHDC(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -1068,7 +1104,8 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationGHDC(
   return -1;
 }
 
-ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABCDEFGH(
+template<size_t card>
+ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborAtDecimationABCDEFGH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -1112,3 +1149,9 @@ ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABCDEFGH(
   }
   return -1;
 }
+
+// explicit instanciations
+template class ttk::MultiresTriangulation<0>;
+template class ttk::MultiresTriangulation<1>;
+template class ttk::MultiresTriangulation<2>;
+template class ttk::MultiresTriangulation<3>;

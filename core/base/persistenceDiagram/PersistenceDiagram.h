@@ -575,7 +575,7 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
   approxT_.setDebugLevel(debugLevel_);
   approxT_.setThreadNumber(threadNumber_);
   size_t card = triangulation->getDimensionality();
-  if (card == 0) {
+  /*if (card == 0) {
   approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
     (const ImplicitTriangulation<0> *)triangulation));
   }
@@ -594,7 +594,8 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
   else {
     this->printErr("Error: the dimensionality should be between 0 and 3. Aborting.");
     return 1;
-  }
+  }*/
+  approxT_.setupTriangulation(const_cast<ttk::AbstractTriangulation*> ((const AbstractTriangulation *)triangulation));
   approxT_.setStartingResolutionLevel(StartingResolutionLevel);
   approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   approxT_.setPreallocateMemory(true);

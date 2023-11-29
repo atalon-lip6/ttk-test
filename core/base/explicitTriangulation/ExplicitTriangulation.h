@@ -43,6 +43,27 @@ namespace ttk {
 
     size_t footprint(size_t size = 0) const;
 
+
+    inline int getCellEdge(const SimplexId &cellId,
+                                   const int &localEdgeId,
+                                   SimplexId &edgeId) const override {
+      #ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      edgeId = -1;
+
+      if(!hasPreconditionedCellEdges())
+        return -1;
+#endif
+
+      if constexpr(card == 1)
+        return getCellNeighbor(cellId, localEdgeId, edgeId);
+
+      else if constexpr(card == 2)
+        return getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
+
+      return getCellEdgeInternal(cellId, localEdgeId, edgeId);
+    }
+
     inline int getCellEdgeInternal(const SimplexId &cellId,
                                    const int &localEdgeId,
                                    SimplexId &edgeId) const override {
@@ -57,6 +78,7 @@ namespace ttk {
       edgeId = tetraEdgeList_[cellId][localEdgeId];
       return 0;
     }
+
 
     inline SimplexId
       getCellEdgeNumberInternal(const SimplexId &cellId) const override {
@@ -74,6 +96,35 @@ namespace ttk {
       for(size_t i = 0; i < table.size(); ++i) {
         vec[i] = {table[i].begin(), table[i].end()};
       }
+    }
+
+
+    inline SimplexId getCellEdgeNumber(const SimplexId &cellId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedCellEdges())
+        return -1;
+#endif
+      if constexpr(card == 1)
+        return getCellNeighborNumber(cellId);
+
+      else if constexpr(card == 2)
+        return getTriangleEdgeNumber(cellId);
+
+      return getCellEdgeNumberInternal(cellId);
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *getCellEdges() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedCellEdges())
+        return nullptr;
+#endif
+      if constexpr(card == 1)
+        return getCellNeighbors();
+
+      else if constexpr(card == 2)
+        return getTriangleEdgesInternal();
+
+      return getCellEdgesInternal();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -103,6 +154,26 @@ namespace ttk {
       return &cellNeighborList_;
     }
 
+    inline int getCellTriangle(const SimplexId &cellId,
+                                       const int &localTriangleId,
+                                       SimplexId &triangleId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      triangleId = -1;
+
+      if constexpr(card == 1)
+        return -1;
+
+      if(!hasPreconditionedCellTriangles())
+        return -2;
+#endif
+      if constexpr(card == 2)
+        return getCellNeighbor(cellId, localTriangleId, triangleId);
+
+      return getCellTriangleInternal(cellId, localTriangleId, triangleId);
+    }
+
+
     inline int getCellTriangleInternal(const SimplexId &cellId,
                                        const int &localTriangleId,
                                        SimplexId &triangleId) const override {
@@ -120,6 +191,22 @@ namespace ttk {
     }
 
     inline SimplexId
+      getCellTriangleNumber(const SimplexId &cellId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card == 1)
+        return -1;
+
+      if(!hasPreconditionedCellTriangles())
+        return -2;
+#endif
+      if constexpr(card == 2)
+        return getCellNeighborNumber(cellId);
+
+      return getCellTriangleNumberInternal(cellId);
+    }
+
+
+    inline SimplexId
       getCellTriangleNumberInternal(const SimplexId &cellId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -128,6 +215,21 @@ namespace ttk {
 #endif
 
       return tetraTriangleList_[cellId].size();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getCellTriangles() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card == 1)
+        return nullptr;
+
+      if(!hasPreconditionedCellTriangles())
+        return nullptr;
+#endif
+      if constexpr(card == 2)
+        return getCellNeighbors();
+
+      return getCellTrianglesInternal();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -207,6 +309,25 @@ namespace ttk {
       return &edgeStarList_;
     }
 
+    inline int getEdgeTriangle(const SimplexId &edgeId,
+                                       const int &localTriangleId,
+                                       SimplexId &triangleId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      triangleId = -1;
+
+      if constexpr(card==1)
+        return -1;
+
+      if(!hasPreconditionedEdgeTriangles())
+        return -2;
+#endif
+      if constexpr(card==2)
+        return getEdgeStar(edgeId, localTriangleId, triangleId);
+
+      return getEdgeTriangleInternal(edgeId, localTriangleId, triangleId);
+    }
+
     inline int getEdgeTriangleInternal(const SimplexId &edgeId,
                                        const int &localTriangleId,
                                        SimplexId &triangleId) const override {
@@ -215,14 +336,62 @@ namespace ttk {
     }
 
     inline SimplexId
+      getEdgeTriangleNumber(const SimplexId &edgeId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card == 1)
+        return -1;
+
+      if(!hasPreconditionedEdgeTriangles())
+        return -2;
+#endif
+
+      if constexpr(card == 2)
+        return getEdgeStarNumber(edgeId);
+
+      return getEdgeTriangleNumberInternal(edgeId);
+    }
+    inline SimplexId
       getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override {
       return edgeTriangleData_.size(edgeId);
+    }
+
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getEdgeTriangles() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card==1)
+        return nullptr;
+
+      if(!hasPreconditionedEdgeTriangles())
+        return nullptr;
+#endif
+
+      if constexpr(card==2)
+        return getEdgeStars();
+
+      return getEdgeTrianglesInternal();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() override {
       edgeTriangleData_.copyTo(edgeTriangleList_);
       return &edgeTriangleList_;
+    }
+
+    inline int getEdgeVertex(const SimplexId &edgeId,
+                                     const int &localVertexId,
+                                     SimplexId &vertexId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      vertexId = -1;
+    
+      if(!hasPreconditionedEdges())
+        return -2;
+#endif
+      if constexpr (card == 1)
+        return getCellVertex(edgeId, localVertexId, vertexId);
+
+      return getEdgeVertexInternal(edgeId, localVertexId, vertexId);
     }
 
     inline int getEdgeVertexInternal(const SimplexId &edgeId,
@@ -246,8 +415,33 @@ namespace ttk {
       return cellNumber_;
     }
 
+    inline SimplexId getNumberOfEdges() const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedEdges())
+        return -2;
+#endif
+      if constexpr (card==1)
+        return getNumberOfCells();
+    
+      return getNumberOfEdgesInternal(); 
+    }
+
     inline SimplexId getNumberOfEdgesInternal() const override {
       return edgeList_.size();
+    }
+
+    inline SimplexId getNumberOfTriangles() const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card==1)
+        return -1;
+
+      if(!hasPreconditionedTriangles())
+        return -2;
+#endif
+      if constexpr(card==2)
+        return getNumberOfCells();
+
+      return getNumberOfTrianglesInternal();
     }
 
     inline SimplexId getNumberOfTrianglesInternal() const override {
@@ -339,6 +533,25 @@ namespace ttk {
       return &triangleStarList_;
     }
 
+    inline int getTriangleVertex(const SimplexId &triangleId,
+                                         const int &localVertexId,
+                                         SimplexId &vertexId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      vertexId = -1;
+
+      if constexpr(card==1)
+        return -1;
+
+      if(!hasPreconditionedTriangles())
+        return -2;
+#endif
+      if constexpr(card==2)
+        return getCellVertex(triangleId, localVertexId, vertexId);
+
+      return getTriangleVertexInternal(triangleId, localVertexId, vertexId);
+    }
+
     inline int getTriangleVertexInternal(const SimplexId &triangleId,
                                          const int &localVertexId,
                                          SimplexId &vertexId) const override {
@@ -353,6 +566,23 @@ namespace ttk {
       return 0;
     }
 
+    inline int getVertexEdge(const SimplexId &vertexId,
+                                     const int &localEdgeId,
+                                     SimplexId &edgeId) const override {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      edgeId = -1;
+
+      if(!hasPreconditionedVertexEdges())
+        return -1;
+#endif
+      if constexpr(card==1)
+        return getVertexStar(vertexId, localEdgeId, edgeId);
+
+      return getVertexEdgeInternal(vertexId, localEdgeId, edgeId);
+    }
+
     inline int getVertexEdgeInternal(const SimplexId &vertexId,
                                      const int &localEdgeId,
                                      SimplexId &edgeId) const override {
@@ -361,8 +591,31 @@ namespace ttk {
     }
 
     inline SimplexId
+      getVertexEdgeNumber(const SimplexId &vertexId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedVertexEdges())
+        return -1;
+#endif
+      if constexpr(card == 1)
+        return getVertexStarNumber(vertexId);
+
+      return getVertexEdgeNumberInternal(vertexId);
+    }
+
+    inline SimplexId
       getVertexEdgeNumberInternal(const SimplexId &vertexId) const override {
       return vertexEdgeData_[vertexId].size();
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *getVertexEdges() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedVertexEdges())
+        return nullptr;
+#endif
+      if constexpr(card==1)
+        return getVertexStars();
+
+      return getVertexEdgesInternal();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
@@ -450,12 +703,62 @@ namespace ttk {
       return &vertexStarList_;
     }
 
+    inline int getVertexTriangle(const SimplexId &vertexId,
+                                         const int &localTriangleId,
+                                         SimplexId &triangleId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      // initialize output variable before early return
+      triangleId = -1;
+   
+      if constexpr(card==1)
+        return -1;
+    
+      if(!hasPreconditionedVertexTriangles())
+        return -2;
+#endif
+      if constexpr(card==2)
+        return getVertexStar(vertexId, localTriangleId, triangleId);
+
+      return getVertexTriangleInternal(vertexId, localTriangleId, triangleId);
+    }
+
     inline int getVertexTriangleInternal(const SimplexId &vertexId,
                                          const int &localTriangleId,
                                          SimplexId &triangleId) const override {
       triangleId = vertexTriangleData_[vertexId][localTriangleId];
       return 0;
     }
+
+    inline SimplexId
+      getVertexTriangleNumber(const SimplexId &vertexId) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card==1)
+        return -1;
+
+      if(!hasPreconditionedVertexTriangles())
+        return -2;
+#endif
+
+      if constexpr(card==2)
+        return getVertexStarNumber(vertexId);
+
+      return getVertexTriangleNumberInternal(vertexId);
+    }
+
+    inline const std::vector<std::vector<SimplexId>> *
+      getVertexTriangles() override {
+#ifndef TTK_ENABLE_KAMIKAZE
+        if constexpr (card==1)
+          return nullptr;
+
+        if(!hasPreconditionedVertexTriangles())
+          return nullptr;
+#endif
+        if constexpr (card==2)
+          return getVertexStars();
+
+        return getVertexTrianglesInternal();
+      }
 
     inline SimplexId getVertexTriangleNumberInternal(
       const SimplexId &vertexId) const override {
@@ -504,6 +807,7 @@ namespace ttk {
     int preconditionBoundaryTrianglesInternal() override;
     int preconditionBoundaryVerticesInternal() override;
 
+    //TODO precondition pas templatées
     int preconditionCellEdgesInternal() override;
     int preconditionCellNeighborsInternal() override;
     int preconditionCellTrianglesInternal() override;
@@ -668,10 +972,90 @@ namespace ttk {
       return it->second;
     }
 
+inline SimplexId getTriangleGlobalId(const SimplexId ltid) const override {
+      const auto dim{this->getDimensionality()};
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card != 3 && card != 2) {
+        this->printErr("Only 2D and  3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("TriangleGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedTriangles() in a pre-process.");
+        return -1;
+      }
+      if(ltid < 0 || ltid >= this->getNumberOfTriangles()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return ltid;
+      }
+      if constexpr(card == 3) {
+        return this->getTriangleGlobalIdInternal(ltid);
+      } else if constexpr(card == 2) {
+        return this->getCellGlobalIdInternal(ltid);
+      }
+      return -1;
+    }
+
+inline SimplexId getEdgeGlobalId(const SimplexId leid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card != 1 && card != 2 && card != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("EdgeGlobalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedEdges() in a pre-process.");
+        return -1;
+      }
+      if(leid < 0 || leid >= this->getNumberOfEdges()) {
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return leid;
+      }
+      if constexpr(card == 2 || card == 3) {
+        return this->getEdgeGlobalIdInternal(leid);
+      } else if constexpr(card == 1) {
+        return this->getCellGlobalIdInternal(leid);
+      }
+      return -1;
+    }
+
     inline SimplexId
       getEdgeGlobalIdInternal(const SimplexId leid) const override {
       return this->edgeLidToGid_[leid];
     }
+
+    virtual inline SimplexId getEdgeLocalId(const SimplexId geid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(card != 1 && card != 2 && card != 3) {
+        this->printErr("Only 1D, 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("EdgeLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedEdges() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return geid;
+      }
+      if constexpr(card == 2 || card == 3) {
+        return this->getEdgeLocalIdInternal(geid);
+      } else if constexpr(card == 1) {
+        return this->getCellLocalIdInternal(geid);
+      }
+      return -1;
+    }
+
 
     inline SimplexId
       getEdgeLocalIdInternal(const SimplexId geid) const override {
@@ -682,6 +1066,30 @@ namespace ttk {
       }
 #endif // TTK_ENABLE_KAMIKAZE
       return it->second;
+    }
+
+    inline SimplexId getTriangleLocalId(const SimplexId gtid) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if constexpr(card != 3 && card != 2) {
+        this->printErr("Only 2D and 3D datasets are supported");
+        return -1;
+      }
+      if(!this->hasPreconditionedDistributedEdges_) {
+        this->printErr("TriangleLocalId query without pre-process!");
+        this->printErr(
+          "Please call preconditionDistributedTriangles() in a pre-process.");
+        return -1;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+      if(!ttk::isRunningWithMPI()) {
+        return gtid;
+      }
+      if constexpr(card == 3) {
+        return this->getTriangleLocalIdInternal(gtid);
+      } else if constexpr (card == 2) {
+        return this->getCellLocalIdInternal(gtid);
+      }
+      return -1;
     }
 
     inline SimplexId
@@ -724,6 +1132,62 @@ namespace ttk {
       this->boundingBox_
         = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
     }
+
+    inline int getTriangleIncenter(const SimplexId triangleId,
+                                   float incenter[3]) const {
+      std::array<SimplexId, 3> vertexId{};
+      if constexpr(card == 2) {
+        getCellVertex(triangleId, 0, vertexId[0]);
+        getCellVertex(triangleId, 1, vertexId[1]);
+        getCellVertex(triangleId, 2, vertexId[2]);
+      } else if constexpr(card == 3) {
+        getTriangleVertex(triangleId, 0, vertexId[0]);
+        getTriangleVertex(triangleId, 1, vertexId[1]);
+        getTriangleVertex(triangleId, 2, vertexId[2]);
+      }
+
+      std::array<float, 9> p{};
+      getVertexPoint(vertexId[0], p[0], p[1], p[2]);
+      getVertexPoint(vertexId[1], p[3], p[4], p[5]);
+      getVertexPoint(vertexId[2], p[6], p[7], p[8]);
+
+      std::array<float, 3> d{};
+      d[0] = Geometry::distance(&p[3], &p[6]);
+      d[1] = Geometry::distance(&p[0], &p[6]);
+      d[2] = Geometry::distance(&p[0], &p[3]);
+      const float sum = d[0] + d[1] + d[2];
+
+      d[0] = d[0] / sum;
+      d[1] = d[1] / sum;
+      d[2] = d[2] / sum;
+
+      incenter[0] = d[0] * p[0] + d[1] * p[3] + d[2] * p[6];
+      incenter[1] = d[0] * p[1] + d[1] * p[4] + d[2] * p[7];
+      incenter[2] = d[0] * p[2] + d[1] * p[5] + d[2] * p[8];
+
+      return 0;
+    }
+
+    /* TODO dimension dimensionalité de la trig ?!
+    inline int getCellIncenter(const SimplexId cellid,
+                               const int dim,
+                               float incenter[3]) const override {
+      if constexpr(card == 0) {
+        getVertexPoint(cellid, incenter[0], incenter[1], incenter[2]);
+      }
+      else if constexpr(card == 1) {
+        getEdgeIncenter(cellid, incenter);
+      }
+      else if constexpr(card == 3) {
+        getTriangleIncenter(cellid, incenter);
+      }
+      else if constexpr(card == 3) {
+        getTetraIncenter(cellid, incenter);
+      }
+      return 0;
+    } */
+
+    
 
   protected:
     template <typename Func0, typename Func1, typename Func2>

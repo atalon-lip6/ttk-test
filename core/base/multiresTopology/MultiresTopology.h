@@ -1,3 +1,4 @@
+// Todo peut-être le templater ?
 /// \ingroup base
 /// \class ttk::MultiresTopology
 /// \author Jules Vidal <jules.vidal@lip6.fr>
@@ -70,10 +71,28 @@ namespace ttk {
       this->setDebugMsgPrefix("MultiresTopology");
     }
 
-    template <size_t card>
-    inline void setupTriangulation(ImplicitTriangulation<card> *const data) {
-      triangulation_ = data;
-      multiresTriangulation_.setTriangulation(triangulation_);
+    inline void setupTriangulation(AbstractTriangulation *const data) {
+      int card = data->getDimensionality();
+      if (card == 0) {
+        triangulation0_ = static_cast<ttk::ImplicitTriangulation<0>*>(data);
+        multiresTriangulation0_.setTriangulation(triangulation0_);
+        dimensionality_ = 0;
+      }
+      else if (card == 1) {
+        triangulation1_ = static_cast<ttk::ImplicitTriangulation<1>*>(data);
+        multiresTriangulation1_.setTriangulation(triangulation1_);
+        dimensionality_ = 1;
+      }
+      else if (card == 2) {
+        triangulation2_ = static_cast<ttk::ImplicitTriangulation<2>*>(data);
+        multiresTriangulation2_.setTriangulation(triangulation2_);
+        dimensionality_ = 2;
+      }
+      else if (card == 3) {
+        triangulation3_ = static_cast<ttk::ImplicitTriangulation<3>*>(data);
+        multiresTriangulation3_.setTriangulation(triangulation3_);
+        dimensionality_ = 3;
+      }
     }
 
     virtual void setStartingDecimationLevel(int data) {
@@ -90,20 +109,50 @@ namespace ttk {
     }
 
     void setStartingResolutionLevel(int rl) {
-      this->setStartingDecimationLevel(multiresTriangulation_.RL_to_DL(rl));
+      if (dimensionality_ == 0) {
+        this->setStartingDecimationLevel(multiresTriangulation0_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 1) {
+        this->setStartingDecimationLevel(multiresTriangulation1_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 2) {
+        this->setStartingDecimationLevel(multiresTriangulation2_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 3) {
+        this->setStartingDecimationLevel(multiresTriangulation3_.RL_to_DL(rl));
+      }
     }
 
     void setStoppingResolutionLevel(int rl) {
-      this->setStoppingDecimationLevel(multiresTriangulation_.RL_to_DL(rl));
+      if (dimensionality_ == 0) {
+        this->setStoppingDecimationLevel(multiresTriangulation0_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 1) {
+        this->setStoppingDecimationLevel(multiresTriangulation1_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 2) {
+        this->setStoppingDecimationLevel(multiresTriangulation2_.RL_to_DL(rl));
+      }
+      else if (dimensionality_ == 3) {
+        this->setStoppingDecimationLevel(multiresTriangulation3_.RL_to_DL(rl));
+      }
     }
 
+
   protected:
+    int dimensionality_ = -1;
     // maximum link size in 3D
     static const size_t nLink_ = 27;
 
     using VLBoundaryType
       = std::array<std::vector<std::pair<SimplexId, SimplexId>>, nLink_>;
 
+    void buildVertexLinkByBoundary(const SimplexId vertexId,
+                                   VLBoundaryType &vlbt) const;
+
+
+
+    template <size_t card>
     void buildVertexLinkByBoundary(const SimplexId vertexId,
                                    VLBoundaryType &vlbt) const;
 
@@ -128,11 +177,236 @@ namespace ttk {
     void updateLinkPolarityPonctual(
       std::vector<std::pair<polarity, polarity>> &vlp) const;
 
+    inline void setDecimationLevel(int decimationLevel) {
+      if (this->dimensionality_ == 0) {
+        multiresTriangulation0_.setDecimationLevel(decimationLevel);
+      }
+      else if (this->dimensionality_ == 1) {
+        multiresTriangulation1_.setDecimationLevel(decimationLevel);
+      }
+      else if (this->dimensionality_ == 2) {
+        multiresTriangulation2_.setDecimationLevel(decimationLevel);
+      }
+      else if (this->dimensionality_ == 3) {
+        multiresTriangulation3_.setDecimationLevel(decimationLevel);
+      }
+    }
+
+    inline int getVertexNumber(void) const {
+      if (this->dimensionality_ == 0) {
+        multiresTriangulation0_.getVertexNumber();
+      }
+      else if (this->dimensionality_ == 1) {
+        multiresTriangulation1_.getVertexNumber();
+      }
+      else if (this->dimensionality_ == 2) {
+        multiresTriangulation2_.getVertexNumber();
+      }
+      else if (this->dimensionality_ == 3) {
+        multiresTriangulation3_.getVertexNumber();
+      }
+      
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline int DL_to_RL(int dl) {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.DL_to_RL(dl);
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.DL_to_RL(dl);
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.DL_to_RL(dl);
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.DL_to_RL(dl);
+      }
+
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline int getVertexNeighbor(const SimplexId &vertexId,
+        const int &localNeighborId,
+        SimplexId &neighborId) const {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.getVertexNeighbor(vertexId, localNeighborId, neighborId);
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.getVertexNeighbor(vertexId, localNeighborId, neighborId);
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.getVertexNeighbor(vertexId, localNeighborId, neighborId);
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.getVertexNeighbor(vertexId, localNeighborId, neighborId);
+      }
+
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline int getDecimatedVertexNumber() const {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.getDecimatedVertexNumber();
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.getDecimatedVertexNumber();
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.getDecimatedVertexNumber();
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.getDecimatedVertexNumber();
+      }
+      
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline SimplexId localToGlobalVertexId(const SimplexId localId) const {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.localToGlobalVertexId(localId);
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.localToGlobalVertexId(localId);
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.localToGlobalVertexId(localId);
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.localToGlobalVertexId(localId);
+      }
+      
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+
+    inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.getVertexNeighborNumber(vertexId);
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.getVertexNeighborNumber(vertexId);
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.getVertexNeighborNumber(vertexId);
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.getVertexNeighborNumber(vertexId);
+      }
+
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline SimplexId getVertexBoundaryIndex(const SimplexId simplexId) const {
+      if (this->dimensionality_ == 0) {
+        return multiresTriangulation0_.getVertexBoundaryIndex(simplexId);
+      }
+      else if (this->dimensionality_ == 1) {
+        return multiresTriangulation1_.getVertexBoundaryIndex(simplexId);
+      }
+      else if (this->dimensionality_ == 2) {
+        return multiresTriangulation2_.getVertexBoundaryIndex(simplexId);
+      }
+      else if (this->dimensionality_ == 3) {
+        return multiresTriangulation3_.getVertexBoundaryIndex(simplexId);
+      }
+
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return -1;
+    }
+
+    inline bool isVertexOnTriangulationBoundary(const SimplexId lvid) const {
+      if (this->dimensionality_ == 0) {
+        return triangulation0_->isVertexOnBoundary(lvid);
+      }
+      else if (this->dimensionality_ == 1) {
+        return triangulation1_->isVertexOnBoundary(lvid);
+      }
+      else if (this->dimensionality_ == 2) {
+        return triangulation2_->isVertexOnBoundary(lvid);
+      }
+      else if (this->dimensionality_ == 3) {
+        return triangulation3_->isVertexOnBoundary(lvid);
+      }
+      
+      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      return false;
+    }
+
+
+    inline void getVertexNeighborAtDecimation(const SimplexId &vertexId,   
+                                            const int &localNeighborId,    
+                                            SimplexId &neighborId,
+                                            int decimation) const {
+      if (this->dimensionality_ == 0) {
+        multiresTriangulation0_.getVertexNeighborAtDecimation(vertexId, localNeighborId, neighborId, decimation);
+      }
+      else if (this->dimensionality_ == 1) {
+        multiresTriangulation1_.getVertexNeighborAtDecimation(vertexId, localNeighborId, neighborId, decimation);
+      }
+      else if (this->dimensionality_ == 2) {
+        multiresTriangulation2_.getVertexNeighborAtDecimation(vertexId, localNeighborId, neighborId, decimation);
+      }
+      else if (this->dimensionality_ == 3) {
+        multiresTriangulation3_.getVertexNeighborAtDecimation(vertexId, localNeighborId, neighborId, decimation);
+      }
+    }
+
+
+    /*
+ 
+    inline void tata(int toto) {
+      if (this->dimensionality_ == 0) {
+        multiresTriangulation0_.tata(toto);
+      }
+      else if (this->dimensionality_ == 1) {
+        multiresTriangulation1_.tata(toto);
+      }
+      else if (this->dimensionality_ == 2) {
+        multiresTriangulation2_.tata(toto);
+      }
+      else if (this->dimensionality_ == 3) {
+        multiresTriangulation3_.tata(toto);
+      }
+    }
+
+*/ 
+
+    //getTriangulation ?
+
+    inline void findBoundaryRepresentatives(std::vector<SimplexId> &boundaryRepresentatives) {
+      if (this->dimensionality_ == 0) {
+        multiresTriangulation0_.findBoundaryRepresentatives(boundaryRepresentatives);
+      }
+      else if (this->dimensionality_ == 1) {
+        multiresTriangulation1_.findBoundaryRepresentatives(boundaryRepresentatives);
+      }
+      else if (this->dimensionality_ == 2) {
+        multiresTriangulation1_.findBoundaryRepresentatives(boundaryRepresentatives);
+      }
+      else if (this->dimensionality_ == 3) {
+        multiresTriangulation1_.findBoundaryRepresentatives(boundaryRepresentatives);
+      }
+    }
+
+
     std::string resolutionInfoString();
 
-    ImplicitTriangulation<0> *triangulation_{};
+    ImplicitTriangulation<0> *triangulation0_{};
+    ImplicitTriangulation<1> *triangulation1_{};
+    ImplicitTriangulation<2> *triangulation2_{};
+    ImplicitTriangulation<3> *triangulation3_{};
 
-    MultiresTriangulation multiresTriangulation_{};
+    MultiresTriangulation<0> multiresTriangulation0_{};
+    MultiresTriangulation<1> multiresTriangulation1_{};
+    MultiresTriangulation<2> multiresTriangulation2_{};
+    MultiresTriangulation<3> multiresTriangulation3_{};
 
     // store the two global extrema extracted from the whole dataset vertices
     // sorting operation

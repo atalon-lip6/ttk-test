@@ -23,6 +23,7 @@
 
 namespace ttk {
 
+  template <size_t card>
   class MultiresTriangulation : public Debug {
 
   public:
@@ -806,7 +807,7 @@ namespace ttk {
     int getDimensionality() const {
       return dimensionality_;
     }
-    void setTriangulation(ImplicitTriangulation<0> *triangulation) {
+    void setTriangulation(ImplicitTriangulation<card> *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_) {
         dimensionality_ = triangulation_->getDimensionality();
@@ -924,7 +925,7 @@ namespace ttk {
       return dimensions;
     }
 
-    ImplicitTriangulation<0> *getTriangulation() const {
+    ImplicitTriangulation<card> *getTriangulation() const {
       return triangulation_;
     }
 
@@ -1030,11 +1031,12 @@ namespace ttk {
     int Di_, Dj_, Dk_;
     int vshift_[2];
 
-    ImplicitTriangulation<0> *triangulation_;
+    ImplicitTriangulation<card> *triangulation_;
   };
 } // namespace ttk
 
-inline bool ttk::MultiresTriangulation::areVerticesNeighbors(
+template <size_t card>
+inline bool ttk::MultiresTriangulation<card>::areVerticesNeighbors(
   const SimplexId vertexId0, const SimplexId vertexId1) const {
   const SimplexId neighborNumber = getVertexNeighborNumber(vertexId0);
   for(SimplexId i = 0; i < neighborNumber; i++) {

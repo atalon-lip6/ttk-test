@@ -3,7 +3,8 @@
 using ttk::MultiresTriangulation;
 using ttk::SimplexId;
 
-MultiresTriangulation::MultiresTriangulation() {
+template <size_t card>
+MultiresTriangulation<card>::MultiresTriangulation() {
   decimation_ = 1;
   decimationLevel_ = 0;
   debugLevel_ = 0;
@@ -12,9 +13,11 @@ MultiresTriangulation::MultiresTriangulation() {
   this->setDebugMsgPrefix("MultiresTriangulation");
 }
 
-MultiresTriangulation::~MultiresTriangulation() = default;
+template <size_t card>
+MultiresTriangulation<card>::~MultiresTriangulation() = default;
 
-int ttk::MultiresTriangulation::preconditionVerticesInternal() {
+template <size_t card>
+int ttk::MultiresTriangulation<card>::preconditionVerticesInternal() {
   vertexPositions_.resize(vertexNumber_);
   vertexCoords_.resize(vertexNumber_);
 
@@ -150,7 +153,8 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
   return 0;
 }
 
-int ttk::MultiresTriangulation::computeVerticesShifts() {
+template<size_t card>
+int ttk::MultiresTriangulation<card>::computeVerticesShifts() {
   vertexShifts_.resize(vertexNumber_);
 
   if(dimensionality_ == 3) {
@@ -197,7 +201,8 @@ int ttk::MultiresTriangulation::computeVerticesShifts() {
   return 0;
 }
 
-int MultiresTriangulation::getInvertVertexNeighbor(
+template<size_t card>
+int MultiresTriangulation<card>::getInvertVertexNeighbor(
   const SimplexId &vertexId,
   const SimplexId &neighborId,
   SimplexId &localNeighborId) const {
@@ -400,7 +405,9 @@ int MultiresTriangulation::getInvertVertexNeighbor(
 
   return 0;
 }
-int MultiresTriangulation::getVertexNeighbor(const SimplexId &vertexId,
+
+template<size_t card>
+int MultiresTriangulation<card>::getVertexNeighbor(const SimplexId &vertexId,
                                              const int &localNeighborId,
                                              SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -569,7 +576,8 @@ int MultiresTriangulation::getVertexNeighbor(const SimplexId &vertexId,
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dA(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dA(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -582,8 +590,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dA(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dA(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dA(const SimplexId v,
                                               const int id,
                                               const SimplexId shiftX,
                                               const SimplexId shiftY) const {
@@ -597,7 +606,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dB(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dB(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -612,8 +622,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dB(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dB(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dB(const SimplexId v,
                                               const int id,
                                               const SimplexId shiftX,
                                               const SimplexId shiftY) const {
@@ -629,7 +640,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dC(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -644,8 +656,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dC(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dC(const SimplexId v,
                                               const int id,
                                               const SimplexId shiftX,
                                               const SimplexId shiftY) const {
@@ -661,7 +674,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -674,8 +688,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dD(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dD(const SimplexId v,
                                               const int id,
                                               const SimplexId shiftX,
                                               const SimplexId shiftY) const {
@@ -689,7 +704,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dAB(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dAB(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -706,8 +722,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dAB(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dAB(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dAB(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY) const {
@@ -725,7 +742,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dCD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dCD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -742,8 +760,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dCD(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dCD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dCD(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY) const {
@@ -761,7 +780,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dAC(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dAC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -778,8 +798,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dAC(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dAC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dAC(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY) const {
@@ -797,7 +818,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dBD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dBD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -814,8 +836,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dBD(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dBD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dBD(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY) const {
@@ -833,7 +856,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getInvertVertexNeighbor2dABCD(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getInvertVertexNeighbor2dABCD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -854,8 +878,9 @@ SimplexId MultiresTriangulation::getInvertVertexNeighbor2dABCD(
   return -1;
 }
 
+template<size_t card>
 SimplexId
-  MultiresTriangulation::getVertexNeighbor2dABCD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighbor2dABCD(const SimplexId v,
                                                  const int id,
                                                  const SimplexId shiftX,
                                                  const SimplexId shiftY) const {
@@ -877,7 +902,8 @@ SimplexId
   return -1;
 }
 
-SimplexId MultiresTriangulation::getVertexNeighborNumber(
+template<size_t card>
+SimplexId MultiresTriangulation<card>::getVertexNeighborNumber(
   const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -939,7 +965,8 @@ SimplexId MultiresTriangulation::getVertexNeighborNumber(
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborA(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborA(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -957,8 +984,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborA(
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborA(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborA(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -977,7 +1005,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborB(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborB(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1002,8 +1031,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborB(
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborB(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborB(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1028,7 +1058,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborC(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1046,8 +1077,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborC(
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborC(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1066,7 +1098,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborD(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1084,8 +1117,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborD(
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborD(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1104,7 +1138,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborE(
+template<size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborE(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1122,8 +1157,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborE(
   return -1;
 }
 
+template<size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborE(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborE(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1142,7 +1178,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborF(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborF(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1160,8 +1197,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborF(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborF(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborF(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1180,7 +1218,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborG(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborG(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1205,8 +1244,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborG(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborG(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborG(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1231,7 +1271,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborH(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborH(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1249,8 +1290,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborH(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborH(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborH(const SimplexId v,
                                             const int id,
                                             const SimplexId shiftX,
                                             const SimplexId shiftY,
@@ -1269,7 +1311,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAB(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborAB(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1296,8 +1339,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAB(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborAB(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborAB(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1324,7 +1368,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCD(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborCD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1345,8 +1390,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCD(
     return 5; // V(c)::{d}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborCD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborCD(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1369,7 +1415,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEF(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborEF(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1390,8 +1437,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEF(
     return 5; // V(e)::{f}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborEF(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborEF(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1414,7 +1462,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGH(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborGH(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1441,8 +1490,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGH(
 
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborGH(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborGH(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1470,7 +1520,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAC(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborAC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1491,8 +1542,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAC(
     return 5; // V(a)::{c}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborAC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborAC(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1515,7 +1567,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBD(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborBD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1541,8 +1594,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBD(
     return 7; // V(d)::{b}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborBD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborBD(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1569,7 +1623,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEG(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborEG(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1595,8 +1650,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEG(
     return 7; // V(e)::{g}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborEG(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborEG(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1623,7 +1679,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborFH(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborFH(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1644,8 +1701,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborFH(
     return 5; // V(h)::{f}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborFH(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborFH(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1668,7 +1726,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAE(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborAE(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1689,8 +1748,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAE(
     return 5; // V(e)::{b}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborAE(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborAE(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1713,7 +1773,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBF(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborBF(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1740,8 +1801,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBF(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborBF(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborBF(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1768,7 +1830,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCG(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborCG(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1794,8 +1857,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCG(
     return 7; // V(c)::{g}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborCG(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborCG(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1822,7 +1886,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborDH(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborDH(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1843,8 +1908,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborDH(
     return 5; // V(h)::{d}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborDH(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborDH(const SimplexId v,
                                              const int id,
                                              const SimplexId shiftX,
                                              const SimplexId shiftY,
@@ -1867,7 +1933,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABDC(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborABDC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1898,8 +1965,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABDC(
   return -1;
 }
 
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborABDC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborABDC(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -1930,7 +1998,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEFHG(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborEFHG(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -1960,8 +2029,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEFHG(
     return 9; // V(f)::{h}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborEFHG(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborEFHG(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -1992,7 +2062,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEGC(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborAEGC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -2022,8 +2093,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEGC(
     return 9; // V(c)::{g}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborAEGC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborAEGC(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -2056,7 +2128,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBFHD(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborBFHD(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -2087,8 +2160,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBFHD(
     return 9; // V(d)::{b}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborBFHD(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborBFHD(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -2121,7 +2195,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEFB(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborAEFB(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -2151,8 +2226,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEFB(
     return 9; // V(f)::{b}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborAEFB(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborAEFB(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -2183,7 +2259,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGHDC(
+template <size_t card>
+inline ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborGHDC(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -2213,8 +2290,9 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGHDC(
     return 9; // V(d)::{h}
   return -1;
 }
+template <size_t card>
 inline ttk::SimplexId
-  MultiresTriangulation::getVertexNeighborGHDC(const SimplexId v,
+  MultiresTriangulation<card>::getVertexNeighborGHDC(const SimplexId v,
                                                const int id,
                                                const SimplexId shiftX,
                                                const SimplexId shiftY,
@@ -2245,7 +2323,8 @@ inline ttk::SimplexId
   return -1;
 }
 
-ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABCDEFGH(
+template<size_t card>
+ttk::SimplexId MultiresTriangulation<card>::getInvertVertexNeighborABCDEFGH(
   const SimplexId v,
   const SimplexId neighborId,
   const SimplexId shiftX,
@@ -2284,7 +2363,9 @@ ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABCDEFGH(
     return 13;
   return -1;
 }
-ttk::SimplexId MultiresTriangulation::getVertexNeighborABCDEFGH(
+
+template <size_t card>
+ttk::SimplexId MultiresTriangulation<card>::getVertexNeighborABCDEFGH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -2327,7 +2408,8 @@ ttk::SimplexId MultiresTriangulation::getVertexNeighborABCDEFGH(
   }
   return -1;
 }
-ttk::SimplexId MultiresTriangulation::getInvertedVertexNeighborABCDEFGH(
+template <size_t card>
+ttk::SimplexId MultiresTriangulation<card>::getInvertedVertexNeighborABCDEFGH(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -2402,7 +2484,8 @@ ttk::SimplexId MultiresTriangulation::getInvertedVertexNeighborABCDEFGH(
   }
   return invertedVertexId;
 }
-void MultiresTriangulation::getInvertedLocalNeighborABDC(
+template<size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborABDC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 0:
@@ -2438,7 +2521,8 @@ void MultiresTriangulation::getInvertedLocalNeighborABDC(
   }
 }
 
-void MultiresTriangulation::getInvertedLocalNeighborEFHG(
+template<size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborEFHG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2474,7 +2558,8 @@ void MultiresTriangulation::getInvertedLocalNeighborEFHG(
   }
 }
 
-void MultiresTriangulation::getInvertedLocalNeighborAEFB(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborAEFB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -2509,7 +2594,8 @@ void MultiresTriangulation::getInvertedLocalNeighborAEFB(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborGHDC(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborGHDC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2544,7 +2630,8 @@ void MultiresTriangulation::getInvertedLocalNeighborGHDC(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborAEGC(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborAEGC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2579,7 +2666,8 @@ void MultiresTriangulation::getInvertedLocalNeighborAEGC(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborBFHD(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborBFHD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -2614,7 +2702,8 @@ void MultiresTriangulation::getInvertedLocalNeighborBFHD(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborAB(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborAB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -2643,7 +2732,8 @@ void MultiresTriangulation::getInvertedLocalNeighborAB(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborEF(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborEF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 8:
@@ -2666,7 +2756,8 @@ void MultiresTriangulation::getInvertedLocalNeighborEF(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborCD(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborCD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 11:
@@ -2689,7 +2780,8 @@ void MultiresTriangulation::getInvertedLocalNeighborCD(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborGH(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborGH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2718,7 +2810,8 @@ void MultiresTriangulation::getInvertedLocalNeighborGH(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborAC(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborAC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 11:
@@ -2741,7 +2834,8 @@ void MultiresTriangulation::getInvertedLocalNeighborAC(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborEG(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborEG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2770,7 +2864,8 @@ void MultiresTriangulation::getInvertedLocalNeighborEG(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborAE(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborAE(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 9:
@@ -2793,7 +2888,8 @@ void MultiresTriangulation::getInvertedLocalNeighborAE(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborCG(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborCG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -2822,7 +2918,8 @@ void MultiresTriangulation::getInvertedLocalNeighborCG(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborBD(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborBD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -2851,7 +2948,8 @@ void MultiresTriangulation::getInvertedLocalNeighborBD(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborFH(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborFH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 8:
@@ -2874,7 +2972,8 @@ void MultiresTriangulation::getInvertedLocalNeighborFH(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborBF(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborBF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -2903,7 +3002,8 @@ void MultiresTriangulation::getInvertedLocalNeighborBF(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborDH(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborDH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 11:
@@ -2926,7 +3026,8 @@ void MultiresTriangulation::getInvertedLocalNeighborDH(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborA(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborA(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 9:
@@ -2943,7 +3044,8 @@ void MultiresTriangulation::getInvertedLocalNeighborA(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborE(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborE(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 8:
@@ -2960,7 +3062,8 @@ void MultiresTriangulation::getInvertedLocalNeighborE(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborC(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 11:
@@ -2977,7 +3080,8 @@ void MultiresTriangulation::getInvertedLocalNeighborC(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborG(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -3003,7 +3107,8 @@ void MultiresTriangulation::getInvertedLocalNeighborG(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborB(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 6:
@@ -3029,7 +3134,8 @@ void MultiresTriangulation::getInvertedLocalNeighborB(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborF(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 8:
@@ -3046,7 +3152,8 @@ void MultiresTriangulation::getInvertedLocalNeighborF(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborD(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 11:
@@ -3063,7 +3170,8 @@ void MultiresTriangulation::getInvertedLocalNeighborD(
       break;
   }
 }
-void MultiresTriangulation::getInvertedLocalNeighborH(
+template <size_t card>
+void MultiresTriangulation<card>::getInvertedLocalNeighborH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 13:
@@ -3081,20 +3189,23 @@ void MultiresTriangulation::getInvertedLocalNeighborH(
   }
 }
 
-void MultiresTriangulation::vertexToPosition2d(
+template <size_t card>
+void MultiresTriangulation<card>::vertexToPosition2d(
   const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   p[0] = vertex % vshift_[0];
   p[1] = vertex / vshift_[0];
 }
 
-void MultiresTriangulation::vertexToPosition(
+template <size_t card>
+void MultiresTriangulation<card>::vertexToPosition(
   const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   p[0] = vertex % vshift_[0];
   p[1] = (vertex % vshift_[1]) / vshift_[0];
   p[2] = vertex / vshift_[1];
 }
 
-bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
+template <size_t card>
+bool MultiresTriangulation<card>::isInTriangulation(const SimplexId vertexId) const {
   bool is_in_triangulation = false;
   if(dimensionality_ == 1) {
     is_in_triangulation = ((vertexId % decimation_) == 0);
@@ -3115,8 +3226,9 @@ bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
   return is_in_triangulation;
 }
 
+template <size_t card>
 SimplexId
-  MultiresTriangulation::localToGlobalVertexId(const SimplexId localId) const {
+  MultiresTriangulation<card>::localToGlobalVertexId(const SimplexId localId) const {
   // ID in the decimated grid TO ID in the highest resolution grid
   if(decimation_ == 1)
     return localId;
@@ -3156,7 +3268,8 @@ SimplexId
 //      v[0] : the local neighbor index of v0 for vertexId
 //      v[1] : the global index of v0
 //      v[2] : the local neighbor index of vertexId for v0
-void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices(SimplexId vertexId,
                                                 SimplexId v0[3],
                                                 SimplexId v1[3]) {
 
@@ -3267,7 +3380,8 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
   getInvertVertexNeighbor(v1[1], vertexId, v1[2]);
 }
 
-char MultiresTriangulation::localNeighborId(SimplexId neighborId,
+template <size_t card>
+char MultiresTriangulation<card>::localNeighborId(SimplexId neighborId,
                                             SimplexId vertexId) {
   this->printMsg("BOUNDARY CASES TO TAKE CARE OF");
 
@@ -3328,7 +3442,8 @@ char MultiresTriangulation::localNeighborId(SimplexId neighborId,
   return localNeighbor;
 }
 
-int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
+template <size_t card>
+int MultiresTriangulation<card>::getInteriorInvertedVertexNeighbor(
   SimplexId vertexId,
   SimplexId localNeighborId,
   SimplexId &invertedVertexId,
@@ -3513,7 +3628,8 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedVertexNeighbor2dABCD(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedVertexNeighbor2dABCD(
   const SimplexId v,
   const int id,
   const SimplexId shiftX,
@@ -3549,7 +3665,8 @@ SimplexId MultiresTriangulation::getInvertedVertexNeighbor2dABCD(
   return invertedVertexId;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dA(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dA(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 0:
@@ -3562,7 +3679,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dA(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dB(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 3:
@@ -3578,7 +3696,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dB(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dC(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 0:
@@ -3594,7 +3713,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dC(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dD(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 3:
@@ -3607,7 +3727,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dD(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dAB(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dAB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 3:
@@ -3626,7 +3747,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dAB(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dAC(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dAC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 4:
@@ -3645,7 +3767,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dAC(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dBD(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dBD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 2:
@@ -3664,7 +3787,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dBD(
   return 0;
 }
 
-SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dCD(
+template <size_t card>
+SimplexId MultiresTriangulation<card>::getInvertedLocalNeighbor2dCD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
     case 3:
@@ -3683,7 +3807,8 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dCD(
   return 0;
 }
 
-void MultiresTriangulation::getImpactedVerticesError(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesError(
   const int prev_decim, const std::array<SimplexId, 3> &p) const {
   this->printErr("THIS SHOULDNT HAPPEN");
   this->printErr("previous decimation: " + std::to_string(prev_decim));
@@ -3694,7 +3819,8 @@ void MultiresTriangulation::getImpactedVerticesError(
                  + std::to_string(gridDimensions_[2]));
 }
 
-void MultiresTriangulation::getImpactedVerticesABCDEFGH(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesABCDEFGH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3732,7 +3858,8 @@ void MultiresTriangulation::getImpactedVerticesABCDEFGH(
   }
 }
 
-void MultiresTriangulation::getImpactedVerticesABDC(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesABDC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3754,7 +3881,8 @@ void MultiresTriangulation::getImpactedVerticesABDC(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesEFHG(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesEFHG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3776,7 +3904,8 @@ void MultiresTriangulation::getImpactedVerticesEFHG(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesAEGC(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesAEGC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3797,7 +3926,8 @@ void MultiresTriangulation::getImpactedVerticesAEGC(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesBFHD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesBFHD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3818,7 +3948,8 @@ void MultiresTriangulation::getImpactedVerticesBFHD(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesAEFB(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesAEFB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3839,7 +3970,8 @@ void MultiresTriangulation::getImpactedVerticesAEFB(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesGHDC(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesGHDC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3860,7 +3992,8 @@ void MultiresTriangulation::getImpactedVerticesGHDC(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesAB(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesAB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3873,7 +4006,8 @@ void MultiresTriangulation::getImpactedVerticesAB(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesCD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3886,7 +4020,8 @@ void MultiresTriangulation::getImpactedVerticesCD(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesEF(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesEF(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3899,7 +4034,8 @@ void MultiresTriangulation::getImpactedVerticesEF(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesGH(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesGH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3912,7 +4048,8 @@ void MultiresTriangulation::getImpactedVerticesGH(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesAC(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesAC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3925,7 +4062,8 @@ void MultiresTriangulation::getImpactedVerticesAC(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesBD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesBD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3938,7 +4076,8 @@ void MultiresTriangulation::getImpactedVerticesBD(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesEG(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesEG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3951,7 +4090,8 @@ void MultiresTriangulation::getImpactedVerticesEG(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesFH(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesFH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3964,7 +4104,8 @@ void MultiresTriangulation::getImpactedVerticesFH(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVerticesAE(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesAE(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3978,7 +4119,8 @@ void MultiresTriangulation::getImpactedVerticesAE(
   }
 }
 
-void MultiresTriangulation::getImpactedVerticesBF(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesBF(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -3992,7 +4134,8 @@ void MultiresTriangulation::getImpactedVerticesBF(
   }
 }
 
-void MultiresTriangulation::getImpactedVerticesCG(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesCG(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4006,7 +4149,8 @@ void MultiresTriangulation::getImpactedVerticesCG(
   }
 }
 
-void MultiresTriangulation::getImpactedVerticesDH(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVerticesDH(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4020,7 +4164,8 @@ void MultiresTriangulation::getImpactedVerticesDH(
   }
 }
 
-void MultiresTriangulation::getImpactedVertices2dABCD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices2dABCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4042,7 +4187,8 @@ void MultiresTriangulation::getImpactedVertices2dABCD(
   }
 }
 
-void MultiresTriangulation::getImpactedVertices2dAB(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices2dAB(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4056,7 +4202,8 @@ void MultiresTriangulation::getImpactedVertices2dAB(
   }
 }
 
-void MultiresTriangulation::getImpactedVertices2dCD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices2dCD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4070,7 +4217,8 @@ void MultiresTriangulation::getImpactedVertices2dCD(
   }
 }
 
-void MultiresTriangulation::getImpactedVertices2dAC(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices2dAC(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4083,7 +4231,8 @@ void MultiresTriangulation::getImpactedVertices2dAC(
     this->getImpactedVerticesError(previous_decimation, p);
   }
 }
-void MultiresTriangulation::getImpactedVertices2dBD(
+template <size_t card>
+void MultiresTriangulation<card>::getImpactedVertices2dBD(
   std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
@@ -4097,8 +4246,9 @@ void MultiresTriangulation::getImpactedVertices2dBD(
   }
 }
 
+template <size_t card>
 std::vector<SimplexId>
-  MultiresTriangulation::getExtendedStar(const SimplexId &vertexId) const {
+  MultiresTriangulation<card>::getExtendedStar(const SimplexId &vertexId) const {
 
   std::vector<SimplexId> result;
   if(dimensionality_ == 3) {
@@ -4200,7 +4350,8 @@ std::vector<SimplexId>
   return result;
 }
 
-int MultiresTriangulation::getVertexBoundaryIndex(
+template <size_t card>
+int MultiresTriangulation<card>::getVertexBoundaryIndex(
   const SimplexId vertexId) const {
 
   if(dimensionality_ == 3) {
@@ -4311,7 +4462,8 @@ int MultiresTriangulation::getVertexBoundaryIndex(
   return -1;
 }
 
-void MultiresTriangulation::findBoundaryRepresentatives(
+template <size_t card>
+void MultiresTriangulation<card>::findBoundaryRepresentatives(
   std::vector<SimplexId> &boundaryRepresentatives) {
   int const currentDecimationLevel = decimationLevel_;
   setDecimationLevel(0);
@@ -4406,7 +4558,8 @@ void MultiresTriangulation::findBoundaryRepresentatives(
   setDecimationLevel(currentDecimationLevel);
 }
 
-bool ttk::MultiresTriangulation::isBoundaryImpacted(SimplexId v) const {
+template<size_t card>
+bool ttk::MultiresTriangulation<card>::isBoundaryImpacted(SimplexId v) const {
   bool ret = false;
   if(dimensionality_ == 3) {
     std::array<SimplexId, 3> p{};
@@ -4424,7 +4577,8 @@ bool ttk::MultiresTriangulation::isBoundaryImpacted(SimplexId v) const {
   return ret;
 }
 
-void ttk::MultiresTriangulation::computeCoarsestDecimationLevel() {
+template<size_t card>
+void ttk::MultiresTriangulation<card>::computeCoarsestDecimationLevel() {
   int maxDim = std::max(
     gridDimensions_[0], std::max(gridDimensions_[1], gridDimensions_[2]));
   int dl = 0;
@@ -4436,7 +4590,8 @@ void ttk::MultiresTriangulation::computeCoarsestDecimationLevel() {
   coarsestDL_ = dl;
 }
 
-int ttk::MultiresTriangulation::RL_to_DL(int rl) {
+template<size_t card>
+int ttk::MultiresTriangulation<card>::RL_to_DL(int rl) {
   if(rl < 0) {
     return 0;
   } else {
@@ -4444,6 +4599,13 @@ int ttk::MultiresTriangulation::RL_to_DL(int rl) {
   }
 }
 
-int ttk::MultiresTriangulation::DL_to_RL(int dl) {
+template<size_t card>
+int ttk::MultiresTriangulation<card>::DL_to_RL(int dl) {
   return coarsestDL_ - dl;
 }
+
+// explicit instanciations
+template class ttk::MultiresTriangulation<0>;
+template class ttk::MultiresTriangulation<1>;
+template class ttk::MultiresTriangulation<2>;
+template class ttk::MultiresTriangulation<3>;

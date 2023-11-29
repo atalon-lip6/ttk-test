@@ -2966,6 +2966,7 @@ namespace ttk {
       return this->hasPreconditionedDistributedCells_;
     }
 
+    //TODO ?
     inline int getDistributedGlobalCellId(const SimplexId &localCellId,
                                           const int &cellDim,
                                           SimplexId &globalCellId) const {

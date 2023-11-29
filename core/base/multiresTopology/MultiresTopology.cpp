@@ -50,25 +50,106 @@ void ttk::MultiresTopology::getValencesFromLink(
   }
 }
 
-void ttk::MultiresTopology::buildVertexLinkByBoundary(
+
+
+
+template<> void ttk::MultiresTopology::buildVertexLinkByBoundary<0>(
   const SimplexId vertexId, VLBoundaryType &vlbt) const {
 
-  const auto bid = multiresTriangulation_.getVertexBoundaryIndex(vertexId);
-  const auto nneigh = multiresTriangulation_.getVertexNeighborNumber(vertexId);
+  const auto bid = multiresTriangulation0_.getVertexBoundaryIndex(vertexId);
+  const auto nneigh = multiresTriangulation0_.getVertexNeighborNumber(vertexId);
   vlbt[bid].reserve(nneigh);
 
   for(SimplexId i = 0; i < nneigh; i++) {
     SimplexId n0 = 0;
-    multiresTriangulation_.getVertexNeighbor(vertexId, i, n0);
+    multiresTriangulation0_.getVertexNeighbor(vertexId, i, n0);
     for(SimplexId j = i + 1; j < nneigh; j++) {
       SimplexId n1 = 0;
-      multiresTriangulation_.getVertexNeighbor(vertexId, j, n1);
-      if(multiresTriangulation_.areVerticesNeighbors(n0, n1)) {
+      multiresTriangulation0_.getVertexNeighbor(vertexId, j, n1);
+      if(multiresTriangulation0_.areVerticesNeighbors(n0, n1)) {
         vlbt[bid].emplace_back(i, j);
       }
     }
   }
 }
+
+template<> void ttk::MultiresTopology::buildVertexLinkByBoundary<1>(
+  const SimplexId vertexId, VLBoundaryType &vlbt) const {
+
+  const auto bid = multiresTriangulation1_.getVertexBoundaryIndex(vertexId);
+  const auto nneigh = multiresTriangulation1_.getVertexNeighborNumber(vertexId);
+  vlbt[bid].reserve(nneigh);
+
+  for(SimplexId i = 0; i < nneigh; i++) {
+    SimplexId n0 = 0;
+    multiresTriangulation1_.getVertexNeighbor(vertexId, i, n0);
+    for(SimplexId j = i + 1; j < nneigh; j++) {
+      SimplexId n1 = 0;
+      multiresTriangulation1_.getVertexNeighbor(vertexId, j, n1);
+      if(multiresTriangulation1_.areVerticesNeighbors(n0, n1)) {
+        vlbt[bid].emplace_back(i, j);
+      }
+    }
+  }
+}
+
+template<> void ttk::MultiresTopology::buildVertexLinkByBoundary<2>(
+  const SimplexId vertexId, VLBoundaryType &vlbt) const {
+
+  const auto bid = multiresTriangulation2_.getVertexBoundaryIndex(vertexId);
+  const auto nneigh = multiresTriangulation2_.getVertexNeighborNumber(vertexId);
+  vlbt[bid].reserve(nneigh);
+
+  for(SimplexId i = 0; i < nneigh; i++) {
+    SimplexId n0 = 0;
+    multiresTriangulation2_.getVertexNeighbor(vertexId, i, n0);
+    for(SimplexId j = i + 1; j < nneigh; j++) {
+      SimplexId n1 = 0;
+      multiresTriangulation2_.getVertexNeighbor(vertexId, j, n1);
+      if(multiresTriangulation2_.areVerticesNeighbors(n0, n1)) {
+        vlbt[bid].emplace_back(i, j);
+      }
+    }
+  }
+}
+
+template<> void ttk::MultiresTopology::buildVertexLinkByBoundary<3>(
+  const SimplexId vertexId, VLBoundaryType &vlbt) const {
+
+  const auto bid = multiresTriangulation3_.getVertexBoundaryIndex(vertexId);
+  const auto nneigh = multiresTriangulation3_.getVertexNeighborNumber(vertexId);
+  vlbt[bid].reserve(nneigh);
+
+  for(SimplexId i = 0; i < nneigh; i++) {
+    SimplexId n0 = 0;
+    multiresTriangulation3_.getVertexNeighbor(vertexId, i, n0);
+    for(SimplexId j = i + 1; j < nneigh; j++) {
+      SimplexId n1 = 0;
+      multiresTriangulation3_.getVertexNeighbor(vertexId, j, n1);
+      if(multiresTriangulation3_.areVerticesNeighbors(n0, n1)) {
+        vlbt[bid].emplace_back(i, j);
+      }
+    }
+  }
+}
+
+void ttk::MultiresTopology::buildVertexLinkByBoundary(
+  const SimplexId vertexId, VLBoundaryType &vlbt) const {
+  if (dimensionality_ == 0) {
+    buildVertexLinkByBoundary<0>(vertexId, vlbt);
+  }
+  else if (dimensionality_ == 1) {
+    buildVertexLinkByBoundary<1>(vertexId, vlbt);
+  }
+  else if (dimensionality_ == 2) {
+    buildVertexLinkByBoundary<2>(vertexId, vlbt);
+  }
+  else if (dimensionality_ == 3) {
+    buildVertexLinkByBoundary<3>(vertexId, vlbt);
+  }
+}
+
+
 
 void ttk::MultiresTopology::getTripletsFromSaddles(
   const SimplexId vertexId,
@@ -101,7 +182,7 @@ char ttk::MultiresTopology::getCriticalTypeFromLink(
 
   const auto nbCC = link.getNbCC();
 
-  int const dimensionality = multiresTriangulation_.getDimensionality();
+  int const dimensionality = this->dimensionality_;//multiresTriangulation_.getDimensionality();
   SimplexId downValence = 0, upValence = 0;
 
   std::vector<size_t> CCIds;
@@ -161,8 +242,26 @@ char ttk::MultiresTopology::getCriticalTypeFromLink(
 
 std::string ttk::MultiresTopology::resolutionInfoString() {
   std::stringstream res;
-  res << "Resolution level "
-      << multiresTriangulation_.DL_to_RL(decimationLevel_);
+  if (dimensionality_ == 0) {
+    res << "Resolution level "
+      << multiresTriangulation0_.DL_to_RL(decimationLevel_);
+  }
+  else if (dimensionality_ == 1) {
+    res << "Resolution level "
+      << multiresTriangulation1_.DL_to_RL(decimationLevel_);
+  }
+  else if (dimensionality_ == 2) {
+    res << "Resolution level "
+      << multiresTriangulation2_.DL_to_RL(decimationLevel_);
+  }
+  else if (dimensionality_ == 3) {
+    res << "Resolution level "
+      << multiresTriangulation3_.DL_to_RL(decimationLevel_);
+  }
+  else {
+    this->printErr("Error: dimensionality should be between 0 and 3 inclusive.");
+    return "";
+  }
   if(decimationLevel_ == 0) {
     res << " (final)";
   }

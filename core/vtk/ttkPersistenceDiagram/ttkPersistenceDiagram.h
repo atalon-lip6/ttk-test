@@ -157,6 +157,7 @@
 #include <ttkPersistenceDiagramModule.h>
 
 // ttk code includes
+#include <MultiresTriangulation.h>
 #include <PersistenceDiagram.h>
 #include <ttkAlgorithm.h>
 #include <ttkMacros.h>

@@ -1780,8 +1780,8 @@ namespace ttk {
     /// Check if the edge with global identifier \p edgeId is on the boundary
     /// of the domain.
     ///
-    /// For 2D triangulations<card>, this function will return true if the edge is
-    /// a boundary edge. For 3D triangulations<card>, this function will return
+    /// For 2D triangulations, this function will return true if the edge is
+    /// a boundary edge. For 3D triangulations, this function will return
     /// true if the edge belongs to a boundary triangle.
     ///
     /// Here the notion of edge only makes sense if the triangulation
@@ -1826,7 +1826,7 @@ namespace ttk {
     /// \ref ttk::ExplicitTriangulation (and maybe \ref
     /// ttk::CompactTriangulation too) can be generated from
     /// non-manifold datasets (such as a Rips Complex). Some TTK
-    /// modules may be valid only for manifold triangulations<card>, other
+    /// modules may be valid only for manifold triangulations, other
     /// may have alternatives for non-manifold data-sets (\see
     /// ttk::PersistenceDiagram::checkManifold).
     ///
@@ -1856,8 +1856,8 @@ namespace ttk {
     /// Here the notion of triangle only makes sense if the triangulation
     /// has a dimension greater than 2 (otherwise, use the cell information).
     ///
-    /// For 2D triangulations<card>, this function will return false all the time.
-    /// For 3D triangulations<card>, this function will return true if the triangle
+    /// For 2D triangulations, this function will return false all the time.
+    /// For 3D triangulations, this function will return true if the triangle
     /// is a boundary triangle.
     ///
     /// \pre For this function to behave correctly,
@@ -1882,8 +1882,8 @@ namespace ttk {
     /// Check if the vertex with global identifier \p vertexId is on the
     /// boundary of the domain.
     ///
-    /// For 2D triangulations<card>, this function will return true if the vertex
-    /// belongs to a boundary edge. For 3D triangulations<card>, this function will
+    /// For 2D triangulations, this function will return true if the vertex
+    /// belongs to a boundary edge. For 3D triangulations, this function will
     /// return true if the vertex belongs to a boundary triangle.
     ///
     /// \pre For this function to behave correctly,

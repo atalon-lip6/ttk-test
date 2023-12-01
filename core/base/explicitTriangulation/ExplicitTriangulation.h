@@ -14,14 +14,6 @@
 #include <CellArray.h>
 #include <FlatJaggedArray.h>
 
-#include <OneSkeleton.h>
-#include <ThreeSkeleton.h>
-#include <TwoSkeleton.h>
-#include <ZeroSkeleton.h>
-
-#include <cstring>
-#include <numeric>
-
 #include <memory>
 
 namespace ttk {
@@ -79,7 +71,6 @@ namespace ttk {
       return 0;
     }
 
-
     inline SimplexId
       getCellEdgeNumberInternal(const SimplexId &cellId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -97,7 +88,6 @@ namespace ttk {
         vec[i] = {table[i].begin(), table[i].end()};
       }
     }
-
 
     inline SimplexId getCellEdgeNumber(const SimplexId &cellId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -354,7 +344,6 @@ namespace ttk {
       getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override {
       return edgeTriangleData_.size(edgeId);
     }
-
 
     inline const std::vector<std::vector<SimplexId>> *
       getEdgeTriangles() override {
@@ -1286,7 +1275,5 @@ inline SimplexId getEdgeGlobalId(const SimplexId leid) const override {
     // breaking change to keep backward compatibility.
     static const unsigned long formatVersion_;
   };
-  //
-  //
 
 } // namespace ttk

@@ -71,7 +71,7 @@ int ttk::Mapper::reduceMatrix(
   dimRed.setInputNumberOfComponents(static_cast<int>(this->LowerDimension));
 
   const auto ret
-    = dimRed.execute(outputCoords, mat.data(), mat.nRows(), mat.nCols());
+    = dimRed.execute(outputCoords, nullptr, mat.data(), mat.nRows(), mat.nCols());
   if(ret != 0) {
     this->printErr("DimensionReduction returned error code "
                    + std::to_string(ret));

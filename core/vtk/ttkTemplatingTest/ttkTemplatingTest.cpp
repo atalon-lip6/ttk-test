@@ -114,7 +114,7 @@ int ttkTemplatingTest::RequestData(vtkInformation *ttkNotUsed(request),
 
   // calling the smoothing package
   ttkTypeMacroAT(
-    VTK_INT, triangulation->getType(),
+    VTK_INT, triangulation->getType(), triangulation->getDimensionality(),
     (execute<T0, T1>(
       static_cast<const T1 *>(triangulation->getData()), NumberOfIterations)));
 

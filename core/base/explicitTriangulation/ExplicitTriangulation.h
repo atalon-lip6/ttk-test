@@ -1134,7 +1134,7 @@ inline SimplexId getEdgeGlobalId(const SimplexId leid) const override {
     }
 
     inline int getTriangleIncenter(const SimplexId triangleId,
-                                   float incenter[3]) const {
+                                   float incenter[3]) const override {
       std::array<SimplexId, 3> vertexId{};
       if constexpr(card == 2) {
         getCellVertex(triangleId, 0, vertexId[0]);

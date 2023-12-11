@@ -2468,7 +2468,7 @@ namespace ttk {
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
-    inline int getEdgeIncenter(const SimplexId edgeId,
+    virtual inline int getEdgeIncenter(const SimplexId edgeId,
                                float incenter[3]) const {
       std::array<SimplexId, 2> vertexId{};
       getEdgeVertex(edgeId, 0, vertexId[0]);

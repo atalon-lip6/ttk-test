@@ -1,0 +1,9 @@
+NAME
+  ttkTemplatingTest
+SOURCES
+  ttkTemplatingTest.cpp
+HEADERS
+  ttkTemplatingTest.h
+DEPENDS
+  templatingTest
+  ttkAlgorithm

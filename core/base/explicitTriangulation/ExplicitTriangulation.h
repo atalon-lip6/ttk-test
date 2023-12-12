@@ -791,6 +791,45 @@ namespace ttk {
 #endif
       return boundaryVertices_[vertexId];
     }
+  
+    inline int getTriangleIncenter(const SimplexId triangleId,
+        float incenter[3]) const override {
+      std::array<SimplexId, 3> vertexId{};
+      if constexpr(card == 2) {
+        getCellVertex(triangleId, 0, vertexId[0]);
+        getCellVertex(triangleId, 1, vertexId[1]);
+        getCellVertex(triangleId, 2, vertexId[2]);
+      } else if constexpr(card == 3) {
+        getTriangleVertex(triangleId, 0, vertexId[0]);
+        getTriangleVertex(triangleId, 1, vertexId[1]);
+        getTriangleVertex(triangleId, 2, vertexId[2]);
+      }
+
+      std::array<float, 9> p{};
+      getVertexPoint(vertexId[0], p[0], p[1], p[2]);
+      getVertexPoint(vertexId[1], p[3], p[4], p[5]);
+      getVertexPoint(vertexId[2], p[6], p[7], p[8]);
+
+      std::array<float, 3> d{};
+      d[0] = Geometry::distance(&p[3], &p[6]);
+      d[1] = Geometry::distance(&p[0], &p[6]);
+      d[2] = Geometry::distance(&p[0], &p[3]);
+      const float sum = d[0] + d[1] + d[2];
+
+      d[0] = d[0] / sum;
+      d[1] = d[1] / sum;
+      d[2] = d[2] / sum;
+
+      incenter[0] = d[0] * p[0] + d[1] * p[3] + d[2] * p[6];
+      incenter[1] = d[0] * p[1] + d[1] * p[4] + d[2] * p[7];
+      incenter[2] = d[0] * p[2] + d[1] * p[5] + d[2] * p[8];
+
+      return 0;
+    }
+
+
+
+
 
     int preconditionBoundaryEdgesInternal() override;
     int preconditionBoundaryTrianglesInternal() override;
@@ -1122,40 +1161,6 @@ inline SimplexId getEdgeGlobalId(const SimplexId leid) const override {
         = {bBox[0], bBox[1], bBox[2], bBox[3], bBox[4], bBox[5]};
     }
 
-    inline int getTriangleIncenter(const SimplexId triangleId,
-                                   float incenter[3]) const override {
-      std::array<SimplexId, 3> vertexId{};
-      if constexpr(card == 2) {
-        getCellVertex(triangleId, 0, vertexId[0]);
-        getCellVertex(triangleId, 1, vertexId[1]);
-        getCellVertex(triangleId, 2, vertexId[2]);
-      } else if constexpr(card == 3) {
-        getTriangleVertex(triangleId, 0, vertexId[0]);
-        getTriangleVertex(triangleId, 1, vertexId[1]);
-        getTriangleVertex(triangleId, 2, vertexId[2]);
-      }
-
-      std::array<float, 9> p{};
-      getVertexPoint(vertexId[0], p[0], p[1], p[2]);
-      getVertexPoint(vertexId[1], p[3], p[4], p[5]);
-      getVertexPoint(vertexId[2], p[6], p[7], p[8]);
-
-      std::array<float, 3> d{};
-      d[0] = Geometry::distance(&p[3], &p[6]);
-      d[1] = Geometry::distance(&p[0], &p[6]);
-      d[2] = Geometry::distance(&p[0], &p[3]);
-      const float sum = d[0] + d[1] + d[2];
-
-      d[0] = d[0] / sum;
-      d[1] = d[1] / sum;
-      d[2] = d[2] / sum;
-
-      incenter[0] = d[0] * p[0] + d[1] * p[3] + d[2] * p[6];
-      incenter[1] = d[0] * p[1] + d[1] * p[4] + d[2] * p[7];
-      incenter[2] = d[0] * p[2] + d[1] * p[5] + d[2] * p[8];
-
-      return 0;
-    }
 
     /* TODO dimension dimensionalité de la trig ?!
     inline int getCellIncenter(const SimplexId cellid,

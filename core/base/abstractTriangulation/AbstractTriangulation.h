@@ -2488,7 +2488,7 @@ namespace ttk {
     /**
      * Compute the incenter of the points of the given triangle identifier.
      */
-    inline int getTriangleIncenter(const SimplexId triangleId,
+    virtual inline int getTriangleIncenter(const SimplexId triangleId,
                                    float incenter[3]) const {
 
       std::array<SimplexId, 3> vertexId{};

@@ -970,6 +970,39 @@ namespace ttk {
       this->vertGid_ = array;
     }
 
+    inline int getDistributedGlobalCellId(const SimplexId &localCellId,
+        const int &cellDim,
+        SimplexId &globalCellId) const {
+      if(ttk::hasInitializedMPI()) {
+        switch(cellDim) {
+          case 0:
+            globalCellId = this->getVertexGlobalIdInternal(localCellId);
+            break;
+          case 1:
+            globalCellId = this->getEdgeGlobalIdInternal(localCellId);
+            break;
+          case 2:
+            if constexpr (card == 2) {
+              globalCellId = this->getCellGlobalIdInternal(localCellId);
+              break;
+            } else {
+              globalCellId = this->getTriangleGlobalIdInternal(localCellId);
+              break;
+            }
+          case 3: {
+                    globalCellId = this->getCellGlobalIdInternal(localCellId);
+                    break;
+                  }
+          default:
+                  globalCellId = -1;
+                  break;
+        }
+      } else {
+        globalCellId = localCellId;
+      }
+      return 0;
+    }
+
     inline SimplexId
       getVertexGlobalIdInternal(const SimplexId lvid) const override {
       return this->vertGid_[lvid];

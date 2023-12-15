@@ -61,9 +61,9 @@ namespace ttk {
       return nTriangles_ * 6;
     }
 
-    template <typename triangulationType>
+    template <typename triangulationType, size_t card>
     int execute(const triangulationType &inputTriangl,
-                ExplicitTriangulation<0> &outputTriangl); //TODO
+                ExplicitTriangulation<card> &outputTriangl);
 
     /**
      * @brief Interpolate floating-point point data on subdivised triangulation
@@ -165,7 +165,8 @@ namespace ttk {
     template <typename triangulationType>
     int subdiviseTriangulation(const triangulationType &inputTriangl);
 
-    int buildOutputTriangulation(ExplicitTriangulation<0> &outputTriangl);
+    template <size_t card>
+    int buildOutputTriangulation(ExplicitTriangulation<card> &outputTriangl);
 
     // input triangulation properties
     SimplexId nVertices_{};
@@ -309,10 +310,10 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
   return 0;
 }
 
-template <typename triangulationType>
+template <typename triangulationType, size_t card>
 int ttk::BarycentricSubdivision::execute(
   const triangulationType &inputTriangl,
-  ttk::ExplicitTriangulation<0> &outputTriangl) {
+  ExplicitTriangulation<card> &outputTriangl) {
 
   // not implemented for dimension >= 3
   if(inputTriangl.getDimensionality() >= 3) {
@@ -325,10 +326,33 @@ int ttk::BarycentricSubdivision::execute(
   const SimplexId vertexNumber = inputTriangl.getNumberOfVertices();
   subdiviseTriangulation(inputTriangl);
   buildOutputTriangulation(outputTriangl);
-
   this->printMsg(
     "Data-set (" + std::to_string(vertexNumber) + " points) processed", 1.0,
     tm.getElapsedTime(), this->threadNumber_);
+
+  return 0;
+}
+
+template<size_t card>
+int ttk::BarycentricSubdivision::buildOutputTriangulation(
+  ttk::ExplicitTriangulation<card> &outputTriangl) {
+
+  // ensure subdivision is already performed
+  if(points_.empty() || cells_connectivity_.empty()) {
+    return 1;
+  }
+
+  outputTriangl.setInputPoints(points_.size() / 3, points_.data());
+#ifdef TTK_CELL_ARRAY_NEW
+  outputTriangl.setInputCells(cells_offsets_.size() - 1,
+                              cells_connectivity_.data(),
+                              cells_offsets_.data());
+#else
+  // TODO use revert translator
+  LongSimplexId *cells = nullptr;
+  CellArray::TranslateToFlatLayout(cells_connectivity_, cells_offsets_, cells);
+  outputTriangl.setInputCells(cells_offsets_.size() - 1, cells);
+#endif
 
   return 0;
 }

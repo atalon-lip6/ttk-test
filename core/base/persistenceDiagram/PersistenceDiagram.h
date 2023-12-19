@@ -723,6 +723,7 @@ int ttk::PersistenceDiagram::executeFTM(
   return 0;
 }
 
+//TODO et si pas classe finale, renvoie erreur et constexpr
 template <class triangulationType>
 void ttk::PersistenceDiagram::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
@@ -730,7 +731,13 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
   if((BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
       || BackEnd == BACKEND::APPROXIMATE_TOPOLOGY)
      && !std::is_same<ttk::ImplicitWithPreconditions<0>, triangulationType>::value
-     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value) {
+     && !std::is_same<ttk::ImplicitWithPreconditions<1>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitWithPreconditions<2>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitWithPreconditions<3>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<1>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<2>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<3>, triangulationType>::value) {
 
     printWrn("Explicit, Compact or Periodic triangulation detected.");
     printWrn("Defaulting to the FTM backend.");

@@ -612,14 +612,19 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   return (char)(CriticalType::Regular);
 }
 
-//Todo
+//Todo et si implicittriangulation simple va échouer...
 template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY
      && !std::is_same<ttk::ImplicitWithPreconditions<0>, triangulationType>::value
-     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value) {
-
+     && !std::is_same<ttk::ImplicitWithPreconditions<1>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitWithPreconditions<2>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitWithPreconditions<3>, triangulationType>::value
+     && !std::is_same<ttk::ImplicitNoPreconditions<0>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<1>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<2>, triangulationType>::value 
+     && !std::is_same<ttk::ImplicitNoPreconditions<3>, triangulationType>::value) {
     printMsg(ttk::debug::Separator::L2);
     printWrn("Explicit, Compact or Periodic");
     printWrn("triangulation detected.");

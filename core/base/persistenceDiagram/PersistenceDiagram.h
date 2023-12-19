@@ -571,63 +571,51 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
   std::vector<PersistencePair> &CTDiagram,
   const scalarType *inputScalars,
   const triangulationType *triangulation) {
+  if constexpr (std::is_base_of<ttk::ImplicitTriangulation<0>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<1>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<2>, triangulationType>::value || 
+      std::is_base_of<ttk::ImplicitTriangulation<3>, triangulationType>::value) {
+    approxT_.setDebugLevel(debugLevel_);
+    approxT_.setThreadNumber(threadNumber_);
+    size_t card = triangulation->getDimensionality();
+    //approxT_.setupTriangulation(const_cast<ttk::AbstractTriangulation*> ((const AbstractTriangulation *)triangulation));
+    approxT_.setupTriangulation(triangulation);
+    approxT_.setStartingResolutionLevel(StartingResolutionLevel);
+    approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
+    approxT_.setPreallocateMemory(true);
+    approxT_.setEpsilon(Epsilon);
 
-  approxT_.setDebugLevel(debugLevel_);
-  approxT_.setThreadNumber(threadNumber_);
-  size_t card = triangulation->getDimensionality();
-  /*if (card == 0) {
-  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
-    (const ImplicitTriangulation<0> *)triangulation));
-  }
-  else if (card == 1) {
-  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<1> *>(
-    (const ImplicitTriangulation<1> *)triangulation));
-  }
-  else if (card == 2) {
-  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<2> *>(
-    (const ImplicitTriangulation<2> *)triangulation));
-  }
-  else if (card == 3) {
-  approxT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<3> *>(
-    (const ImplicitTriangulation<3> *)triangulation));
-  }
-  else {
-    this->printErr("Error: the dimensionality should be between 0 and 3. Aborting.");
-    return 1;
-  }*/
-  approxT_.setupTriangulation(const_cast<ttk::AbstractTriangulation*> ((const AbstractTriangulation *)triangulation));
-  approxT_.setStartingResolutionLevel(StartingResolutionLevel);
-  approxT_.setStoppingResolutionLevel(StoppingResolutionLevel);
-  approxT_.setPreallocateMemory(true);
-  approxT_.setEpsilon(Epsilon);
+    std::vector<ApproximateTopology::PersistencePair> resultDiagram{};
 
-  std::vector<ApproximateTopology::PersistencePair> resultDiagram{};
+    approxT_.computeApproximatePD(
+        resultDiagram, inputScalars, (scalarType *)outputScalars_,
+        (SimplexId *)outputOffsets_, (int *)outputMonotonyOffsets_);
 
-  approxT_.computeApproximatePD(
-    resultDiagram, inputScalars, (scalarType *)outputScalars_,
-    (SimplexId *)outputOffsets_, (int *)outputMonotonyOffsets_);
-
-  // create the final diagram
-  for(const auto &p : resultDiagram) {
-    if(p.pairType == 0) {
-      CTDiagram.emplace_back(PersistencePair{
-        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, p.pairType,
-        true});
-    } else if(p.pairType == 2) {
-      CTDiagram.emplace_back(PersistencePair{
-        CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
-        p.pairType, true});
-    } else if(p.pairType == -1) {
-      CTDiagram.emplace_back(PersistencePair{
-        CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
-        CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
-        p.pairType, false});
+    // create the final diagram
+    for(const auto &p : resultDiagram) {
+      if(p.pairType == 0) {
+        CTDiagram.emplace_back(PersistencePair{
+            CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+            CriticalVertex{p.death, CriticalType::Saddle1, {}, {}}, p.pairType,
+            true});
+      } else if(p.pairType == 2) {
+        CTDiagram.emplace_back(PersistencePair{
+            CriticalVertex{p.birth, CriticalType::Saddle2, {}, {}},
+            CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
+            p.pairType, true});
+      } else if(p.pairType == -1) {
+        CTDiagram.emplace_back(PersistencePair{
+            CriticalVertex{p.birth, CriticalType::Local_minimum, {}, {}},
+            CriticalVertex{p.death, CriticalType::Local_maximum, {}, {}},
+            p.pairType, false});
+      }
     }
+
+    return 0;
   }
 
-  return 0;
+  this->printErr("Error: only works with implicit an triangulation.");
+  return 1;
 }
 
 template <class triangulationType>
@@ -636,29 +624,13 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
   const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
+  if constexpr (std::is_base_of<ttk::ImplicitTriangulation<0>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<1>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<2>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<3>, triangulationType>::value) {
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  size_t card = triangulation->getDimensionality();
-  if (card == 0) {
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
-    (const ImplicitTriangulation<0> *)triangulation));
-  }
-  else if (card == 1) {
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<1> *>(
-    (const ImplicitTriangulation<1> *)triangulation));
-  }
-  else if (card == 2) {
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<2> *>(
-    (const ImplicitTriangulation<2> *)triangulation));
-  }
-  else if (card == 3) {
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<3> *>(
-    (const ImplicitTriangulation<3> *)triangulation));
-  }
-  else {
-    this->printErr("Error: the dimensionality should be between 0 and 3. Aborting.");
-    return 1;
-  }
+  progT_.setupTriangulation(triangulation);
 
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
@@ -691,6 +663,10 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
   }
 
   return 0;
+  }
+
+  this->printErr("Error: only works with implicit an triangulation.");
+  return 1;
 }
 
 template <typename scalarType, class triangulationType>

@@ -71,28 +71,30 @@ namespace ttk {
       this->setDebugMsgPrefix("MultiresTopology");
     }
 
-    inline void setupTriangulation(AbstractTriangulation *const data) {
-      int card = data->getDimensionality();
-      if (card == 0) {
-        triangulation0_ = static_cast<ttk::ImplicitTriangulation<0>*>(data);
+
+    template<size_t card>
+    inline void setupTriangulation(const ImplicitTriangulation<card> *const data) {
+      dimensionality_ = card;
+      if constexpr (card == 0) {
+        triangulation0_ = const_cast<ImplicitTriangulation<card>*>(data);
         multiresTriangulation0_.setTriangulation(triangulation0_);
-        dimensionality_ = 0;
       }
-      else if (card == 1) {
-        triangulation1_ = static_cast<ttk::ImplicitTriangulation<1>*>(data);
+      else if constexpr (card == 1) {
+        triangulation1_ = const_cast<ImplicitTriangulation<card>*>(data);
         multiresTriangulation1_.setTriangulation(triangulation1_);
-        dimensionality_ = 1;
       }
-      else if (card == 2) {
-        triangulation2_ = static_cast<ttk::ImplicitTriangulation<2>*>(data);
+      else if constexpr (card == 2) {
+        triangulation2_ = const_cast<ImplicitTriangulation<card>*>(data);
         multiresTriangulation2_.setTriangulation(triangulation2_);
-        dimensionality_ = 2;
       }
-      else if (card == 3) {
-        triangulation3_ = static_cast<ttk::ImplicitTriangulation<3>*>(data);
+      else if constexpr (card == 3) {
+        triangulation3_ = const_cast<ImplicitTriangulation<card>*>(data);
         multiresTriangulation3_.setTriangulation(triangulation3_);
-        dimensionality_ = 3;
       }
+      else {
+        this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      }
+ 
     }
 
     virtual void setStartingDecimationLevel(int data) {
@@ -205,8 +207,9 @@ namespace ttk {
       else if (this->dimensionality_ == 3) {
         multiresTriangulation3_.getVertexNumber();
       }
-      
-      this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      else { 
+        this->printErr("Dimensionality should be between 0 and 3 inclusive.");
+      }
       return -1;
     }
 
@@ -358,25 +361,6 @@ namespace ttk {
       }
     }
 
-
-    /*
- 
-    inline void tata(int toto) {
-      if (this->dimensionality_ == 0) {
-        multiresTriangulation0_.tata(toto);
-      }
-      else if (this->dimensionality_ == 1) {
-        multiresTriangulation1_.tata(toto);
-      }
-      else if (this->dimensionality_ == 2) {
-        multiresTriangulation2_.tata(toto);
-      }
-      else if (this->dimensionality_ == 3) {
-        multiresTriangulation3_.tata(toto);
-      }
-    }
-
-*/ 
 
     //getTriangulation ?
 

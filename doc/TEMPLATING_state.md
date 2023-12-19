@@ -50,6 +50,11 @@ of a final triangulation.
 
  * Do some benchmarking.
 
+ * Todo check rather during compilation time, for type of triangulation in things using progressive/approximate topoloty
+
+ * Maybe template multires topology also (and approximate, progressive)
+
+ * For modules using setupTriangulation from multires, maybe do the templating inside multires setupTriangulation (and a new function?) instead of before calling setupTriangulation (less code)
 
 ## Performance results:
  * 4-5 order of magnitude faster if calling just one function multiple times:

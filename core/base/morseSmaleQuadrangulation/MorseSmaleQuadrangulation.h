@@ -152,7 +152,7 @@ namespace ttk {
      *
      * @return 0
      */
-    template <typename triangulationType>
+    template <typename triangulationType, size_t card>
     int detectCellSeps(const triangulationType &triangulation);
 
     /**
@@ -243,11 +243,11 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename triangulationType>
+template <typename triangulationType, size_t card>
 int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   const triangulationType &triangulation) {
 
-  ExplicitTriangulation<0> newT{};
+  ExplicitTriangulation<card> newT{};
   bs.execute(triangulation, newT);
 
   newT.setDebugLevel(this->debugLevel_);
@@ -549,8 +549,15 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(
     sepEnds_[i] = sepFlatEdges[2 * i + 1];
   }
 
-  detectCellSeps(triangulation);
-
+  if (triangulation.getDimensionality() == 0)
+    detectCellSeps<triangulationType, 0>(triangulation);
+  else if (triangulation.getDimensionality() == 1)
+    detectCellSeps<triangulationType, 1>(triangulation);
+  else if (triangulation.getDimensionality() == 2)
+    detectCellSeps<triangulationType, 2>(triangulation);
+  else
+    detectCellSeps<triangulationType, 3>(triangulation);
+   
   outputCells_.reserve(quadSeps_.size());
 
   for(const auto &qsp : quadSeps_) {

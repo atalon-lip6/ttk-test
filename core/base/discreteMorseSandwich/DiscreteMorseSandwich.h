@@ -1212,8 +1212,10 @@ int ttk::DiscreteMorseSandwich::computePersistencePairs(
       pairs, paired1Saddles, paired2Saddles, false, tmp, criticalCellsByDim[1],
       criticalCellsByDim[2], critCellsOrder[1], triangulation);
   }
-  //TODO
-  if(std::is_same<triangulationType, ttk::ExplicitTriangulation<0>>::value) {
+  if constexpr (std::is_same<triangulationType, ttk::ExplicitTriangulation<0>>::value ||
+      std::is_same<triangulationType, ttk::ExplicitTriangulation<1>>::value ||
+      std::is_same<triangulationType, ttk::ExplicitTriangulation<2>>::value ||
+      std::is_same<triangulationType, ttk::ExplicitTriangulation<3>>::value) {
     // create infinite pairs from non-paired 1-saddles, 2-saddles and maxima
     size_t nHandles{}, nCavities{}, nNonPairedMax{};
     if((dim == 2 && !ignoreBoundary && this->ComputeMinSad

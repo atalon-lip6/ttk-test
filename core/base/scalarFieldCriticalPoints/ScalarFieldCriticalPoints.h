@@ -201,11 +201,13 @@ int ttk::ScalarFieldCriticalPoints::execute(
 template <class triangulationType>
 int ttk::ScalarFieldCriticalPoints::executeProgressive(
   const SimplexId *const offsets, const triangulationType *triangulation) {
-
+  if constexpr (std::is_base_of<ttk::ImplicitTriangulation<0>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<1>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<2>, triangulationType>::value ||
+      std::is_base_of<ttk::ImplicitTriangulation<3>, triangulationType>::value) {
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
-  progT_.setupTriangulation(const_cast<ttk::ImplicitTriangulation<0> *>(
-    (const ImplicitTriangulation<0> *)triangulation));
+  progT_.setupTriangulation(triangulation);
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);
@@ -213,9 +215,13 @@ int ttk::ScalarFieldCriticalPoints::executeProgressive(
   progT_.setPreallocateMemory(true);
 
   progT_.computeProgressiveCP(criticalPoints_, offsets);
-
   displayStats();
   return 0;
+  }
+
+
+  this->printErr("Error: only works with implicit an triangulation.");
+  return 1;
 }
 
 template <class triangulationType>
@@ -606,6 +612,7 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   return (char)(CriticalType::Regular);
 }
 
+//Todo
 template <class triangulationType>
 void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   const triangulationType *ttkNotUsed(triangulation)) {

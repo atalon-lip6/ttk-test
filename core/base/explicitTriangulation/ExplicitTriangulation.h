@@ -1034,7 +1034,7 @@ namespace ttk {
     }
 
 inline SimplexId getTriangleGlobalId(const SimplexId ltid) const override {
-      const auto dim{this->getDimensionality()};
+      //const auto dim{this->getDimensionality()};
 #ifndef TTK_ENABLE_KAMIKAZE
       if constexpr(card != 3 && card != 2) {
         this->printErr("Only 2D and  3D datasets are supported");

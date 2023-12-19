@@ -51,7 +51,7 @@ int ttkTemplatingTest::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
-  auto output = vtkDataSet::GetData(outputVector);
+  //auto output = vtkDataSet::GetData(outputVector);
 
   Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 

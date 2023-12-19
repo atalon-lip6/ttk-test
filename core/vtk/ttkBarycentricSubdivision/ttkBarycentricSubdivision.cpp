@@ -163,7 +163,7 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
   ttk::Timer tm;
 
   auto input = vtkDataSet::GetData(inputVector[0]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  //auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
   ttk::ExplicitTriangulation<0> triangulationSubdivision0{};

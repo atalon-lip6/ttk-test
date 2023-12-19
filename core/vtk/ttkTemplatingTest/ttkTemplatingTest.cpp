@@ -51,7 +51,7 @@ int ttkTemplatingTest::RequestData(vtkInformation *ttkNotUsed(request),
                                vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
-  auto output = vtkDataSet::GetData(outputVector);
+  //auto output = vtkDataSet::GetData(outputVector);
 
   Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
@@ -82,7 +82,7 @@ int ttkTemplatingTest::RequestData(vtkInformation *ttkNotUsed(request),
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
   //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
-  vtkSmartPointer<vtkDataArray> const outputArray;
+  //vtkSmartPointer<vtkDataArray> const outputArray;
     /*= vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetName(this->OutputArrayName.data()); // set array name
   outputArray->SetNumberOfComponents(1); // only one component per tuple

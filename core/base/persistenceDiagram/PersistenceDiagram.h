@@ -577,7 +577,7 @@ int ttk::PersistenceDiagram::executeApproximateTopology(
       std::is_base_of<ttk::ImplicitTriangulation<3>, triangulationType>::value) {
     approxT_.setDebugLevel(debugLevel_);
     approxT_.setThreadNumber(threadNumber_);
-    size_t card = triangulation->getDimensionality();
+    //size_t card = triangulation->getDimensionality();
     //approxT_.setupTriangulation(const_cast<ttk::AbstractTriangulation*> ((const AbstractTriangulation *)triangulation));
     approxT_.setupTriangulation(triangulation);
     approxT_.setStartingResolutionLevel(StartingResolutionLevel);

@@ -50,11 +50,16 @@ of a final triangulation.
 
  * Do some benchmarking.
 
- * Todo check rather during compilation time, for type of triangulation in things using progressive/approximate topoloty
+ * Check rather during compilation time, for type of triangulation in things using progressive/approximate topoloty
 
  * Maybe template multires topology also (and approximate, progressive)
+    * Approxtopo and progressivetopo if templatées => simpler? 
 
  * For modules using setupTriangulation from multires, maybe do the templating inside multires setupTriangulation (and a new function?) instead of before calling setupTriangulation (less code)
+
+ * Triangulation : isExplicit, isImplicit, etc. ?
+    => DiscreteMorseSandwich.h
+
 
 ## Performance results:
  * 4-5 order of magnitude faster if calling just one function multiple times:
